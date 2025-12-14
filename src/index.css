@@ -53,6 +53,7 @@
   /* Fix for white background on scroll - apply to html, body, and #root */
   html {
     min-height: 100vh;
+    background-color: #0a0a0f;
     background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
     background-attachment: fixed;
   }
@@ -69,6 +70,7 @@
     background-attachment: fixed;
     color: #ffffff;
     overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   #root {

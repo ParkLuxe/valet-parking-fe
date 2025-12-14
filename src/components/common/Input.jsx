@@ -21,6 +21,8 @@ const Input = ({
   fullWidth = true,
   multiline = false,
   rows = 4,
+  select = false,
+  children,
   icon,
   className,
   ...props
@@ -34,6 +36,65 @@ const Input = ({
   };
 
   const hasValue = value && value.length > 0;
+
+  // Render select if select prop is true
+  if (select) {
+    return (
+      <div className={cn('relative', fullWidth && 'w-full', className)}>
+        <div className="relative">
+          {icon && (
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none z-10">
+              {icon}
+            </div>
+          )}
+          <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            required={required}
+            disabled={disabled}
+            className={cn(
+              'w-full px-4 py-3 bg-white/5 backdrop-blur-sm',
+              'border border-white/10 rounded-input',
+              'text-white appearance-none cursor-pointer',
+              'transition-all duration-300 ease-in-out',
+              'focus:outline-none focus:border-primary',
+              'focus:ring-2 focus:ring-primary/30',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              error && 'border-error focus:border-error focus:ring-error/30',
+              icon && 'pl-12'
+            )}
+            {...props}
+          >
+            {children}
+          </select>
+          {/* Dropdown arrow */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+            <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+        {label && (
+          <label className={cn(
+            'absolute left-4 top-0 -translate-y-1/2 text-xs px-2',
+            'bg-background-secondary',
+            error ? 'text-error' : 'text-primary'
+          )}>
+            {label}
+            {required && <span className="text-error ml-1">*</span>}
+          </label>
+        )}
+        {helperText && (
+          <p className={cn('mt-1 text-sm px-1', error ? 'text-error' : 'text-white/50')}>
+            {helperText}
+          </p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={cn('relative', fullWidth && 'w-full', className)}>

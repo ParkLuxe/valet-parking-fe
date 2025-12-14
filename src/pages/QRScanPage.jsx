@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { MenuItem } from '@mui/material';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import Card from '../components/common/Card';
 import Input from '../components/common/Input';
@@ -330,10 +329,11 @@ const QRScanPage = () => {
                   onChange={handleChange}
                   required
                 >
+                  <option value="">Select Vehicle Type</option>
                   {Object.keys(VEHICLE_TYPES).map((key) => (
-                    <MenuItem key={key} value={VEHICLE_TYPES[key]}>
+                    <option key={key} value={VEHICLE_TYPES[key]}>
                       {key}
-                    </MenuItem>
+                    </option>
                   ))}
                 </Input>
 
@@ -381,10 +381,11 @@ const QRScanPage = () => {
                   helperText={errors.parkingSlotId || 'Select available parking slot'}
                   required
                 >
+                  <option value="">Select Parking Slot</option>
                   {slots.filter(s => s.isAvailable).map((slot) => (
-                    <MenuItem key={slot.id} value={slot.id}>
+                    <option key={slot.id} value={slot.id}>
                       {slot.name}
-                    </MenuItem>
+                    </option>
                   ))}
                 </Input>
 
@@ -398,10 +399,11 @@ const QRScanPage = () => {
                   helperText={errors.valetId || 'Select valet to assign'}
                   required
                 >
+                  <option value="">Select Valet</option>
                   {valetList.filter(v => v.isActive).map((valet) => (
-                    <MenuItem key={valet.id} value={valet.id}>
+                    <option key={valet.id} value={valet.id}>
                       {valet.name}
-                    </MenuItem>
+                    </option>
                   ))}
                 </Input>
               </div>
