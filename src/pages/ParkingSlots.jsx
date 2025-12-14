@@ -17,7 +17,7 @@ import Modal from '../components/common/Modal';
 import { cn } from '../utils/cn';
 
 const ParkingSlots = () => {
-  const { slots } = useSelector((state) => state.parkingSlots);
+  const { slots = [] } = useSelector((state) => state.parkingSlots || { slots: [] });
   
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -247,7 +247,7 @@ const ParkingSlots = () => {
 
       {/* Slot Details Modal */}
       <AnimatePresence>
-        {showSlotDetails && selectedSlot && (
+        {showSlotDetails && selectedSlot && selectedSlot.slotNumber && (
           <Modal
             open={showSlotDetails}
             onClose={() => setShowSlotDetails(false)}
@@ -258,9 +258,9 @@ const ParkingSlots = () => {
               <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                 <span className="text-white/70">Status</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">{getStatusIcon(selectedSlot.status)}</span>
+                  <span className="text-xl">{getStatusIcon(selectedSlot?.status)}</span>
                   <span className="font-medium capitalize text-white">
-                    {selectedSlot.status}
+                    {selectedSlot?.status || 'N/A'}
                   </span>
                 </div>
               </div>
@@ -268,11 +268,11 @@ const ParkingSlots = () => {
               {/* Floor */}
               <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                 <span className="text-white/70">Floor</span>
-                <span className="font-medium text-white">{selectedSlot.floor || 1}</span>
+                <span className="font-medium text-white">{selectedSlot?.floor || 1}</span>
               </div>
 
               {/* Vehicle Details (if occupied) */}
-              {selectedSlot.status === 'occupied' && selectedSlot.vehicleNumber && (
+              {selectedSlot?.status === 'occupied' && selectedSlot?.vehicleNumber && (
                 <>
                   <div className="border-t border-white/10 pt-4">
                     <h4 className="text-lg font-semibold text-white mb-3">Vehicle Information</h4>
@@ -280,17 +280,17 @@ const ParkingSlots = () => {
                   
                   <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                     <span className="text-white/70">Vehicle Number</span>
-                    <span className="font-medium text-white">{selectedSlot.vehicleNumber}</span>
+                    <span className="font-medium text-white">{selectedSlot?.vehicleNumber || 'N/A'}</span>
                   </div>
 
-                  {selectedSlot.valetName && (
+                  {selectedSlot?.valetName && (
                     <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                       <span className="text-white/70">Valet Assigned</span>
-                      <span className="font-medium text-white">{selectedSlot.valetName}</span>
+                      <span className="font-medium text-white">{selectedSlot?.valetName}</span>
                     </div>
                   )}
 
-                  {selectedSlot.parkedAt && (
+                  {selectedSlot?.parkedAt && (
                     <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                       <span className="text-white/70">Parked Since</span>
                       <span className="font-medium text-white">
@@ -303,12 +303,12 @@ const ParkingSlots = () => {
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">
-                {selectedSlot.status === 'available' && (
+                {selectedSlot?.status === 'available' && (
                   <Button variant="gradient" className="flex-1">
                     Assign Vehicle
                   </Button>
                 )}
-                {selectedSlot.status === 'occupied' && (
+                {selectedSlot?.status === 'occupied' && (
                   <Button variant="gradient" className="flex-1">
                     Release Slot
                   </Button>

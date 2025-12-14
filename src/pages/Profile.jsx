@@ -299,7 +299,7 @@ const Profile = () => {
 
           {/* Stats Cards */}
           <Card>
-            <div className="p-6">
+            <div className="p-4">
               <h3 className="text-xl font-bold text-white mb-4">Your Stats</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
@@ -337,7 +337,7 @@ const Profile = () => {
 
           {/* Account Info */}
           <Card>
-            <div className="p-6">
+            <div className="p-4">
               <h3 className="text-xl font-bold text-white mb-4">Account Info</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-white/70">
@@ -363,49 +363,40 @@ const Profile = () => {
           <Card title="Personal Information">
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 gap-4">
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
-                  <Input
-                    label="Full Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    error={!!errors.name}
-                    helperText={errors.name}
-                    className="pl-10"
-                    required
-                  />
-                </div>
+                <Input
+                  label="Full Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  error={!!errors.name}
+                  helperText={errors.name}
+                  icon={<User className="w-5 h-5" />}
+                  required
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
-                    <Input
-                      label="Email Address"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      error={!!errors.email}
-                      helperText={errors.email}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
+                  <Input
+                    label="Email Address"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    error={!!errors.email}
+                    helperText={errors.email}
+                    icon={<Mail className="w-5 h-5" />}
+                    required
+                  />
 
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
-                    <Input
-                      label="Phone Number"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      error={!!errors.phone}
-                      helperText={errors.phone}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
+                  <Input
+                    label="Phone Number"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    error={!!errors.phone}
+                    helperText={errors.phone}
+                    icon={<Phone className="w-5 h-5" />}
+                    required
+                  />
                 </div>
               </div>
 
@@ -423,51 +414,42 @@ const Profile = () => {
           {/* Change Password */}
           <Card title="Change Password">
             <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
-                <Input
-                  label="Current Password"
-                  name="oldPassword"
-                  type="password"
-                  value={passwordData.oldPassword}
-                  onChange={handlePasswordChange}
-                  error={!!passwordErrors.oldPassword}
-                  helperText={passwordErrors.oldPassword}
-                  className="pl-10"
-                  required
-                />
-              </div>
+              <Input
+                label="Current Password"
+                name="oldPassword"
+                type="password"
+                value={passwordData.oldPassword}
+                onChange={handlePasswordChange}
+                error={!!passwordErrors.oldPassword}
+                helperText={passwordErrors.oldPassword}
+                icon={<Lock className="w-5 h-5" />}
+                required
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
-                  <Input
-                    label="New Password"
-                    name="newPassword"
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordChange}
-                    error={!!passwordErrors.newPassword}
-                    helperText={passwordErrors.newPassword}
-                    className="pl-10"
-                    required
-                  />
-                </div>
+                <Input
+                  label="New Password"
+                  name="newPassword"
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
+                  error={!!passwordErrors.newPassword}
+                  helperText={passwordErrors.newPassword}
+                  icon={<Lock className="w-5 h-5" />}
+                  required
+                />
 
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
-                  <Input
-                    label="Confirm New Password"
-                    name="confirmPassword"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
-                    error={!!passwordErrors.confirmPassword}
-                    helperText={passwordErrors.confirmPassword}
-                    className="pl-10"
-                    required
-                  />
-                </div>
+                <Input
+                  label="Confirm New Password"
+                  name="confirmPassword"
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
+                  error={!!passwordErrors.confirmPassword}
+                  helperText={passwordErrors.confirmPassword}
+                  icon={<Lock className="w-5 h-5" />}
+                  required
+                />
               </div>
 
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
@@ -489,7 +471,7 @@ const Profile = () => {
 
           {/* Activity Timeline */}
           <Card title="Recent Activity">
-            <div className="p-6">
+            <div className="p-4">
               <div className="space-y-4">
                 {activityTimeline.map((activity, index) => {
                   const IconComponent = activity.icon;

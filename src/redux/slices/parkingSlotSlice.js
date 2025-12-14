@@ -6,7 +6,20 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  slots: [],
+  slots: [
+    { id: 'P001', slotNumber: 'A1', floor: 1, status: 'available', isAvailable: true, name: 'A1' },
+    { id: 'P002', slotNumber: 'A2', floor: 1, status: 'occupied', isAvailable: false, name: 'A2', vehicleNumber: 'MH12AB1234', valetName: 'John', parkedAt: new Date().toISOString() },
+    { id: 'P003', slotNumber: 'A3', floor: 1, status: 'reserved', isAvailable: false, name: 'A3' },
+    { id: 'P004', slotNumber: 'A4', floor: 1, status: 'available', isAvailable: true, name: 'A4' },
+    { id: 'P005', slotNumber: 'A5', floor: 1, status: 'occupied', isAvailable: false, name: 'A5', vehicleNumber: 'MH14XY5678', valetName: 'Mike', parkedAt: new Date().toISOString() },
+    { id: 'P006', slotNumber: 'B1', floor: 1, status: 'available', isAvailable: true, name: 'B1' },
+    { id: 'P007', slotNumber: 'B2', floor: 1, status: 'available', isAvailable: true, name: 'B2' },
+    { id: 'P008', slotNumber: 'B3', floor: 1, status: 'occupied', isAvailable: false, name: 'B3', vehicleNumber: 'MH01CD9012', valetName: 'Sara', parkedAt: new Date().toISOString() },
+    { id: 'P009', slotNumber: 'B4', floor: 1, status: 'reserved', isAvailable: false, name: 'B4' },
+    { id: 'P010', slotNumber: 'B5', floor: 1, status: 'available', isAvailable: true, name: 'B5' },
+    { id: 'P011', slotNumber: 'C1', floor: 2, status: 'available', isAvailable: true, name: 'C1' },
+    { id: 'P012', slotNumber: 'C2', floor: 2, status: 'available', isAvailable: true, name: 'C2' },
+  ],
   availableSlots: [],
   loading: false,
   error: null,
