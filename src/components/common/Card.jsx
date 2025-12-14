@@ -1,16 +1,10 @@
 /**
- * Reusable Card Component
- * Wraps Material-UI Card with consistent styling
+ * Enhanced Card Component with Glassmorphism
+ * Features backdrop blur, gradient backgrounds, and hover effects
  */
 
 import React from 'react';
-import {
-  Card as MuiCard,
-  CardContent,
-  CardHeader,
-  CardActions,
-  Divider,
-} from '@mui/material';
+import { cn } from '../../utils/cn';
 
 const Card = ({
   title,
@@ -18,37 +12,60 @@ const Card = ({
   children,
   actions,
   headerAction,
-  elevation = 1,
-  sx = {},
+  className,
+  hover = false,
+  glow = false,
+  gradient = false,
   ...props
 }) => {
   return (
-    <MuiCard elevation={elevation} sx={{ height: '100%', ...sx }} {...props}>
+    <div
+      className={cn(
+        'glass-card p-6',
+        'transition-all duration-300 ease-in-out',
+        hover && 'hover:-translate-y-1 hover:shadow-2xl cursor-pointer',
+        glow && 'hover:shadow-glow-primary',
+        gradient && 'bg-gradient-card',
+        'h-full flex flex-col',
+        className
+      )}
+      {...props}
+    >
+      {/* Card Header */}
       {(title || subtitle || headerAction) && (
-        <>
-          <CardHeader
-            title={title}
-            subheader={subtitle}
-            action={headerAction}
-            sx={{ pb: 1 }}
-          />
-          <Divider />
-        </>
+        <div className="mb-4 flex items-start justify-between">
+          <div className="flex-1">
+            {title && (
+              <h3 className="text-xl font-bold text-white mb-1">
+                {title}
+              </h3>
+            )}
+            {subtitle && (
+              <p className="text-sm text-white/60">
+                {subtitle}
+              </p>
+            )}
+          </div>
+          {headerAction && (
+            <div className="ml-4">
+              {headerAction}
+            </div>
+          )}
+        </div>
       )}
-      
-      <CardContent sx={{ flexGrow: 1 }}>
+
+      {/* Card Content */}
+      <div className="flex-1">
         {children}
-      </CardContent>
-      
+      </div>
+
+      {/* Card Actions */}
       {actions && (
-        <>
-          <Divider />
-          <CardActions>
-            {actions}
-          </CardActions>
-        </>
+        <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-2">
+          {actions}
+        </div>
       )}
-    </MuiCard>
+    </div>
   );
 };
 
