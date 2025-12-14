@@ -17,7 +17,7 @@ import Modal from '../components/common/Modal';
 import { cn } from '../utils/cn';
 
 const ParkingSlots = () => {
-  const { slots = [] } = useSelector((state) => state.parkingSlots || { slots: [] });
+  const { slots = [] } = useSelector((state) => state.parkingSlots) || {};
   
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
