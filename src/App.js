@@ -5,8 +5,6 @@
 
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { ToastProvider, ToastViewport, ToastWithIcon } from './components/common/Toast';
 
@@ -31,29 +29,6 @@ import { removeToast } from './redux/slices/notificationSlice';
 import { USER_ROLES } from './utils/constants';
 import { initializeStore } from './utils/initializeStore';
 
-// Create Material-UI theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-  typography: {
-    fontFamily: [
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
-  },
-});
-
 function App() {
   const dispatch = useDispatch();
   const { toastQueue } = useSelector((state) => state.notifications);
@@ -69,8 +44,7 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <>
       <Router>
         <Routes>
           {/* Public Routes */}
@@ -184,7 +158,7 @@ function App() {
         ))}
         <ToastViewport />
       </ToastProvider>
-    </ThemeProvider>
+    </>
   );
 }
 
