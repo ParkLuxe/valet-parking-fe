@@ -47,17 +47,17 @@ const QRScanPage = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const generateQRCode = React.useCallback(() => {
+    const newQRValue = `PARK-LUXE-${Date.now()}`;
+    setQrValue(newQRValue);
+  }, []);
+
   // Generate new QR code every 30 seconds
   useEffect(() => {
     generateQRCode();
     const interval = setInterval(generateQRCode, 30000);
     return () => clearInterval(interval);
-  }, []);
-
-  const generateQRCode = () => {
-    const newQRValue = `PARK-LUXE-${Date.now()}`;
-    setQrValue(newQRValue);
-  };
+  }, [generateQRCode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

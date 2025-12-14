@@ -109,12 +109,12 @@ const Header = () => {
 
         {/* User Menu */}
         <IconButton onClick={handleMenuOpen}>
-          <Avatar sx={{ bgcolor: 'primary.main' }}>
-            {user?.profilePicture ? (
-              <img src={user.profilePicture} alt={user.name} />
-            ) : (
-              getInitials(user?.name)
-            )}
+          <Avatar 
+            sx={{ bgcolor: 'primary.main' }}
+            src={user?.profilePicture}
+            alt={user?.name}
+          >
+            {!user?.profilePicture && getInitials(user?.name)}
           </Avatar>
         </IconButton>
 
