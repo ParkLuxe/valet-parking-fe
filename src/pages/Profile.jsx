@@ -18,7 +18,6 @@ import {
   CheckCircle,
   Lock,
   User,
-  Activity,
 } from 'lucide-react';
 import Card from '../components/common/Card';
 import Input from '../components/common/Input';
@@ -34,7 +33,6 @@ import {
   validatePasswordMatch,
 } from '../utils/validators';
 import { getInitials } from '../utils/helpers';
-import { cn } from '../utils/cn';
 
 const Profile = () => {
   const dispatch = useDispatch();

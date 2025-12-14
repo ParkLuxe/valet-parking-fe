@@ -10,18 +10,14 @@ import {
   Search,
   Plus,
   Car,
-  Info,
-  X,
 } from 'lucide-react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import Input from '../components/common/Input';
 import Modal from '../components/common/Modal';
 import { cn } from '../utils/cn';
 
 const ParkingSlots = () => {
   const { slots } = useSelector((state) => state.parkingSlots);
-  const { vehicles } = useSelector((state) => state.vehicles);
   
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,10 +86,6 @@ const ParkingSlots = () => {
   const handleSlotClick = (slot) => {
     setSelectedSlot(slot);
     setShowSlotDetails(true);
-  };
-
-  const getVehicleDetails = (slotId) => {
-    return vehicles.find(v => v.parkingSlotId === slotId);
   };
 
   return (

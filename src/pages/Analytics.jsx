@@ -23,17 +23,12 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import {
-  TrendingUp,
   Users,
   Car,
   DollarSign,
   CreditCard,
-  Calendar,
-  Award,
-  Activity,
 } from 'lucide-react';
 import Card from '../components/common/Card';
-import Button from '../components/common/Button';
 import { cn } from '../utils/cn';
 import { formatCurrency } from '../utils/helpers';
 
@@ -75,9 +70,9 @@ const Analytics = () => {
   const [timeFilter, setTimeFilter] = useState('month');
 
   // Generate data
-  const vehicleData = useMemo(() => generateVehicleData(), [timeFilter]);
+  const vehicleData = useMemo(() => generateVehicleData(), []);
   const vehicleTypeData = useMemo(() => generateVehicleTypeData(), []);
-  const userRegistrationData = useMemo(() => generateUserRegistrationData(), [timeFilter]);
+  const userRegistrationData = useMemo(() => generateUserRegistrationData(), []);
   const valetPerformance = useMemo(() => generateValetPerformance(), []);
 
   // Calculate metrics

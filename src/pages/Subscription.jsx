@@ -3,7 +3,7 @@
  * Beautiful plan cards, usage tracking, and payment history
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
@@ -23,7 +23,6 @@ import { cn } from '../utils/cn';
 
 const Subscription = () => {
   const { status, usage, billing, paymentHistory } = useSelector((state) => state.subscription);
-  const [showPlans, setShowPlans] = useState(false);
 
   const usagePercentage = (usage.usedScans / usage.totalScans) * 100;
 
@@ -127,7 +126,7 @@ const Subscription = () => {
                     </span>
                   </div>
                 </div>
-                <Button variant="outline" onClick={() => setShowPlans(true)}>
+                <Button variant="outline">
                   View All Plans
                 </Button>
               </div>
