@@ -1,20 +1,24 @@
 /**
- * Profile Page
- * View and edit user profile, change password, upload profile picture
+ * Profile Page - Enhanced
+ * Modern profile with stats, activity timeline, and glassmorphism design
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { motion } from 'framer-motion';
 import {
-  Container,
-  Grid,
-  Box,
-  Typography,
-  Avatar,
-  Divider,
-  Alert,
-} from '@mui/material';
-import { PhotoCamera as CameraIcon } from '@mui/icons-material';
+  Camera,
+  Mail,
+  Phone,
+  Shield,
+  Calendar,
+  Car,
+  Clock,
+  TrendingUp,
+  CheckCircle,
+  Lock,
+  User,
+} from 'lucide-react';
 import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
@@ -198,74 +202,169 @@ const Profile = () => {
     }
   };
 
+  // Mock stats and activity data
+  const stats = useMemo(() => ({
+    carsParked: 156,
+    avgTime: '2h 15m',
+    totalRevenue: 45600,
+    rating: 4.8,
+  }), []);
+
+  const activityTimeline = useMemo(() => [
+    { id: 1, action: 'Updated profile information', time: '2 hours ago', icon: User },
+    { id: 2, action: 'Parked vehicle MH-01-AB-1234', time: '5 hours ago', icon: Car },
+    { id: 3, action: 'Changed password', time: '2 days ago', icon: Lock },
+    { id: 4, action: 'Completed parking session', time: '3 days ago', icon: CheckCircle },
+  ], []);
+
+  // Calculate profile completion
+  const profileCompletion = useMemo(() => {
+    const fields = [
+      user?.name,
+      user?.email,
+      user?.phone,
+      user?.profilePicture,
+    ];
+    const completed = fields.filter(Boolean).length;
+    return Math.round((completed / fields.length) * 100);
+  }, [user]);
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Profile Settings
-      </Typography>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gradient-primary mb-2">
+          Profile Settings
+        </h1>
+        <p className="text-white/70">
+          Manage your account and view your activity
+        </p>
+      </div>
 
-      <Grid container spacing={3} sx={{ mt: 2 }}>
-        {/* Profile Picture */}
-        <Grid item xs={12} md={4}>
-          <Card title="Profile Picture">
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <Avatar
-                sx={{ width: 120, height: 120, fontSize: 48 }}
-                src={user?.profilePicture}
-              >
-                {getInitials(user?.name)}
-              </Avatar>
-              
-              <Button
-                variant="outlined"
-                component="label"
-                startIcon={<CameraIcon />}
-              >
-                Upload Photo
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleProfilePictureUpload}
-                />
-              </Button>
-              
-              <Typography variant="caption" color="text.secondary" textAlign="center">
-                Allowed formats: JPG, PNG (Max 5MB)
-              </Typography>
-            </Box>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Profile Card & Stats */}
+        <div className="space-y-6">
+          {/* Profile Picture Card */}
+          <Card>
+            <div className="p-6 flex flex-col items-center">
+              {/* Avatar with gradient border */}
+              <div className="relative mb-4 group">
+                <div className="absolute inset-0 bg-gradient-primary rounded-full blur opacity-75 group-hover:opacity-100 transition-opacity" />
+                <div className="relative w-32 h-32 rounded-full bg-gradient-primary p-1">
+                  <div className="w-full h-full rounded-full bg-[#1a1a2e] flex items-center justify-center text-4xl font-bold text-white overflow-hidden">
+                    {user?.profilePicture ? (
+                      <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      getInitials(user?.name)
+                    )}
+                  </div>
+                </div>
+                
+                {/* Upload button overlay */}
+                <label className="absolute bottom-0 right-0 bg-gradient-primary p-2 rounded-full cursor-pointer hover:scale-110 transition-transform shadow-glow-primary">
+                  <Camera className="w-5 h-5 text-white" />
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleProfilePictureUpload}
+                  />
+                </label>
+              </div>
+
+              <h3 className="text-2xl font-bold text-white mb-1">
+                {user?.name || 'User'}
+              </h3>
+              <p className="text-white/60 text-sm mb-4">
+                {user?.role?.replace('_', ' ').toUpperCase()}
+              </p>
+
+              {/* Profile Completion */}
+              <div className="w-full">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white/70 text-sm">Profile Completion</span>
+                  <span className="text-white font-semibold">{profileCompletion}%</span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${profileCompletion}%` }}
+                    transition={{ duration: 1 }}
+                    className="h-full bg-gradient-primary"
+                  />
+                </div>
+              </div>
+            </div>
           </Card>
 
-          {/* Role Info */}
-          <Card title="Account Info" sx={{ mt: 2 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Role
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  {user?.role?.replace('_', ' ').toUpperCase()}
-                </Typography>
-              </Box>
-              <Divider />
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Member Since
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  {new Date(user?.createdAt).toLocaleDateString()}
-                </Typography>
-              </Box>
-            </Box>
-          </Card>
-        </Grid>
+          {/* Stats Cards */}
+          <Card>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Your Stats</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-500/20 rounded-lg">
+                      <Car className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <span className="text-white/70">Cars Parked</span>
+                  </div>
+                  <span className="text-white font-bold">{stats.carsParked}</span>
+                </div>
 
-        {/* Profile Form */}
-        <Grid item xs={12} md={8}>
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500/20 rounded-lg">
+                      <Clock className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <span className="text-white/70">Avg. Time</span>
+                  </div>
+                  <span className="text-white font-bold">{stats.avgTime}</span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-500/20 rounded-lg">
+                      <TrendingUp className="w-5 h-5 text-green-400" />
+                    </div>
+                    <span className="text-white/70">Total Revenue</span>
+                  </div>
+                  <span className="text-white font-bold">₹{stats.totalRevenue.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Account Info */}
+          <Card>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Account Info</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-white/70">
+                  <Shield className="w-5 h-5" />
+                  <span className="text-sm">
+                    {user?.role?.replace('_', ' ').toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-white/70">
+                  <Calendar className="w-5 h-5" />
+                  <span className="text-sm">
+                    Member since {new Date(user?.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Column - Forms */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Personal Information */}
           <Card title="Personal Information">
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
                   <Input
                     label="Full Name"
                     name="name"
@@ -273,65 +372,75 @@ const Profile = () => {
                     onChange={handleChange}
                     error={!!errors.name}
                     helperText={errors.name}
+                    className="pl-10"
                     required
                   />
-                </Grid>
+                </div>
 
-                <Grid item xs={12} sm={6}>
-                  <Input
-                    label="Email Address"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    error={!!errors.email}
-                    helperText={errors.email}
-                    required
-                  />
-                </Grid>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
+                    <Input
+                      label="Email Address"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      error={!!errors.email}
+                      helperText={errors.email}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
 
-                <Grid item xs={12} sm={6}>
-                  <Input
-                    label="Phone Number"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    error={!!errors.phone}
-                    helperText={errors.phone}
-                    required
-                  />
-                </Grid>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
+                    <Input
+                      label="Phone Number"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      error={!!errors.phone}
+                      helperText={errors.phone}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
 
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    loading={loading}
-                  >
-                    Save Changes
-                  </Button>
-                </Grid>
-              </Grid>
+              <Button
+                type="submit"
+                loading={loading}
+                variant="gradient"
+                className="w-full"
+              >
+                Save Changes
+              </Button>
             </form>
           </Card>
 
           {/* Change Password */}
-          <Card title="Change Password" sx={{ mt: 3 }}>
-            <form onSubmit={handlePasswordSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Input
-                    label="Current Password"
-                    name="oldPassword"
-                    type="password"
-                    value={passwordData.oldPassword}
-                    onChange={handlePasswordChange}
-                    error={!!passwordErrors.oldPassword}
-                    helperText={passwordErrors.oldPassword}
-                    required
-                  />
-                </Grid>
+          <Card title="Change Password">
+            <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
+                <Input
+                  label="Current Password"
+                  name="oldPassword"
+                  type="password"
+                  value={passwordData.oldPassword}
+                  onChange={handlePasswordChange}
+                  error={!!passwordErrors.oldPassword}
+                  helperText={passwordErrors.oldPassword}
+                  className="pl-10"
+                  required
+                />
+              </div>
 
-                <Grid item xs={12} sm={6}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
                   <Input
                     label="New Password"
                     name="newPassword"
@@ -340,11 +449,13 @@ const Profile = () => {
                     onChange={handlePasswordChange}
                     error={!!passwordErrors.newPassword}
                     helperText={passwordErrors.newPassword}
+                    className="pl-10"
                     required
                   />
-                </Grid>
+                </div>
 
-                <Grid item xs={12} sm={6}>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50 z-10" />
                   <Input
                     label="Confirm New Password"
                     name="confirmPassword"
@@ -353,30 +464,59 @@ const Profile = () => {
                     onChange={handlePasswordChange}
                     error={!!passwordErrors.confirmPassword}
                     helperText={passwordErrors.confirmPassword}
+                    className="pl-10"
                     required
                   />
-                </Grid>
+                </div>
+              </div>
 
-                <Grid item xs={12}>
-                  <Alert severity="info">
-                    Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.
-                  </Alert>
-                </Grid>
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <p className="text-blue-300 text-sm">
+                  Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.
+                </p>
+              </div>
 
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    loading={passwordLoading}
-                  >
-                    Change Password
-                  </Button>
-                </Grid>
-              </Grid>
+              <Button
+                type="submit"
+                loading={passwordLoading}
+                variant="gradient"
+                className="w-full"
+              >
+                Change Password
+              </Button>
             </form>
           </Card>
-        </Grid>
-      </Grid>
-    </Container>
+
+          {/* Activity Timeline */}
+          <Card title="Recent Activity">
+            <div className="p-6">
+              <div className="space-y-4">
+                {activityTimeline.map((activity, index) => {
+                  const IconComponent = activity.icon;
+                  return (
+                    <motion.div
+                      key={activity.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-start gap-4 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all"
+                    >
+                      <div className="p-2 bg-gradient-primary rounded-lg">
+                        <IconComponent className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{activity.action}</p>
+                        <p className="text-white/50 text-sm">{activity.time}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 };
 

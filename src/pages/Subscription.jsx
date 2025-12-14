@@ -1,198 +1,341 @@
 /**
- * Subscription Management Page
- * View subscription status, usage, and payment history
+ * Subscription Management Page - Enhanced
+ * Beautiful plan cards, usage tracking, and payment history
  */
 
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
 import {
-  Container,
-  Typography,
-  Grid,
-  Box,
-  LinearProgress,
-  Chip,
-  Divider,
-} from '@mui/material';
-import { Payment as PaymentIcon } from '@mui/icons-material';
+  CreditCard,
+  Check,
+  AlertCircle,
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  Zap,
+} from 'lucide-react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { formatCurrency } from '../utils/helpers';
 import { SUBSCRIPTION } from '../utils/constants';
+import { cn } from '../utils/cn';
 
 const Subscription = () => {
   const { status, usage, billing, paymentHistory } = useSelector((state) => state.subscription);
 
-  const getStatusColor = () => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'grace_period':
-        return 'warning';
-      case 'expired':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
   const usagePercentage = (usage.usedScans / usage.totalScans) * 100;
 
+  // Available plans
+  const plans = [
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: 1000,
+      scans: 100,
+      overagePrice: 10,
+      features: [
+        'Up to 100 QR scans',
+        'Basic analytics',
+        'Email support',
+        '3-day grace period',
+        'Standard features',
+      ],
+      recommended: false,
+      color: 'from-blue-500 to-cyan-500',
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: 5000,
+      scans: 600,
+      overagePrice: 8,
+      features: [
+        'Up to 600 QR scans',
+        'Advanced analytics',
+        'Priority support',
+        '7-day grace period',
+        'All features included',
+        'Custom branding',
+      ],
+      recommended: true,
+      color: 'from-purple-500 to-pink-500',
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: 15000,
+      scans: 2000,
+      overagePrice: 5,
+      features: [
+        'Up to 2000 QR scans',
+        'Real-time analytics',
+        '24/7 phone support',
+        '14-day grace period',
+        'Premium features',
+        'Dedicated account manager',
+        'API access',
+      ],
+      recommended: false,
+      color: 'from-orange-500 to-red-500',
+    },
+  ];
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Subscription Management
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Manage your subscription and view billing information
-      </Typography>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gradient-primary mb-2">
+          Subscription Management
+        </h1>
+        <p className="text-white/70">
+          Manage your subscription plans and billing information
+        </p>
+      </div>
 
-      <Grid container spacing={3}>
-        {/* Subscription Status */}
-        <Grid item xs={12} md={6}>
-          <Card title="Subscription Status">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Current Status
-                </Typography>
-                <Chip
-                  label={status.replace('_', ' ').toUpperCase()}
-                  color={getStatusColor()}
-                  sx={{ mt: 1 }}
-                />
-              </Box>
+      {/* Grace Period Warning */}
+      {status === 'grace_period' && (
+        <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
+          <AlertCircle className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-yellow-400 font-semibold mb-1">Grace Period Active</h4>
+            <p className="text-yellow-300 text-sm">
+              You have exceeded your scan limit. Please make a payment to continue service uninterrupted.
+            </p>
+          </div>
+        </div>
+      )}
 
-              <Divider />
+      {/* Current Subscription Card */}
+      {status === 'active' || status === 'grace_period' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Usage Card */}
+          <Card className="lg:col-span-2">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-1">Current Plan: Starter</h2>
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      'px-3 py-1 rounded-full text-sm font-medium',
+                      status === 'active' 
+                        ? 'bg-green-500/20 text-green-400' 
+                        : 'bg-yellow-500/20 text-yellow-400'
+                    )}>
+                      {status === 'active' ? '✅ Active' : '⚠️ Grace Period'}
+                    </span>
+                  </div>
+                </div>
+                <Button variant="outline">
+                  View All Plans
+                </Button>
+              </div>
 
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Scan Usage
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                  <Typography variant="h6" fontWeight="bold">
-                    {usage.usedScans}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    / {usage.totalScans} scans
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={Math.min(usagePercentage, 100)}
-                  color={status === 'active' ? 'primary' : 'warning'}
-                  sx={{ height: 8, borderRadius: 1 }}
-                />
-              </Box>
+              {/* Usage Progress */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white/70">Scans Used</span>
+                  <span className="text-white font-bold">
+                    {usage.usedScans} / {usage.totalScans}
+                  </span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-4 overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                    transition={{ duration: 1 }}
+                    className={cn(
+                      'h-full',
+                      status === 'active'
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-400'
+                        : 'bg-gradient-to-r from-yellow-500 to-orange-400'
+                    )}
+                  />
+                </div>
+                <p className="text-white/50 text-sm mt-2">
+                  {usagePercentage.toFixed(1)}% of monthly quota used
+                </p>
+              </div>
 
-              {status === 'grace_period' && (
-                <Box
-                  sx={{
-                    p: 2,
-                    bgcolor: 'warning.light',
-                    borderRadius: 1,
-                  }}
-                >
-                  <Typography variant="body2" color="warning.dark">
-                    ⚠️ Grace Period Active: You have exceeded your scan limit. Please make a payment to continue service.
-                  </Typography>
-                </Box>
-              )}
-            </Box>
+              {/* Billing Info */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-white/5 rounded-lg">
+                <div>
+                  <p className="text-white/50 text-sm mb-1">Billing Cycle</p>
+                  <p className="text-white font-medium">Dec 1 - Dec 31, 2025</p>
+                </div>
+                <div>
+                  <p className="text-white/50 text-sm mb-1">Next Bill</p>
+                  <p className="text-white font-medium">{formatCurrency(billing.currentAmount)}</p>
+                </div>
+              </div>
+            </div>
           </Card>
-        </Grid>
 
-        {/* Billing Info */}
-        <Grid item xs={12} md={6}>
-          <Card title="Billing Information">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Base Plan
-                </Typography>
-                <Typography variant="h6" fontWeight="bold">
-                  {formatCurrency(SUBSCRIPTION.BASE_PRICE)}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Includes {SUBSCRIPTION.BASE_SCANS} scans
-                </Typography>
-              </Box>
-
-              <Divider />
-
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Additional Scans
-                </Typography>
-                <Typography variant="body1" fontWeight="medium">
-                  {formatCurrency(SUBSCRIPTION.ADDITIONAL_SCAN_PRICE)} per scan
-                </Typography>
-              </Box>
-
-              <Divider />
-
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Current Amount Due
-                </Typography>
-                <Typography variant="h5" fontWeight="bold" color="primary.main">
+          {/* Payment Card */}
+          <Card>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Payment Due</h3>
+              
+              <div className="mb-6">
+                <p className="text-white/50 text-sm mb-2">Amount</p>
+                <p className="text-4xl font-bold text-gradient-primary">
                   {formatCurrency(billing.currentAmount)}
-                </Typography>
-              </Box>
+                </p>
+              </div>
 
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<PaymentIcon />}
-                fullWidth
-              >
-                Pay Now with Razorpay
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/70">Base Plan</span>
+                  <span className="text-white font-medium">{formatCurrency(SUBSCRIPTION.BASE_PRICE)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/70">Overage (0 scans)</span>
+                  <span className="text-white font-medium">{formatCurrency(0)}</span>
+                </div>
+                <div className="h-px bg-white/10" />
+                <div className="flex justify-between">
+                  <span className="text-white font-semibold">Total</span>
+                  <span className="text-white font-bold">{formatCurrency(billing.currentAmount)}</span>
+                </div>
+              </div>
+
+              <Button variant="gradient" className="w-full flex items-center justify-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Pay with Razorpay
               </Button>
-            </Box>
-          </Card>
-        </Grid>
 
-        {/* Payment History */}
-        <Grid item xs={12}>
-          <Card title="Payment History">
-            {paymentHistory.length > 0 ? (
-              <Box>
-                {paymentHistory.map((payment, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      py: 2,
-                      borderBottom: index < paymentHistory.length - 1 ? '1px solid #eee' : 'none',
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="body1" fontWeight="medium">
-                        Payment #{payment.id}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {new Date(payment.date).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                    <Typography variant="h6" fontWeight="bold">
-                      {formatCurrency(payment.amount)}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body2" color="text.secondary">
-                  No payment history available
-                </Typography>
-              </Box>
-            )}
+              <button className="w-full mt-3 text-white/70 hover:text-white text-sm transition-colors">
+                View Invoice
+              </button>
+            </div>
           </Card>
-        </Grid>
-      </Grid>
-    </Container>
+        </div>
+      ) : (
+        /* No Subscription - Show Plans */
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
+            Choose Your Perfect Plan
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((plan, index) => (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="relative"
+              >
+                {plan.recommended && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                    <span className="px-4 py-1 bg-gradient-primary rounded-full text-white text-sm font-medium shadow-glow-primary">
+                      Recommended
+                    </span>
+                  </div>
+                )}
+                
+                <Card className={cn(
+                  'relative overflow-hidden',
+                  plan.recommended && 'border-2 border-purple-500/50'
+                )}>
+                  {/* Background gradient */}
+                  <div className={cn(
+                    'absolute inset-0 bg-gradient-to-br opacity-5',
+                    plan.color
+                  )} />
+                  
+                  <div className="relative p-6">
+                    <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                    <div className="mb-6">
+                      <span className="text-4xl font-bold text-gradient-primary">
+                        {formatCurrency(plan.price)}
+                      </span>
+                      <span className="text-white/50 text-sm">/month</span>
+                    </div>
+
+                    <div className="mb-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Zap className="w-5 h-5 text-yellow-400" />
+                        <span className="text-white font-semibold">{plan.scans} QR scans</span>
+                      </div>
+                      <p className="text-white/50 text-sm">
+                        {formatCurrency(plan.overagePrice)} per extra scan
+                      </p>
+                    </div>
+
+                    <ul className="space-y-3 mb-6">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                          <span className="text-white/70 text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      variant={plan.recommended ? 'gradient' : 'outline'}
+                      className="w-full"
+                    >
+                      Select Plan
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Payment History */}
+      <Card title="Payment History">
+        <div className="p-6">
+          {paymentHistory.length > 0 ? (
+            <div className="space-y-3">
+              {paymentHistory.map((payment, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-500/20 rounded-lg">
+                      <DollarSign className="w-6 h-6 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">
+                        Payment #{payment.id}
+                      </p>
+                      <div className="flex items-center gap-2 text-sm text-white/50">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(payment.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-bold text-lg">
+                      {formatCurrency(payment.amount)}
+                    </p>
+                    <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full">
+                      ✓ Paid
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <TrendingUp className="w-16 h-16 text-white/20 mx-auto mb-4" />
+              <p className="text-white/50">No payment history yet</p>
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
   );
 };
 

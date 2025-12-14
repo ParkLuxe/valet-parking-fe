@@ -21,6 +21,10 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import QRScanPage from './pages/QRScanPage';
+import Analytics from './pages/Analytics';
+import HostUserManagement from './pages/HostUserManagement';
+import ParkingSlots from './pages/ParkingSlots';
+import Subscription from './pages/Subscription';
 
 // Redux
 import { removeToast } from './redux/slices/notificationSlice';
@@ -114,6 +118,46 @@ function App() {
               <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD, USER_ROLES.VALET]}>
                 <Layout>
                   <QRScanPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD]}>
+                <Layout>
+                  <Analytics />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/host-users"
+            element={
+              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD]}>
+                <Layout>
+                  <HostUserManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parking-slots"
+            element={
+              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD, USER_ROLES.VALET]}>
+                <Layout>
+                  <ParkingSlots />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscription"
+            element={
+              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD]}>
+                <Layout>
+                  <Subscription />
                 </Layout>
               </ProtectedRoute>
             }

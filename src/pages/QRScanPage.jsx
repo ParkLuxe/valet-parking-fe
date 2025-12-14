@@ -1,18 +1,11 @@
 /**
- * QR Scan & Customer Details Entry Page
- * Dynamic QR code display, customer details form, and vehicle management
+ * QR Scan & Customer Details Entry Page - Enhanced
+ * Dynamic QR code display with animated borders, modern form, and status timeline
  */
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Container,
-  Grid,
-  Box,
-  Typography,
-  MenuItem,
-  Alert,
-} from '@mui/material';
+import { MenuItem } from '@mui/material';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import Card from '../components/common/Card';
 import Input from '../components/common/Input';
@@ -27,6 +20,7 @@ import {
   validatePhone,
   validateRequired,
 } from '../utils/validators';
+import { cn } from '../utils/cn';
 
 const QRScanPage = () => {
   const dispatch = useDispatch();
@@ -170,224 +164,268 @@ const QRScanPage = () => {
     }
   };
 
-  return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        QR Scan & Customer Details
-      </Typography>
+  // Available slots count
+  const availableSlots = slots.filter(s => s.isAvailable).length;
 
-      {/* Subscription Warning */}
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gradient-primary mb-2">
+          QR Scan & Vehicle Entry
+        </h1>
+        <p className="text-white/70">
+          Generate QR codes and register vehicle details for parking
+        </p>
+      </div>
+
+      {/* Subscription Warnings */}
       {subscriptionStatus === 'grace_period' && (
-        <Alert severity="warning" sx={{ mb: 3 }}>
-          You are in grace period. Remaining scans: {usage.remainingScans}. Please renew your subscription.
-        </Alert>
+        <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+          <p className="text-yellow-400">
+            ⚠️ Grace Period Active: Remaining scans: {usage.remainingScans}. Please renew your subscription.
+          </p>
+        </div>
       )}
 
       {subscriptionStatus === 'expired' && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          Your subscription has expired. Please renew to continue using the service.
-        </Alert>
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <p className="text-red-400">
+            ❌ Subscription Expired: Please renew to continue using the service.
+          </p>
+        </div>
       )}
 
-      <Grid container spacing={3}>
-        {/* QR Code Display */}
-        <Grid item xs={12} md={4}>
-          <Card title="Dynamic QR Code">
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: 'white',
-                  borderRadius: 2,
-                  boxShadow: 2,
-                }}
-              >
-                <QRCode value={qrValue} size={200} level="H" />
-              </Box>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - QR Code & Stats */}
+        <div className="space-y-6">
+          {/* QR Code Display with Animated Border */}
+          <Card>
+            <div className="p-6 flex flex-col items-center">
+              <h3 className="text-xl font-bold text-white mb-4">Dynamic QR Code</h3>
               
-              <Typography variant="caption" color="text.secondary" textAlign="center">
+              {/* QR Code with animated scanning border */}
+              <div className="relative mb-4">
+                {/* Animated corners */}
+                <div className="absolute inset-0 animate-pulse">
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-purple-500 rounded-tl-lg" />
+                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-purple-500 rounded-tr-lg" />
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-purple-500 rounded-bl-lg" />
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-purple-500 rounded-br-lg" />
+                </div>
+                
+                <div className="bg-white p-4 rounded-lg shadow-glow-primary">
+                  <QRCode value={qrValue} size={200} level="H" />
+                </div>
+              </div>
+              
+              <p className="text-white/50 text-sm text-center mb-4">
                 QR code refreshes every 30 seconds
-              </Typography>
+              </p>
               
               <Button
-                variant="outlined"
-                size="small"
+                variant="outline"
                 onClick={generateQRCode}
+                className="w-full"
               >
                 Generate New QR
               </Button>
 
-              <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 2 }}>
-                <strong>Current Code:</strong>
-                <br />
-                {qrValue}
-              </Typography>
-            </Box>
+              <div className="mt-4 p-3 bg-white/5 rounded-lg w-full">
+                <p className="text-white/50 text-xs text-center">Current Code</p>
+                <p className="text-white text-sm text-center font-mono break-all">
+                  {qrValue}
+                </p>
+              </div>
+            </div>
           </Card>
 
           {/* Subscription Usage */}
-          <Card title="Subscription Usage" sx={{ mt: 2 }}>
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                Scans Used
-              </Typography>
-              <Typography variant="h5" fontWeight="bold">
-                {usage.usedScans} / {usage.totalScans}
-              </Typography>
-              <Box
-                sx={{
-                  mt: 2,
-                  height: 8,
-                  bgcolor: 'grey.200',
-                  borderRadius: 1,
-                  overflow: 'hidden',
-                }}
-              >
-                <Box
-                  sx={{
-                    width: `${(usage.usedScans / usage.totalScans) * 100}%`,
-                    height: '100%',
-                    bgcolor: subscriptionStatus === 'active' ? 'success.main' : 'warning.main',
-                  }}
-                />
-              </Box>
-            </Box>
+          <Card>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Subscription Usage</h3>
+              
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white/70">Scans Used</span>
+                  <span className="text-white font-bold">
+                    {usage.usedScans} / {usage.totalScans}
+                  </span>
+                </div>
+                
+                <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 ${
+                      subscriptionStatus === 'active' 
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-400' 
+                        : 'bg-gradient-to-r from-yellow-500 to-orange-400'
+                    }`}
+                    style={{ width: `${Math.min((usage.usedScans / usage.totalScans) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10">
+                <p className="text-white/50 text-sm">
+                  Available Slots: <span className="text-green-400 font-bold">{availableSlots}</span>
+                </p>
+              </div>
+            </div>
           </Card>
-        </Grid>
 
-        {/* Vehicle Entry Form */}
-        <Grid item xs={12} md={8}>
+          {/* Status Timeline */}
+          <Card>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Parking Process</h3>
+              <div className="space-y-3">
+                {[
+                  { step: 1, label: 'Fill Vehicle Details', active: true },
+                  { step: 2, label: 'Assign Valet', active: false },
+                  { step: 3, label: 'Vehicle Parked', active: false },
+                  { step: 4, label: 'QR Sent to Customer', active: false },
+                ].map((item) => (
+                  <div key={item.step} className="flex items-center gap-3">
+                    <div className={cn(
+                      'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm',
+                      item.active 
+                        ? 'bg-gradient-primary text-white' 
+                        : 'bg-white/10 text-white/50'
+                    )}>
+                      {item.step}
+                    </div>
+                    <span className={cn(
+                      'text-sm',
+                      item.active ? 'text-white' : 'text-white/50'
+                    )}>
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Column - Vehicle Entry Form */}
+        <div className="lg:col-span-2">
           <Card title="Vehicle Details Entry">
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Input
-                    label="Vehicle Number"
-                    name="vehicleNumber"
-                    value={formData.vehicleNumber}
-                    onChange={handleChange}
-                    error={!!errors.vehicleNumber}
-                    helperText={errors.vehicleNumber}
-                    required
-                    placeholder="MH12AB1234"
-                  />
-                </Grid>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Vehicle Number"
+                  name="vehicleNumber"
+                  value={formData.vehicleNumber}
+                  onChange={handleChange}
+                  error={!!errors.vehicleNumber}
+                  helperText={errors.vehicleNumber}
+                  required
+                  placeholder="MH12AB1234"
+                />
 
-                <Grid item xs={12} sm={6}>
-                  <Input
-                    select
-                    label="Vehicle Type"
-                    name="vehicleType"
-                    value={formData.vehicleType}
-                    onChange={handleChange}
-                    required
-                  >
-                    {Object.keys(VEHICLE_TYPES).map((key) => (
-                      <MenuItem key={key} value={VEHICLE_TYPES[key]}>
-                        {key}
-                      </MenuItem>
-                    ))}
-                  </Input>
-                </Grid>
+                <Input
+                  select
+                  label="Vehicle Type"
+                  name="vehicleType"
+                  value={formData.vehicleType}
+                  onChange={handleChange}
+                  required
+                >
+                  {Object.keys(VEHICLE_TYPES).map((key) => (
+                    <MenuItem key={key} value={VEHICLE_TYPES[key]}>
+                      {key}
+                    </MenuItem>
+                  ))}
+                </Input>
 
-                <Grid item xs={12} sm={6}>
-                  <Input
-                    label="Vehicle Color"
-                    name="vehicleColor"
-                    value={formData.vehicleColor}
-                    onChange={handleChange}
-                    error={!!errors.vehicleColor}
-                    helperText={errors.vehicleColor}
-                    required
-                    placeholder="Black, White, Red, etc."
-                  />
-                </Grid>
+                <Input
+                  label="Vehicle Color"
+                  name="vehicleColor"
+                  value={formData.vehicleColor}
+                  onChange={handleChange}
+                  error={!!errors.vehicleColor}
+                  helperText={errors.vehicleColor}
+                  required
+                  placeholder="Black, White, Red, etc."
+                />
 
-                <Grid item xs={12} sm={6}>
-                  <Input
-                    label="Customer Phone"
-                    name="customerPhone"
-                    value={formData.customerPhone}
-                    onChange={handleChange}
-                    error={!!errors.customerPhone}
-                    helperText={errors.customerPhone}
-                    required
-                    placeholder="+919876543210"
-                  />
-                </Grid>
+                <Input
+                  label="Customer Phone"
+                  name="customerPhone"
+                  value={formData.customerPhone}
+                  onChange={handleChange}
+                  error={!!errors.customerPhone}
+                  helperText={errors.customerPhone}
+                  required
+                  placeholder="+919876543210"
+                />
+              </div>
 
-                <Grid item xs={12}>
-                  <Input
-                    label="Customer Name"
-                    name="customerName"
-                    value={formData.customerName}
-                    onChange={handleChange}
-                    error={!!errors.customerName}
-                    helperText={errors.customerName}
-                    required
-                  />
-                </Grid>
+              <Input
+                label="Customer Name"
+                name="customerName"
+                value={formData.customerName}
+                onChange={handleChange}
+                error={!!errors.customerName}
+                helperText={errors.customerName}
+                required
+              />
 
-                <Grid item xs={12} sm={6}>
-                  <Input
-                    select
-                    label="Parking Slot"
-                    name="parkingSlotId"
-                    value={formData.parkingSlotId}
-                    onChange={handleChange}
-                    error={!!errors.parkingSlotId}
-                    helperText={errors.parkingSlotId || 'Select available parking slot'}
-                    required
-                  >
-                    {slots.filter(s => s.isAvailable).map((slot) => (
-                      <MenuItem key={slot.id} value={slot.id}>
-                        {slot.name}
-                      </MenuItem>
-                    ))}
-                  </Input>
-                </Grid>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  select
+                  label="Parking Slot"
+                  name="parkingSlotId"
+                  value={formData.parkingSlotId}
+                  onChange={handleChange}
+                  error={!!errors.parkingSlotId}
+                  helperText={errors.parkingSlotId || 'Select available parking slot'}
+                  required
+                >
+                  {slots.filter(s => s.isAvailable).map((slot) => (
+                    <MenuItem key={slot.id} value={slot.id}>
+                      {slot.name}
+                    </MenuItem>
+                  ))}
+                </Input>
 
-                <Grid item xs={12} sm={6}>
-                  <Input
-                    select
-                    label="Assign Valet"
-                    name="valetId"
-                    value={formData.valetId}
-                    onChange={handleChange}
-                    error={!!errors.valetId}
-                    helperText={errors.valetId || 'Select valet to assign'}
-                    required
-                  >
-                    {valetList.filter(v => v.isActive).map((valet) => (
-                      <MenuItem key={valet.id} value={valet.id}>
-                        {valet.name}
-                      </MenuItem>
-                    ))}
-                  </Input>
-                </Grid>
+                <Input
+                  select
+                  label="Assign Valet"
+                  name="valetId"
+                  value={formData.valetId}
+                  onChange={handleChange}
+                  error={!!errors.valetId}
+                  helperText={errors.valetId || 'Select valet to assign'}
+                  required
+                >
+                  {valetList.filter(v => v.isActive).map((valet) => (
+                    <MenuItem key={valet.id} value={valet.id}>
+                      {valet.name}
+                    </MenuItem>
+                  ))}
+                </Input>
+              </div>
 
-                <Grid item xs={12}>
-                  <Alert severity="info">
-                    Once submitted, valet will be notified to park the vehicle. Customer will receive QR code via SMS.
-                  </Alert>
-                </Grid>
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <p className="text-blue-300 text-sm">
+                  ℹ️ Once submitted, the valet will be notified to park the vehicle. Customer will receive the QR code via SMS.
+                </p>
+              </div>
 
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    loading={loading}
-                    disabled={subscriptionStatus === 'expired'}
-                    size="large"
-                  >
-                    Submit & Assign Valet
-                  </Button>
-                </Grid>
-              </Grid>
+              <Button
+                type="submit"
+                loading={loading}
+                disabled={subscriptionStatus === 'expired'}
+                variant="gradient"
+                className="w-full py-3 text-lg"
+              >
+                Submit & Assign Valet
+              </Button>
             </form>
           </Card>
-        </Grid>
-      </Grid>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
 
