@@ -32,13 +32,13 @@ import Card from '../components/common/Card';
 import { cn } from '../utils/cn';
 import { formatCurrency } from '../utils/helpers';
 
-// Mock data generators
+// Mock data generators - using deterministic values
 const generateVehicleData = () => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
   return months.map((month, index) => ({
     month,
-    vehicles: Math.floor(Math.random() * 100) + 50 + index * 10,
-    revenue: Math.floor(Math.random() * 50000) + 30000 + index * 5000,
+    vehicles: 60 + index * 15 + (index % 2) * 8,
+    revenue: 35000 + index * 6000 + (index % 3) * 2000,
   }));
 };
 
@@ -54,7 +54,7 @@ const generateUserRegistrationData = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   return days.map((day, index) => ({
     day,
-    users: Math.floor(Math.random() * 30) + 10 + index * 2,
+    users: 15 + index * 3 + (index % 3) * 5,
   }));
 };
 

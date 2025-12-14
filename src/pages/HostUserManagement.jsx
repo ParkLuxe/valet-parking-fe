@@ -65,9 +65,9 @@ const HostUserManagement = () => {
     return badges[role] || badges.valet;
   };
 
-  // Mock performance score (would come from backend)
-  const getPerformanceScore = () => Math.floor(Math.random() * 30) + 70;
-  const getOnlineStatus = () => Math.random() > 0.5;
+  // Mock performance score (would come from backend) - using deterministic values based on index
+  const getPerformanceScore = (index) => 70 + ((index * 7) % 30);
+  const getOnlineStatus = (index) => index % 3 !== 0;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -158,8 +158,8 @@ const HostUserManagement = () => {
             <div className="space-y-4">
               {paginatedUsers.map((user, index) => {
                 const roleBadge = getRoleBadge(user.role);
-                const performanceScore = getPerformanceScore();
-                const isOnline = getOnlineStatus();
+                const performanceScore = getPerformanceScore(index);
+                const isOnline = getOnlineStatus(index);
 
                 return (
                   <motion.div
@@ -281,7 +281,7 @@ const HostUserManagement = () => {
       {/* Add User Modal */}
       {showAddModal && (
         <Modal
-          isOpen={showAddModal}
+          open={showAddModal}
           onClose={() => setShowAddModal(false)}
           title="Add New Host User"
         >

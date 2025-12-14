@@ -249,7 +249,7 @@ const ParkingSlots = () => {
       <AnimatePresence>
         {showSlotDetails && selectedSlot && (
           <Modal
-            isOpen={showSlotDetails}
+            open={showSlotDetails}
             onClose={() => setShowSlotDetails(false)}
             title={`Slot ${selectedSlot.slotNumber} Details`}
           >
