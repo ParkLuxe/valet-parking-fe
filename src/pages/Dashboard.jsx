@@ -1,56 +1,111 @@
 /**
- * Dashboard Page
- * Main dashboard showing metrics and recent activity
+ * Enhanced Dashboard Page with Premium Analytics
+ * Features animated counters, glassmorphism cards, and real-time updates
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { motion } from 'framer-motion';
 import {
-  Container,
-  Grid,
-  Box,
-  Typography,
-} from '@mui/material';
-import {
-  DirectionsCar as CarIcon,
-  Person as PersonIcon,
-  Timer as TimerIcon,
-  LocalShipping as DeliveryIcon,
-} from '@mui/icons-material';
+  Car,
+  Users,
+  Clock,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  DollarSign,
+  ParkingSquare,
+} from 'lucide-react';
 import Card from '../components/common/Card';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { setMetrics } from '../redux/slices/analyticsSlice';
 import { formatDuration } from '../utils/helpers';
+import { cn } from '../utils/cn';
 
-// Metric Card Component
-const MetricCard = ({ title, value, icon, color = 'primary' }) => (
-  <Card>
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Box>
-        <Typography variant="h4" fontWeight="bold" color={`${color}.main`}>
-          {value}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          {title}
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          bgcolor: `${color}.light`,
-          p: 2,
-          borderRadius: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {React.cloneElement(icon, { 
-          sx: { fontSize: 40, color: `${color}.main` } 
-        })}
-      </Box>
-    </Box>
-  </Card>
-);
+// Animated Counter Component
+const AnimatedCounter = ({ end, duration = 2000, suffix = '' }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime;
+    let animationFrame;
+
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = (timestamp - startTime) / duration;
+
+      if (progress < 1) {
+        setCount(Math.floor(end * progress));
+        animationFrame = requestAnimationFrame(animate);
+      } else {
+        setCount(end);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [end, duration]);
+
+  return <span>{count}{suffix}</span>;
+};
+
+// Enhanced Metric Card Component
+const MetricCard = ({ title, value, icon: Icon, trend, trendValue, delay = 0 }) => {
+  const isPositive = trend === 'up';
+  const TrendIcon = isPositive ? TrendingUp : TrendingDown;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.3 }}
+    >
+      <Card hover glow className="group">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <p className="text-white/60 text-sm mb-2">{title}</p>
+            <h3 className="text-3xl font-bold text-white mb-2 animate-count-up">
+              {typeof value === 'number' ? (
+                <AnimatedCounter end={value} />
+              ) : (
+                value
+              )}
+            </h3>
+            {trend && (
+              <div className={cn(
+                'flex items-center gap-1 text-sm',
+                isPositive ? 'text-success' : 'text-error'
+              )}>
+                <TrendIcon className="w-4 h-4" />
+                <span>{trendValue}%</span>
+                <span className="text-white/50 ml-1">vs last month</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-primary rounded-lg blur opacity-50 group-hover:opacity-100 transition-opacity" />
+            <div className="relative bg-gradient-primary p-3 rounded-lg group-hover:scale-110 transition-transform">
+              <Icon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Activity status colors and icons
+const getStatusStyle = (status) => {
+  const styles = {
+    'Being Assigned': { color: 'bg-warning/20 text-warning border-warning', dot: 'bg-warning' },
+    'Parking In Progress': { color: 'bg-primary/20 text-primary border-primary', dot: 'bg-primary' },
+    'Parked': { color: 'bg-success/20 text-success border-success', dot: 'bg-success' },
+    'Out for Delivery': { color: 'bg-accent/20 text-accent border-accent', dot: 'bg-accent' },
+    'Delivered': { color: 'bg-white/20 text-white border-white/30', dot: 'bg-white' },
+  };
+  return styles[status] || styles['Parked'];
+};
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -70,138 +125,158 @@ const Dashboard = () => {
   }, [dispatch]);
 
   if (loading) {
-    return <LoadingSpinner message="Loading dashboard..." />;
+    return <LoadingSpinner message="Loading dashboard..." fullScreen />;
   }
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Welcome back, {user?.name}!
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Here's what's happening with your valet parking today.
-      </Typography>
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <h1 className="text-4xl font-bold text-white mb-2">
+          Welcome back, {user?.name}! 👋
+        </h1>
+        <p className="text-white/60">
+          Here's what's happening with your valet parking today.
+        </p>
+      </motion.div>
 
-      {/* Metrics Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Active Valets"
-            value={metrics.activeValets}
-            icon={<PersonIcon />}
-            color="primary"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Cars Currently Parked"
-            value={metrics.carsParked}
-            icon={<CarIcon />}
-            color="success"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Avg Parking Time"
-            value={formatDuration(metrics.avgParkingTime)}
-            icon={<TimerIcon />}
-            color="info"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Avg Delivery Time"
-            value={formatDuration(metrics.avgDeliveryTime)}
-            icon={<DeliveryIcon />}
-            color="warning"
-          />
-        </Grid>
-      </Grid>
+      {/* Metrics Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Active Valets"
+          value={metrics.activeValets}
+          icon={Users}
+          trend="up"
+          trendValue={12}
+          delay={0}
+        />
+        <MetricCard
+          title="Cars Parked"
+          value={metrics.carsParked}
+          icon={Car}
+          trend="up"
+          trendValue={8}
+          delay={0.1}
+        />
+        <MetricCard
+          title="Avg Parking Time"
+          value={formatDuration(metrics.avgParkingTime)}
+          icon={Clock}
+          trend="down"
+          trendValue={5}
+          delay={0.2}
+        />
+        <MetricCard
+          title="Revenue Today"
+          value="₹2,400"
+          icon={DollarSign}
+          trend="up"
+          trendValue={15}
+          delay={0.3}
+        />
+      </div>
 
-      {/* Recent Activity */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} lg={8}>
-          <Card title="Recent Activity">
+      {/* Activity and Stats Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Activity - Takes 2 columns */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+          className="lg:col-span-2"
+        >
+          <Card title="Recent Activity" className="h-full">
             {activeVehicles.length > 0 ? (
-              <Box>
-                {activeVehicles.slice(0, 5).map((vehicle) => (
-                  <Box
-                    key={vehicle.id}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      py: 2,
-                      borderBottom: '1px solid #eee',
-                      '&:last-child': { borderBottom: 'none' },
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="body1" fontWeight="medium">
-                        {vehicle.vehicleNumber}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {vehicle.valetName} • Slot {vehicle.parkingSlot}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        px: 2,
-                        py: 0.5,
-                        bgcolor: 'success.light',
-                        color: 'success.dark',
-                        borderRadius: 1,
-                      }}
+              <div className="space-y-3">
+                {activeVehicles.slice(0, 5).map((vehicle, index) => {
+                  const statusStyle = getStatusStyle(vehicle.status);
+                  return (
+                    <motion.div
+                      key={vehicle.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
+                      className="flex items-center justify-between p-4 rounded-button bg-white/5 hover:bg-white/10 transition-colors group"
                     >
-                      <Typography variant="caption" fontWeight="medium">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className={cn('w-2 h-2 rounded-full', statusStyle.dot)} />
+                          <div className={cn('absolute inset-0 w-2 h-2 rounded-full animate-ping', statusStyle.dot)} />
+                        </div>
+                        <div>
+                          <p className="text-white font-medium group-hover:text-primary transition-colors">
+                            {vehicle.vehicleNumber}
+                          </p>
+                          <p className="text-white/50 text-sm">
+                            {vehicle.valetName} • Slot {vehicle.parkingSlot}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={cn(
+                        'px-3 py-1 rounded-button text-sm font-medium border',
+                        statusStyle.color
+                      )}>
                         {vehicle.status}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
             ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body1" color="text.secondary">
-                  No recent activity
-                </Typography>
-              </Box>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Activity className="w-12 h-12 text-white/30 mb-3" />
+                <p className="text-white/60">No recent activity</p>
+              </div>
             )}
           </Card>
-        </Grid>
+        </motion.div>
 
-        <Grid item xs={12} lg={4}>
-          <Card title="Quick Stats">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Total Vehicles Today
-                </Typography>
-                <Typography variant="h5" fontWeight="bold">
-                  24
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Revenue Today
-                </Typography>
-                <Typography variant="h5" fontWeight="bold">
-                  ₹2,400
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Available Slots
-                </Typography>
-                <Typography variant="h5" fontWeight="bold">
-                  8 / 20
-                </Typography>
-              </Box>
-            </Box>
+        {/* Quick Stats - Takes 1 column */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5 }}
+          className="space-y-6"
+        >
+          {/* Today's Stats Card */}
+          <Card title="Today's Overview" className="h-auto">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-button bg-gradient-primary/10 border border-primary/20">
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Total Vehicles</p>
+                  <p className="text-2xl font-bold text-white">
+                    <AnimatedCounter end={24} />
+                  </p>
+                </div>
+                <Car className="w-8 h-8 text-primary" />
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-button bg-gradient-accent/10 border border-accent/20">
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Revenue</p>
+                  <p className="text-2xl font-bold text-white">
+                    ₹<AnimatedCounter end={2400} />
+                  </p>
+                </div>
+                <DollarSign className="w-8 h-8 text-accent" />
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-button bg-success/10 border border-success/20">
+                <div>
+                  <p className="text-white/60 text-sm mb-1">Available Slots</p>
+                  <p className="text-2xl font-bold text-white">8 / 20</p>
+                </div>
+                <ParkingSquare className="w-8 h-8 text-success" />
+              </div>
+            </div>
           </Card>
-        </Grid>
-      </Grid>
-    </Container>
+        </motion.div>
+      </div>
+    </div>
   );
 };
 

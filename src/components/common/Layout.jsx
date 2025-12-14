@@ -1,36 +1,37 @@
 /**
- * Main Layout Component
- * Includes sidebar, header, and main content area
+ * Enhanced Main Layout Component
+ * Features responsive design with glassmorphism and smooth transitions
  */
 
 import React from 'react';
-import { Box, Toolbar } from '@mui/material';
+import { motion } from 'framer-motion';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
 const Layout = ({ children }) => {
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.50' }}>
-      {/* Header */}
-      <Header />
-      
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
       <Sidebar />
       
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 0,
-          width: '100%',
-          minHeight: '100vh',
-        }}
-      >
-        <Toolbar /> {/* Spacer for fixed header */}
-        {children}
-      </Box>
-    </Box>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col lg:ml-64">
+        {/* Header */}
+        <Header />
+        
+        {/* Page Content */}
+        <motion.main
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex-1 p-6 pt-24"
+        >
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </motion.main>
+      </div>
+    </div>
   );
 };
 

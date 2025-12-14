@@ -1,13 +1,214 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Tailwind CSS directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Variables for Theme Customization */
+:root {
+  /* Dark theme colors (default) */
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #1a1a2e;
+  --color-bg-card: rgba(255, 255, 255, 0.05);
+  
+  /* Primary colors */
+  --color-primary: #667eea;
+  --color-primary-light: #8a9ef7;
+  --color-primary-dark: #5568d3;
+  
+  /* Accent colors */
+  --color-accent: #00d2ff;
+  --color-accent-light: #33deff;
+  --color-accent-dark: #00a5cc;
+  
+  /* Status colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-accent: linear-gradient(135deg, #00d2ff 0%, #3a47d5 100%);
+  --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  
+  /* Border radius */
+  --radius-card: 16px;
+  --radius-button: 8px;
+  --radius-input: 8px;
+  
+  /* Shadows */
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.3);
+  --shadow-glow-primary: 0 0 20px rgba(102, 126, 234, 0.5);
+  --shadow-glow-accent: 0 0 20px rgba(0, 210, 255, 0.5);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Light theme overrides */
+.light-theme {
+  --color-bg-primary: #f5f5f5;
+  --color-bg-secondary: #ffffff;
+  --color-bg-card: rgba(255, 255, 255, 0.9);
+}
+
+/* Base styles */
+@layer base {
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--color-bg-primary);
+    color: #ffffff;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+}
+
+/* Component styles */
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    background: var(--gradient-card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+  
+  /* Gradient button */
+  .btn-gradient {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-button);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-gradient:hover {
+    box-shadow: var(--shadow-glow-primary);
+    transform: translateY(-2px);
+  }
+  
+  /* Input with floating label */
+  .input-floating {
+    position: relative;
+    width: 100%;
+  }
+  
+  .input-floating input {
+    width: 100%;
+    padding: 1rem;
+    background: var(--color-bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-input);
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .input-floating input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary);
+  }
+  
+  .input-floating label {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .input-floating input:focus + label,
+  .input-floating input:not(:placeholder-shown) + label {
+    top: 0;
+    font-size: 0.75rem;
+    background: var(--color-bg-secondary);
+    padding: 0 0.5rem;
+  }
+  
+  /* Skeleton loader with shimmer */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+    border-radius: var(--radius-button);
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+}
+
+/* Utility styles */
+@layer utilities {
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
 }

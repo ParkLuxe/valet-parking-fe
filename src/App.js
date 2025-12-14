@@ -6,8 +6,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Snackbar, Alert } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
+import { ToastProvider, ToastViewport, ToastWithIcon } from './components/common/Toast';
 
 // Route Components
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -126,26 +127,19 @@ function App() {
         </Routes>
       </Router>
 
-      {/* Toast Notifications */}
-      {toastQueue.map((toast, index) => (
-        <Snackbar
-          key={toast.id}
-          open={true}
-          autoHideDuration={4000}
-          onClose={() => handleCloseToast(toast.id)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          sx={{ bottom: { xs: 90 + index * 70, sm: 24 + index * 70 } }}
-        >
-          <Alert
+      {/* Toast Notifications using Radix UI */}
+      <ToastProvider>
+        {toastQueue.map((toast) => (
+          <ToastWithIcon
+            key={toast.id}
+            variant={toast.type || 'info'}
+            title={toast.type === 'success' ? 'Success' : toast.type === 'error' ? 'Error' : 'Info'}
+            description={toast.message}
             onClose={() => handleCloseToast(toast.id)}
-            severity={toast.type || 'info'}
-            variant="filled"
-            sx={{ width: '100%' }}
-          >
-            {toast.message}
-          </Alert>
-        </Snackbar>
-      ))}
+          />
+        ))}
+        <ToastViewport />
+      </ToastProvider>
     </ThemeProvider>
   );
 }
