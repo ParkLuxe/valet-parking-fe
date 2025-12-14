@@ -32,6 +32,7 @@ export const validatePhone = (phone) => {
   }
   
   // Remove spaces, dashes, and brackets
+  // eslint-disable-next-line no-useless-escape
   const cleanedPhone = phone.replace(/[\s\-\(\)]/g, '');
   
   // Check if it's a valid Indian phone number (10 digits)
@@ -73,6 +74,7 @@ export const validatePassword = (password) => {
   }
   
   // Check for at least one special character
+  // eslint-disable-next-line no-useless-escape
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
     return { isValid: false, error: 'Password must contain at least one special character' };
   }
@@ -109,6 +111,7 @@ export const validateVehicleNumber = (vehicleNumber) => {
   }
   
   // Indian vehicle number format: XX00XX0000 or XX-00-XX-0000
+  // eslint-disable-next-line no-useless-escape
   const cleanedNumber = vehicleNumber.replace(/[\s\-]/g, '').toUpperCase();
   const vehicleRegex = /^[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}$/;
   

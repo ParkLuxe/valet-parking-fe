@@ -3,7 +3,7 @@
  * Contains formatting, calculation, and general utility functions
  */
 
-import { DATE_DISPLAY_FORMAT, PERFORMANCE_THRESHOLDS } from './constants';
+import { PERFORMANCE_THRESHOLDS } from './constants';
 
 /**
  * Format date to display format

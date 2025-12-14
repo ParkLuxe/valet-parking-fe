@@ -4,7 +4,7 @@
  * TODO: Replace mock data with actual API endpoints
  */
 
-import { apiHelper } from './api';
+// import { apiHelper } from './api'; // TODO: Uncomment when backend is ready
 
 const authService = {
   /**
@@ -137,15 +137,11 @@ const authService = {
    * @returns {Promise}
    */
   changePassword: async (passwordData) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.post('/auth/change-password', passwordData);
-      
-      // Mock response for development
-      return { success: true, message: 'Password changed successfully' };
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.post('/auth/change-password', passwordData);
+    
+    // Mock response for development
+    return { success: true, message: 'Password changed successfully' };
   },
 
   /**
@@ -154,20 +150,16 @@ const authService = {
    * @returns {Promise} Uploaded file URL
    */
   uploadProfilePicture: async (file) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const formData = new FormData();
-      // formData.append('profilePicture', file);
-      // const response = await apiHelper.post('/auth/upload-picture', formData, {
-      //   headers: { 'Content-Type': 'multipart/form-data' }
-      // });
-      
-      // Mock response for development
-      const mockUrl = URL.createObjectURL(file);
-      return { url: mockUrl };
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const formData = new FormData();
+    // formData.append('profilePicture', file);
+    // const response = await apiHelper.post('/auth/upload-picture', formData, {
+    //   headers: { 'Content-Type': 'multipart/form-data' }
+    // });
+    
+    // Mock response for development
+    const mockUrl = URL.createObjectURL(file);
+    return { url: mockUrl };
   },
 
   /**
@@ -176,14 +168,10 @@ const authService = {
    * @returns {Promise}
    */
   verifyEmail: async (token) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.post('/auth/verify-email', { token });
-      
-      return { success: true, message: 'Email verified successfully' };
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.post('/auth/verify-email', { token });
+    
+    return { success: true, message: 'Email verified successfully' };
   },
 
   /**
@@ -192,14 +180,10 @@ const authService = {
    * @returns {Promise}
    */
   requestPasswordReset: async (email) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.post('/auth/forgot-password', { email });
-      
-      return { success: true, message: 'Password reset link sent to email' };
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.post('/auth/forgot-password', { email });
+    
+    return { success: true, message: 'Password reset link sent to email' };
   },
 
   /**
@@ -209,14 +193,10 @@ const authService = {
    * @returns {Promise}
    */
   resetPassword: async (token, newPassword) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.post('/auth/reset-password', { token, newPassword });
-      
-      return { success: true, message: 'Password reset successfully' };
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.post('/auth/reset-password', { token, newPassword });
+    
+    return { success: true, message: 'Password reset successfully' };
   },
 };
 

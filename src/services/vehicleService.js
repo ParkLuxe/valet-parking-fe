@@ -4,7 +4,7 @@
  * TODO: Replace mock data with actual API endpoints
  */
 
-import { apiHelper } from './api';
+// import { apiHelper } from './api'; // TODO: Uncomment when backend is ready
 import { VEHICLE_STATUS } from '../utils/constants';
 
 const vehicleService = {
@@ -45,14 +45,10 @@ const vehicleService = {
    * @returns {Promise} List of historical vehicles
    */
   getVehicleHistory: async (filters = {}) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get('/vehicles/history', { params: filters });
-      
-      return [];
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.get('/vehicles/history', { params: filters });
+    
+    return [];
   },
 
   /**
@@ -105,14 +101,10 @@ const vehicleService = {
    * @returns {Promise} Vehicle data
    */
   getVehicleById: async (vehicleId) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get(`/vehicles/${vehicleId}`);
-      
-      return null;
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.get(`/vehicles/${vehicleId}`);
+    
+    return null;
   },
 
   /**
@@ -121,14 +113,10 @@ const vehicleService = {
    * @returns {Promise} Vehicle data
    */
   searchByQRCode: async (qrCode) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get(`/vehicles/search/qr/${qrCode}`);
-      
-      return null;
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.get(`/vehicles/search/qr/${qrCode}`);
+    
+    return null;
   },
 
   /**
@@ -137,14 +125,10 @@ const vehicleService = {
    * @returns {Promise} Vehicle data
    */
   searchByVehicleNumber: async (vehicleNumber) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get(`/vehicles/search/number/${vehicleNumber}`);
-      
-      return null;
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.get(`/vehicles/search/number/${vehicleNumber}`);
+    
+    return null;
   },
 
   /**
