@@ -5,27 +5,27 @@
 
 import { createSlice } from '@reduxjs/toolkit';
 
-// Mock parking slots data
+// Mock parking slots data with fixed timestamps for consistency
 const mockSlots = [
   { id: 'P001', slotNumber: 'A1', floor: 1, status: 'available', isAvailable: true, name: 'A1' },
-  { id: 'P002', slotNumber: 'A2', floor: 1, status: 'occupied', isAvailable: false, name: 'A2', vehicleNumber: 'MH12AB1234', valetName: 'John Doe', parkedAt: new Date().toISOString() },
-  { id: 'P003', slotNumber: 'A3', floor: 1, status: 'occupied', isAvailable: false, name: 'A3', vehicleNumber: 'MH14XY5678', valetName: 'Mike Smith', parkedAt: new Date(Date.now() - 3600000).toISOString() },
+  { id: 'P002', slotNumber: 'A2', floor: 1, status: 'occupied', isAvailable: false, name: 'A2', vehicleNumber: 'MH12AB1234', valetName: 'John Doe', parkedAt: '2025-12-14T18:00:00.000Z' },
+  { id: 'P003', slotNumber: 'A3', floor: 1, status: 'occupied', isAvailable: false, name: 'A3', vehicleNumber: 'MH14XY5678', valetName: 'Mike Smith', parkedAt: '2025-12-14T15:00:00.000Z' },
   { id: 'P004', slotNumber: 'A4', floor: 1, status: 'reserved', isAvailable: false, name: 'A4' },
   { id: 'P005', slotNumber: 'A5', floor: 1, status: 'available', isAvailable: true, name: 'A5' },
   { id: 'P006', slotNumber: 'B1', floor: 1, status: 'available', isAvailable: true, name: 'B1' },
-  { id: 'P007', slotNumber: 'B2', floor: 1, status: 'occupied', isAvailable: false, name: 'B2', vehicleNumber: 'MH01CD9012', valetName: 'Sara Wilson', parkedAt: new Date(Date.now() - 7200000).toISOString() },
+  { id: 'P007', slotNumber: 'B2', floor: 1, status: 'occupied', isAvailable: false, name: 'B2', vehicleNumber: 'MH01CD9012', valetName: 'Sara Wilson', parkedAt: '2025-12-14T11:00:00.000Z' },
   { id: 'P008', slotNumber: 'B3', floor: 1, status: 'available', isAvailable: true, name: 'B3' },
   { id: 'P009', slotNumber: 'B4', floor: 1, status: 'reserved', isAvailable: false, name: 'B4' },
   { id: 'P010', slotNumber: 'B5', floor: 1, status: 'available', isAvailable: true, name: 'B5' },
-  { id: 'P011', slotNumber: 'C1', floor: 1, status: 'occupied', isAvailable: false, name: 'C1', vehicleNumber: 'MH05EF3456', valetName: 'John Doe', parkedAt: new Date(Date.now() - 1800000).toISOString() },
+  { id: 'P011', slotNumber: 'C1', floor: 1, status: 'occupied', isAvailable: false, name: 'C1', vehicleNumber: 'MH05EF3456', valetName: 'John Doe', parkedAt: '2025-12-14T17:30:00.000Z' },
   { id: 'P012', slotNumber: 'C2', floor: 1, status: 'available', isAvailable: true, name: 'C2' },
   { id: 'P013', slotNumber: 'C3', floor: 1, status: 'available', isAvailable: true, name: 'C3' },
-  { id: 'P014', slotNumber: 'C4', floor: 1, status: 'occupied', isAvailable: false, name: 'C4', vehicleNumber: 'MH09GH7890', valetName: 'Mike Smith', parkedAt: new Date(Date.now() - 5400000).toISOString() },
+  { id: 'P014', slotNumber: 'C4', floor: 1, status: 'occupied', isAvailable: false, name: 'C4', vehicleNumber: 'MH09GH7890', valetName: 'Mike Smith', parkedAt: '2025-12-14T13:30:00.000Z' },
   { id: 'P015', slotNumber: 'C5', floor: 1, status: 'available', isAvailable: true, name: 'C5' },
   // Floor 2
   { id: 'P016', slotNumber: 'D1', floor: 2, status: 'available', isAvailable: true, name: 'D1' },
   { id: 'P017', slotNumber: 'D2', floor: 2, status: 'available', isAvailable: true, name: 'D2' },
-  { id: 'P018', slotNumber: 'D3', floor: 2, status: 'occupied', isAvailable: false, name: 'D3', vehicleNumber: 'MH11IJ2345', valetName: 'Sara Wilson', parkedAt: new Date(Date.now() - 900000).toISOString() },
+  { id: 'P018', slotNumber: 'D3', floor: 2, status: 'occupied', isAvailable: false, name: 'D3', vehicleNumber: 'MH11IJ2345', valetName: 'Sara Wilson', parkedAt: '2025-12-14T18:45:00.000Z' },
   { id: 'P019', slotNumber: 'D4', floor: 2, status: 'available', isAvailable: true, name: 'D4' },
   { id: 'P020', slotNumber: 'D5', floor: 2, status: 'reserved', isAvailable: false, name: 'D5' },
 ];
