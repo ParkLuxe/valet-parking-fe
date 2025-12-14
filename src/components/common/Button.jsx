@@ -89,7 +89,7 @@ const Button = ({
     >
       {/* Ripple effect on click */}
       <span className="absolute inset-0 overflow-hidden rounded-button">
-        <span className="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors duration-300" />
+        <span className="absolute inset-0 bg-white/0 active:bg-white/10 transition-colors duration-300" />
       </span>
 
       {/* Button content */}
