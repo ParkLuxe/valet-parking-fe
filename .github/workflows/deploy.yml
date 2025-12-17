@@ -1,0 +1,122 @@
+name: Deploy to AWS EC2
+
+# Trigger the workflow on push to master branch or manual trigger
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:  # Enable manual deployment trigger
+
+# Environment variables
+env:
+  NODE_VERSION: '20'  # Using Node.js 20 LTS
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Create production environment file
+        run: |
+          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL || 'http://localhost:3001/api' }}" >> .env.production
+          echo "REACT_APP_WS_URL=${{ secrets.REACT_APP_WS_URL || 'ws://localhost:3001' }}" >> .env.production
+          echo "REACT_APP_RAZORPAY_KEY=${{ secrets.REACT_APP_RAZORPAY_KEY || '' }}" >> .env.production
+
+      - name: Build application
+        run: npm run build
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: build-files
+          path: build/
+          retention-days: 1
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      actions: read
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4.1.3
+        with:
+          name: build-files
+          path: build/
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key.pem
+          chmod 600 ~/.ssh/deploy_key.pem
+          # Use accept-new instead of blindly accepting any host key
+          echo "StrictHostKeyChecking accept-new" >> ~/.ssh/config
+
+      - name: Deploy to EC2 using rsync
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key.pem" \
+            build/ \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_TARGET_DIR }}/
+
+      - name: Validate and restart web server (if applicable)
+        run: |
+          ssh -i ~/.ssh/deploy_key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            'sudo nginx -t && (sudo systemctl reload nginx || sudo service nginx reload) || echo "Nginx validation or reload failed, but deployment succeeded"'
+        continue-on-error: true
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key.pem
+
+  # Optional: Staging deployment job (uncomment and configure as needed)
+  # deploy-staging:
+  #   name: Deploy to Staging EC2
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   if: github.ref == 'refs/heads/develop'  # Or your staging branch
+  #   
+  #   steps:
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v4.1.3
+  #       with:
+  #         name: build-files
+  #         path: build/
+  #
+  #     - name: Setup SSH key
+  #       run: |
+  #         mkdir -p ~/.ssh
+  #         echo "${{ secrets.STAGING_EC2_SSH_KEY }}" > ~/.ssh/deploy_key.pem
+  #         chmod 600 ~/.ssh/deploy_key.pem
+  #         echo "StrictHostKeyChecking accept-new" >> ~/.ssh/config
+  #
+  #     - name: Deploy to Staging EC2
+  #       run: |
+  #         rsync -avz --delete \
+  #           -e "ssh -i ~/.ssh/deploy_key.pem" \
+  #           build/ \
+  #           ${{ secrets.STAGING_EC2_USER }}@${{ secrets.STAGING_EC2_HOST }}:${{ secrets.STAGING_EC2_TARGET_DIR }}/
+  #
+  #     - name: Cleanup SSH key
+  #       if: always()
+  #       run: rm -f ~/.ssh/deploy_key.pem
