@@ -52,15 +52,16 @@
 @layer base {
   /* Fix for white background on scroll - apply to html, body, and #root */
   html {
-    min-height: 100vh;
-    background-color: #0a0a0f;
-    background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
-    background-attachment: fixed;
+    background-color: #0a0a0f !important;
+    min-height: 100%;
+    height: 100%;
   }
 
   body {
+    background-color: #0a0a0f !important;
+    min-height: 100%;
+    height: 100%;
     margin: 0;
-    min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
@@ -69,13 +70,33 @@
     background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
     background-attachment: fixed;
     color: #ffffff;
-    overscroll-behavior: none;
+    overscroll-behavior-y: none;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Critical: Prevent white flash on scroll bounce */
+  html::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: 0;
+    right: 0;
+    bottom: -50%;
+    background: #0a0a0f;
+    z-index: -1;
   }
 
   #root {
     min-height: 100vh;
     background: transparent;
+    position: relative;
+  }
+
+  /* Fix for mobile scroll bounce */
+  @supports (-webkit-touch-callout: none) {
+    html, body {
+      height: -webkit-fill-available;
+    }
   }
 
   code {

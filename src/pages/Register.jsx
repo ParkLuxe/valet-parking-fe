@@ -6,15 +6,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import {
-  Container,
-  Box,
-  Paper,
-  Typography,
-  Alert,
-  Grid,
-} from '@mui/material';
-import { LocalParking as LogoIcon } from '@mui/icons-material';
+import { Car } from 'lucide-react';
+import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { loginSuccess, setLoading } from '../redux/slices/authSlice';
@@ -135,49 +128,44 @@ const Register = () => {
   };
 
   return (
-    <Container component="main" maxWidth="md">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-            <LogoIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
-            <Typography component="h1" variant="h4" fontWeight="bold">
-              Register as Host
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Create your Park-Luxe host account
-            </Typography>
-          </Box>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-2xl">
+        <Card>
+          <div className="p-8">
+            {/* Header */}
+            <div className="flex flex-col items-center mb-6">
+              <div className="p-3 bg-gradient-primary rounded-full mb-3">
+                <Car className="w-12 h-12 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-gradient-primary mb-1">
+                Register as Host
+              </h1>
+              <p className="text-white/70 text-sm">
+                Create your Park-Luxe host account
+              </p>
+            </div>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Input
-                  label="Full Name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  error={!!errors.name}
-                  helperText={errors.name}
-                  required
-                  autoFocus
-                />
-              </Grid>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                label="Full Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                error={!!errors.name}
+                helperText={errors.name}
+                required
+                autoFocus
+              />
 
-              <Grid item xs={12} sm={6}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="Email Address"
                   name="email"
@@ -188,9 +176,7 @@ const Register = () => {
                   helperText={errors.email}
                   required
                 />
-              </Grid>
 
-              <Grid item xs={12} sm={6}>
                 <Input
                   label="Phone Number"
                   name="phone"
@@ -201,22 +187,20 @@ const Register = () => {
                   required
                   placeholder="+919876543210"
                 />
-              </Grid>
+              </div>
 
-              <Grid item xs={12}>
-                <Input
-                  label="Business Name"
-                  name="businessName"
-                  value={formData.businessName}
-                  onChange={handleChange}
-                  error={!!errors.businessName}
-                  helperText={errors.businessName}
-                  required
-                  placeholder="Restaurant, Mall, Hospital, etc."
-                />
-              </Grid>
+              <Input
+                label="Business Name"
+                name="businessName"
+                value={formData.businessName}
+                onChange={handleChange}
+                error={!!errors.businessName}
+                helperText={errors.businessName}
+                required
+                placeholder="Restaurant, Mall, Hospital, etc."
+              />
 
-              <Grid item xs={12} sm={6}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="Password"
                   name="password"
@@ -227,9 +211,7 @@ const Register = () => {
                   helperText={errors.password}
                   required
                 />
-              </Grid>
 
-              <Grid item xs={12} sm={6}>
                 <Input
                   label="Confirm Password"
                   name="confirmPassword"
@@ -240,40 +222,38 @@ const Register = () => {
                   helperText={errors.confirmPassword}
                   required
                 />
-              </Grid>
+              </div>
 
-              <Grid item xs={12}>
-                <Alert severity="info" sx={{ mt: 1 }}>
-                  <Typography variant="caption">
-                    Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.
-                  </Typography>
-                </Alert>
-              </Grid>
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <p className="text-blue-300 text-sm">
+                  Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.
+                </p>
+              </div>
 
-              <Grid item xs={12}>
-                <Button
-                  type="submit"
-                  fullWidth
-                  loading={loading}
-                  size="large"
-                >
-                  Register
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
+              <Button
+                type="submit"
+                fullWidth
+                loading={loading}
+                size="large"
+                variant="gradient"
+              >
+                Register
+              </Button>
+            </form>
 
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2">
-              Already have an account?{' '}
-              <Link to="/login" style={{ color: '#1976d2', textDecoration: 'none' }}>
-                Sign In
-              </Link>
-            </Typography>
-          </Box>
-        </Paper>
-      </Box>
-    </Container>
+            {/* Login Link */}
+            <div className="mt-6 text-center">
+              <p className="text-white/70 text-sm">
+                Already have an account?{' '}
+                <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+                  Sign In
+                </Link>
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
   );
 };
 
