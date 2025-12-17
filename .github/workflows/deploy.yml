@@ -15,6 +15,9 @@ jobs:
   build:
     name: Build Application
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     
     steps:
       - name: Checkout code
@@ -49,6 +52,9 @@ jobs:
     name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: read
+      actions: read
     
     steps:
       - name: Download build artifacts
@@ -62,20 +68,21 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key.pem
           chmod 600 ~/.ssh/deploy_key.pem
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          # Use accept-new instead of blindly accepting any host key
+          echo "StrictHostKeyChecking accept-new" >> ~/.ssh/config
 
       - name: Deploy to EC2 using rsync
         run: |
           rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key.pem -o StrictHostKeyChecking=no" \
+            -e "ssh -i ~/.ssh/deploy_key.pem" \
             build/ \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_TARGET_DIR }}/
 
-      - name: Restart web server (if applicable)
+      - name: Validate and restart web server (if applicable)
         run: |
-          ssh -i ~/.ssh/deploy_key.pem -o StrictHostKeyChecking=no \
+          ssh -i ~/.ssh/deploy_key.pem \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-            'sudo systemctl reload nginx || sudo service nginx reload || echo "Nginx reload not available, skipping"'
+            'sudo nginx -t && (sudo systemctl reload nginx || sudo service nginx reload) || echo "Nginx validation or reload failed, but deployment succeeded"'
         continue-on-error: true
 
       - name: Cleanup SSH key
@@ -101,12 +108,12 @@ jobs:
   #         mkdir -p ~/.ssh
   #         echo "${{ secrets.STAGING_EC2_SSH_KEY }}" > ~/.ssh/deploy_key.pem
   #         chmod 600 ~/.ssh/deploy_key.pem
-  #         ssh-keyscan -H ${{ secrets.STAGING_EC2_HOST }} >> ~/.ssh/known_hosts
+  #         echo "StrictHostKeyChecking accept-new" >> ~/.ssh/config
   #
   #     - name: Deploy to Staging EC2
   #       run: |
   #         rsync -avz --delete \
-  #           -e "ssh -i ~/.ssh/deploy_key.pem -o StrictHostKeyChecking=no" \
+  #           -e "ssh -i ~/.ssh/deploy_key.pem" \
   #           build/ \
   #           ${{ secrets.STAGING_EC2_USER }}@${{ secrets.STAGING_EC2_HOST }}:${{ secrets.STAGING_EC2_TARGET_DIR }}/
   #
