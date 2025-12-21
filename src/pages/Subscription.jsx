@@ -54,23 +54,37 @@ const Subscription = () => {
       // Show success message
       setPaymentSuccess('Payment successful! Your subscription has been renewed.');
       setPaymentError(null);
-
-      // Clear success message after 5 seconds
-      setTimeout(() => {
-        setPaymentSuccess(null);
-      }, 5000);
     },
     onFailure: (errorMessage) => {
       // Show error message
       setPaymentError(errorMessage);
       setPaymentSuccess(null);
-
-      // Clear error message after 5 seconds
-      setTimeout(() => {
-        setPaymentError(null);
-      }, 5000);
     },
   });
+
+  // Auto-dismiss success/error messages after 5 seconds
+  React.useEffect(() => {
+    let successTimer;
+    let errorTimer;
+
+    if (paymentSuccess) {
+      successTimer = setTimeout(() => {
+        setPaymentSuccess(null);
+      }, 5000);
+    }
+
+    if (paymentError) {
+      errorTimer = setTimeout(() => {
+        setPaymentError(null);
+      }, 5000);
+    }
+
+    // Cleanup timers on unmount
+    return () => {
+      if (successTimer) clearTimeout(successTimer);
+      if (errorTimer) clearTimeout(errorTimer);
+    };
+  }, [paymentSuccess, paymentError]);
 
   // Handle payment button click
   const handlePayment = () => {

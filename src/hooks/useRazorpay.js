@@ -78,6 +78,11 @@ const useRazorpay = ({ invoiceId, onSuccess, onFailure }) => {
         },
       };
 
+      // Check if Razorpay script is loaded
+      if (!window.Razorpay) {
+        throw new Error('Razorpay SDK not loaded. Please refresh the page and try again.');
+      }
+
       // Create Razorpay instance and open checkout
       const razorpay = new window.Razorpay(options);
       razorpay.open();
