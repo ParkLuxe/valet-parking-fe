@@ -73,8 +73,8 @@ jobs:
 
       - name: Deploy to EC2 using rsync
         run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key.pem" \
+          rsync -avz --delete --exclude='.well-known' \
+            -e "ssh -i ~/.ssh/deploy_key. pem" \
             build/ \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_TARGET_DIR }}/
 
