@@ -3,8 +3,8 @@
  * Beautiful plan cards, usage tracking, and payment history
  */
 
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
   CreditCard,
@@ -14,15 +14,82 @@ import {
   Calendar,
   DollarSign,
   Zap,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { formatCurrency } from '../utils/helpers';
 import { SUBSCRIPTION } from '../utils/constants';
 import { cn } from '../utils/cn';
+import useRazorpay from '../hooks/useRazorpay';
+import { addPayment } from '../redux/slices/subscriptionSlice';
 
 const Subscription = () => {
   const { status, usage, billing, paymentHistory } = useSelector((state) => state.subscription);
+  const dispatch = useDispatch();
+
+  // Payment state management
+  const [paymentSuccess, setPaymentSuccess] = useState(null);
+  const [paymentError, setPaymentError] = useState(null);
+
+  // TODO: Replace with actual invoice ID from backend or state
+  const invoiceId = 1;
+
+  // Razorpay payment hook
+  const { initiatePayment, loading: paymentLoading } = useRazorpay({
+    invoiceId,
+    onSuccess: (verificationData) => {
+      // Create payment history entry
+      const paymentEntry = {
+        id: verificationData.paymentId || Date.now(),
+        amount: billing.currentAmount,
+        date: new Date().toISOString(),
+        status: 'success',
+      };
+
+      // Update Redux store with payment history
+      dispatch(addPayment(paymentEntry));
+
+      // Show success message
+      setPaymentSuccess('Payment successful! Your subscription has been renewed.');
+      setPaymentError(null);
+    },
+    onFailure: (errorMessage) => {
+      // Show error message
+      setPaymentError(errorMessage);
+      setPaymentSuccess(null);
+    },
+  });
+
+  // Auto-dismiss success/error messages after 5 seconds
+  React.useEffect(() => {
+    let successTimer;
+    let errorTimer;
+
+    if (paymentSuccess) {
+      successTimer = setTimeout(() => {
+        setPaymentSuccess(null);
+      }, 5000);
+    }
+
+    if (paymentError) {
+      errorTimer = setTimeout(() => {
+        setPaymentError(null);
+      }, 5000);
+    }
+
+    // Cleanup timers on unmount
+    return () => {
+      if (successTimer) clearTimeout(successTimer);
+      if (errorTimer) clearTimeout(errorTimer);
+    };
+  }, [paymentSuccess, paymentError]);
+
+  // Handle payment button click
+  const handlePayment = () => {
+    initiatePayment();
+  };
 
   const usagePercentage = (usage.usedScans / usage.totalScans) * 100;
 
@@ -92,6 +159,36 @@ const Subscription = () => {
           Manage your subscription plans and billing information
         </p>
       </div>
+
+      {/* Payment Success Alert */}
+      {paymentSuccess && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg flex items-start gap-3"
+        >
+          <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-green-400 font-semibold mb-1">Payment Successful</h4>
+            <p className="text-green-300 text-sm">{paymentSuccess}</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Payment Error Alert */}
+      {paymentError && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3"
+        >
+          <XCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-red-400 font-semibold mb-1">Payment Failed</h4>
+            <p className="text-red-300 text-sm">{paymentError}</p>
+          </div>
+        </motion.div>
+      )}
 
       {/* Grace Period Warning */}
       {status === 'grace_period' && (
@@ -199,9 +296,14 @@ const Subscription = () => {
                 </div>
               </div>
 
-              <Button variant="gradient" className="w-full flex items-center justify-center gap-2">
+              <Button
+                variant="gradient"
+                className="w-full flex items-center justify-center gap-2"
+                onClick={handlePayment}
+                disabled={paymentLoading}
+              >
                 <CreditCard className="w-5 h-5" />
-                Pay with Razorpay
+                {paymentLoading ? 'Processing...' : 'Pay with Razorpay'}
               </Button>
 
               <button className="w-full mt-3 text-white/70 hover:text-white text-sm transition-colors">
