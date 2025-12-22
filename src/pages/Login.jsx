@@ -31,7 +31,7 @@ const Login = () => {
   const [loading, setLoadingState] = useState(false);
   const [error, setError] = useState('');
 
-  const roles = ['host', 'valet', 'super_admin'];
+  const roles = ['HOSTADMIN', 'HOSTUSER', 'SUPERADMIN'];
   const roleLabels = ['Host', 'Host User (Valet)', 'Super Admin'];
 
   const handleChange = (e) => {
@@ -106,8 +106,8 @@ const Login = () => {
   // Get placeholder credentials for current role
   const getPlaceholderCreds = () => {
     const role = roles[selectedTab];
-    if (role === 'super_admin') return PLACEHOLDER_CREDENTIALS.superAdmin;
-    if (role === 'valet') return PLACEHOLDER_CREDENTIALS.valet;
+    if (role === 'SUPERADMIN') return PLACEHOLDER_CREDENTIALS.superAdmin;
+    if (role === 'HOSTUSER') return PLACEHOLDER_CREDENTIALS.valet;
     return PLACEHOLDER_CREDENTIALS.host;
   };
 
