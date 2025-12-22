@@ -16,7 +16,6 @@ import {
   CreditCard,
   User,
   ChevronLeft,
-  Car,
   FileText,
   DollarSign,
   Package,
