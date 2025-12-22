@@ -4,10 +4,10 @@
  */
 
 // API Base URL - Replace with your actual API endpoint
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://parkluxe.co.in';
 
 // WebSocket URL - Replace with your actual WebSocket endpoint
-export const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8080';
+export const WS_URL = process.env.REACT_APP_WS_URL || 'wss://parkluxe.co.in';
 
 // User Roles - Updated to match backend
 export const USER_ROLES = {
