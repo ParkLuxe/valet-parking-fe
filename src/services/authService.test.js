@@ -37,8 +37,8 @@ describe('authService', () => {
       apiHelper.post.mockResolvedValueOnce(mockResponse);
 
       const credentials = {
-        username: 'parkLuxe.superadmin',
-        password: 'iemss@264',
+        username: 'testuser',
+        password: 'testpassword123',
         role: 'SUPERADMIN'
       };
 
@@ -46,8 +46,8 @@ describe('authService', () => {
 
       // Verify the API was called with userName (camelCase) not username
       expect(apiHelper.post).toHaveBeenCalledWith('/v1/auth/login', {
-        userName: 'parkLuxe.superadmin',
-        password: 'iemss@264',
+        userName: 'testuser',
+        password: 'testpassword123',
         role: 'SUPERADMIN'
       });
       expect(result).toEqual(mockResponse);
