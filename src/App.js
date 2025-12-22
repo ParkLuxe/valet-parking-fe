@@ -23,6 +23,12 @@ import Analytics from './pages/Analytics';
 import HostUserManagement from './pages/HostUserManagement';
 import ParkingSlots from './pages/ParkingSlots';
 import Subscription from './pages/Subscription';
+import Invoices from './pages/Invoices';
+import InvoiceDetails from './pages/InvoiceDetails';
+import Payments from './pages/Payments';
+import SubscriptionPlans from './pages/SubscriptionPlans';
+import QRCodeManagement from './pages/QRCodeManagement';
+import HostSchedules from './pages/HostSchedules';
 
 // Redux
 import { removeToast } from './redux/slices/notificationSlice';
@@ -99,7 +105,7 @@ function App() {
           <Route
             path="/analytics"
             element={
-              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD]}>
+              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD, USER_ROLES.SUPERADMIN]}>
                 <Layout>
                   <Analytics />
                 </Layout>
@@ -132,6 +138,68 @@ function App() {
               <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD]}>
                 <Layout>
                   <Subscription />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* New Routes */}
+          <Route
+            path="/invoices"
+            element={
+              <ProtectedRoute page="invoices">
+                <Layout>
+                  <Invoices />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/invoices/:id"
+            element={
+              <ProtectedRoute page="invoices">
+                <Layout>
+                  <InvoiceDetails />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute page="payments">
+                <Layout>
+                  <Payments />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscription-plans"
+            element={
+              <ProtectedRoute page="subscriptionPlans">
+                <Layout>
+                  <SubscriptionPlans />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/qr-management"
+            element={
+              <ProtectedRoute page="qrManagement">
+                <Layout>
+                  <QRCodeManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/host-schedules"
+            element={
+              <ProtectedRoute page="hostSchedules">
+                <Layout>
+                  <HostSchedules />
                 </Layout>
               </ProtectedRoute>
             }

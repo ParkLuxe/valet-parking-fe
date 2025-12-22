@@ -34,6 +34,7 @@ const Invoices = () => {
     if (user?.hostId) {
       fetchInvoices();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, statusFilter]);
 
   const fetchInvoices = async () => {

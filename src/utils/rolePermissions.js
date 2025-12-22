@@ -255,7 +255,7 @@ export const canAccessPage = (role, page) => {
   return hasAnyPermission(role, requiredPermissions);
 };
 
-export default {
+const rolePermissionsHelper = {
   PERMISSIONS,
   hasPermission,
   hasAnyPermission,
@@ -263,3 +263,5 @@ export default {
   getRolePermissions,
   canAccessPage,
 };
+
+export default rolePermissionsHelper;
