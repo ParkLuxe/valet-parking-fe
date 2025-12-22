@@ -12,6 +12,8 @@ import analyticsReducer from './slices/analyticsSlice';
 import subscriptionReducer from './slices/subscriptionSlice';
 import notificationReducer from './slices/notificationSlice';
 import uiReducer from './slices/uiSlice';
+import invoiceReducer from './slices/invoiceSlice';
+import paymentReducer from './slices/paymentSlice';
 
 // Configure Redux store with all reducers
 const store = configureStore({
@@ -24,6 +26,8 @@ const store = configureStore({
     subscription: subscriptionReducer,
     notifications: notificationReducer,
     ui: uiReducer,
+    invoices: invoiceReducer,
+    payments: paymentReducer,
   },
   // Middleware configuration
   middleware: (getDefaultMiddleware) =>
