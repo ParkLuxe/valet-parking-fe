@@ -105,7 +105,11 @@ const Sidebar = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-primary rounded-lg blur opacity-50" />
               <div className="relative bg-gradient-primary p-2 rounded-lg">
-                <Car className="w-6 h-6 text-white" />
+                <img 
+                  src="/parkluxe-logo-192.png" 
+                  alt="ParkLuxe Logo" 
+                  className="w-6 h-6"
+                />
               </div>
             </div>
             <span className="text-xl font-bold text-gradient-primary">

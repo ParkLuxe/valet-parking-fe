@@ -34,8 +34,8 @@ jobs:
 
       - name: Create production environment file
         run: |
-          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL || 'http://localhost:3001/api' }}" >> .env.production
-          echo "REACT_APP_WS_URL=${{ secrets.REACT_APP_WS_URL || 'ws://localhost:3001' }}" >> .env.production
+          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL || 'https://parkluxe.co.in/api' }}" >> .env.production
+          echo "REACT_APP_WS_URL=${{ secrets.REACT_APP_WS_URL || 'wss://parkluxe.co.in' }}" >> .env.production
           echo "REACT_APP_RAZORPAY_KEY=${{ secrets.REACT_APP_RAZORPAY_KEY || '' }}" >> .env.production
 
       - name: Build application

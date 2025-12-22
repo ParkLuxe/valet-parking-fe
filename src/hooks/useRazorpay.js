@@ -31,7 +31,7 @@ const useRazorpay = ({ invoiceId, onSuccess, onFailure }) => {
         order_id: orderData.orderId,
         name: 'ParkLuxe Valet Parking',
         description: 'Subscription Payment',
-        image: '/logo192.png',
+        image: '/parkluxe-logo.png',
         prefill: {
           name: orderData.customerName,
           email: orderData.customerEmail,

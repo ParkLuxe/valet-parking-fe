@@ -150,7 +150,11 @@ const Login = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-white rounded-lg blur opacity-50" />
               <div className="relative bg-white/20 backdrop-blur-sm p-3 rounded-lg">
-                <Car className="w-8 h-8" />
+                <img 
+                  src="/parkluxe-logo-192.png" 
+                  alt="ParkLuxe Logo" 
+                  className="w-8 h-8"
+                />
               </div>
             </div>
             <div>
@@ -223,7 +227,11 @@ const Login = () => {
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <div className="bg-gradient-primary p-3 rounded-lg">
-              <Car className="w-8 h-8 text-white" />
+              <img 
+                src="/parkluxe-logo-192.png" 
+                alt="ParkLuxe Logo" 
+                className="w-8 h-8"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Park-Luxe</h1>
