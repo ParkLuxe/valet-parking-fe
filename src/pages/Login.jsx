@@ -8,14 +8,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Car, Users, Building, Shield, User, Lock, AlertCircle, Info } from 'lucide-react';
+import { Car, Users, Building, Shield, User, Lock, AlertCircle } from 'lucide-react';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { loginSuccess, setLoading } from '../redux/slices/authSlice';
 import { addToast } from '../redux/slices/notificationSlice';
 import authService from '../services/authService';
 import { validateRequired } from '../utils/validators';
-import { PLACEHOLDER_CREDENTIALS } from '../utils/constants';
 import { cn } from '../utils/cn';
 
 const Login = () => {
@@ -103,15 +102,7 @@ const Login = () => {
     }
   };
 
-  // Get placeholder credentials for current role
-  const getPlaceholderCreds = () => {
-    const role = roles[selectedTab];
-    if (role === 'SUPERADMIN') return PLACEHOLDER_CREDENTIALS.superAdmin;
-    if (role === 'HOSTUSER') return PLACEHOLDER_CREDENTIALS.valet;
-    return PLACEHOLDER_CREDENTIALS.host;
-  };
 
-  const placeholderCreds = getPlaceholderCreds();
 
   // Floating stats for hero section
   const stats = [
@@ -294,23 +285,6 @@ const Login = () => {
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Dev Credentials Notice */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="glass-card p-4 mb-6 border-l-4 border-primary"
-          >
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <p className="text-white font-semibold mb-1">Development Credentials</p>
-                <p className="text-white/70">Username: {placeholderCreds.username || placeholderCreds.email}</p>
-                <p className="text-white/70">Password: {placeholderCreds.password}</p>
-              </div>
-            </div>
-          </motion.div>
 
           {/* Login Form */}
           <motion.form
