@@ -4,26 +4,31 @@
  */
 
 // API Base URL - Replace with your actual API endpoint
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 // WebSocket URL - Replace with your actual WebSocket endpoint
-export const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:3001';
+export const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8080';
 
-// User Roles
+// User Roles - Updated to match backend
 export const USER_ROLES = {
-  SUPER_ADMIN: 'super_admin',
-  HOST: 'host',
-  VALET_HEAD: 'valet_head',
-  VALET: 'valet',
+  SUPERADMIN: 'SUPERADMIN',
+  HOSTADMIN: 'HOSTADMIN',
+  HOSTUSER: 'HOSTUSER',
+  // Legacy support
+  SUPER_ADMIN: 'SUPERADMIN',
+  HOST: 'HOSTADMIN',
+  VALET_HEAD: 'HOSTADMIN',
+  VALET: 'HOSTUSER',
 };
 
-// Vehicle Status Constants
+// Vehicle Status Constants - Updated to match backend
 export const VEHICLE_STATUS = {
-  BEING_ASSIGNED: 'being_assigned',
-  PARKING_IN_PROGRESS: 'parking_in_progress',
-  PARKED: 'parked',
-  OUT_FOR_DELIVERY: 'out_for_delivery',
-  DELIVERED: 'delivered',
+  BEING_ASSIGNED: 'BEING_ASSIGNED',
+  PARKING_IN_PROGRESS: 'PARKING_IN_PROGRESS',
+  PARKED: 'PARKED',
+  RETRIEVAL_REQUESTED: 'RETRIEVAL_REQUESTED',
+  OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
+  DELIVERED: 'DELIVERED',
 };
 
 // Vehicle Status Display Names
@@ -31,6 +36,7 @@ export const VEHICLE_STATUS_DISPLAY = {
   [VEHICLE_STATUS.BEING_ASSIGNED]: 'Being Assigned',
   [VEHICLE_STATUS.PARKING_IN_PROGRESS]: 'Parking In Progress',
   [VEHICLE_STATUS.PARKED]: 'Parked',
+  [VEHICLE_STATUS.RETRIEVAL_REQUESTED]: 'Retrieval Requested',
   [VEHICLE_STATUS.OUT_FOR_DELIVERY]: 'Out for Delivery',
   [VEHICLE_STATUS.DELIVERED]: 'Delivered',
 };
