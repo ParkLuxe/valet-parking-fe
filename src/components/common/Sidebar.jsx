@@ -14,63 +14,49 @@ import {
   Users,
   ParkingSquare,
   CreditCard,
-  Shield,
   User,
   ChevronLeft,
   Car,
+  FileText,
+  DollarSign,
+  Package,
+  Calendar,
 } from 'lucide-react';
-import { USER_ROLES } from '../../utils/constants';
 import { toggleSidebar } from '../../redux/slices/uiSlice';
 import { cn } from '../../utils/cn';
+import usePermissions from '../../hooks/usePermissions';
 
 const drawerWidth = 260;
 
-// Menu items configuration based on roles
-const getMenuItems = (role) => {
-  const commonItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: Home },
-    { path: '/profile', label: 'Profile', icon: User },
-  ];
-
-  const hostItems = [
-    { path: '/qr-scan', label: 'QR Scan & Entry', icon: QrCode },
-    { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/host-users', label: 'Host Users', icon: Users },
-    { path: '/parking-slots', label: 'Parking Slots', icon: ParkingSquare },
-    { path: '/subscription', label: 'Subscription', icon: CreditCard },
-  ];
-
-  const valetItems = [
-    { path: '/qr-scan', label: 'QR Scan & Entry', icon: QrCode },
-  ];
-
-  const superAdminItems = [
-    { path: '/super-admin', label: 'Super Admin', icon: Shield },
-    { path: '/analytics', label: 'All Analytics', icon: BarChart3 },
-  ];
-
-  switch (role) {
-    case USER_ROLES.SUPER_ADMIN:
-      return [...commonItems, ...superAdminItems];
-    case USER_ROLES.HOST:
-    case USER_ROLES.VALET_HEAD:
-      return [...commonItems, ...hostItems];
-    case USER_ROLES.VALET:
-      return [...commonItems, ...valetItems];
-    default:
-      return commonItems;
-  }
-};
+// Menu items configuration with permissions
+const getAllMenuItems = () => [
+  { path: '/dashboard', label: 'Dashboard', icon: Home, permission: null },
+  { path: '/profile', label: 'Profile', icon: User, permission: null },
+  { path: '/qr-scan', label: 'QR Scan & Entry', icon: QrCode, permission: 'canScanQR' },
+  { path: '/qr-management', label: 'QR Management', icon: QrCode, permission: 'canManageQR' },
+  { path: '/analytics', label: 'Analytics', icon: BarChart3, permission: 'canViewAnalytics' },
+  { path: '/host-users', label: 'Host Users', icon: Users, permission: 'canManageUsers' },
+  { path: '/parking-slots', label: 'Parking Slots', icon: ParkingSquare, permission: 'canManageParkingSlots' },
+  { path: '/invoices', label: 'Invoices', icon: FileText, permission: 'canViewInvoices' },
+  { path: '/payments', label: 'Payments', icon: DollarSign, permission: 'canViewPaymentHistory' },
+  { path: '/subscription-plans', label: 'Subscription Plans', icon: Package, permission: 'canManageSubscription' },
+  { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'canManageSubscription' },
+  { path: '/host-schedules', label: 'Operating Hours', icon: Calendar, permission: 'canManageSchedules' },
+];
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const { can } = usePermissions();
   
   const { user } = useSelector((state) => state.auth);
   const { sidebarOpen } = useSelector((state) => state.ui);
 
-  const menuItems = getMenuItems(user?.role);
+  // Filter menu items based on permissions
+  const menuItems = getAllMenuItems().filter(item => 
+    !item.permission || can(item.permission)
+  );
 
   const handleNavigate = (path) => {
     navigate(path);
