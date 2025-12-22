@@ -14,7 +14,7 @@ const authService = {
   login: async (credentials) => {
     try {
       const response = await apiHelper.post('/v1/auth/login', {
-        username: credentials.email || credentials.username,
+        userName: credentials.email || credentials.username,
         password: credentials.password,
         role: credentials.role,
       });
