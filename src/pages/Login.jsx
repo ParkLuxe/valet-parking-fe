@@ -8,13 +8,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Car, Users, Building, Shield, Mail, Lock, AlertCircle, Info } from 'lucide-react';
+import { Car, Users, Building, Shield, User, Lock, AlertCircle, Info } from 'lucide-react';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { loginSuccess, setLoading } from '../redux/slices/authSlice';
 import { addToast } from '../redux/slices/notificationSlice';
 import authService from '../services/authService';
-import { validateEmail, validateRequired } from '../utils/validators';
+import { validateRequired } from '../utils/validators';
 import { PLACEHOLDER_CREDENTIALS } from '../utils/constants';
 import { cn } from '../utils/cn';
 
@@ -24,7 +24,7 @@ const Login = () => {
   
   const [selectedTab, setSelectedTab] = useState(0); // 0: Host, 1: Host User, 2: Super Admin
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
   const [errors, setErrors] = useState({});
@@ -52,9 +52,9 @@ const Login = () => {
   const validate = () => {
     const newErrors = {};
     
-    const emailValidation = validateEmail(formData.email);
-    if (!emailValidation.isValid) {
-      newErrors.email = emailValidation.error;
+    const usernameValidation = validateRequired(formData.username, 'Username');
+    if (!usernameValidation.isValid) {
+      newErrors.username = usernameValidation.error;
     }
     
     const passwordValidation = validateRequired(formData.password, 'Password');
@@ -306,7 +306,7 @@ const Login = () => {
               <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="text-sm">
                 <p className="text-white font-semibold mb-1">Development Credentials</p>
-                <p className="text-white/70">Email: {placeholderCreds.email}</p>
+                <p className="text-white/70">Username: {placeholderCreds.username || placeholderCreds.email}</p>
                 <p className="text-white/70">Password: {placeholderCreds.password}</p>
               </div>
             </div>
@@ -321,17 +321,17 @@ const Login = () => {
             className="space-y-5"
           >
             <Input
-              label="Email Address"
-              name="email"
-              type="email"
-              value={formData.email}
+              label="Username"
+              name="username"
+              type="text"
+              value={formData.username}
               onChange={handleChange}
-              error={!!errors.email}
-              helperText={errors.email}
+              error={!!errors.username}
+              helperText={errors.username}
               required
-              autoComplete="email"
+              autoComplete="username"
               autoFocus
-              icon={<Mail className="w-5 h-5" />}
+              icon={<User className="w-5 h-5" />}
             />
 
             <Input
