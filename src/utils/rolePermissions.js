@@ -21,6 +21,9 @@ export const PERMISSIONS = {
     // Host management
     canManageHosts: true,
     canViewHostDetails: true,
+    canCreateHost: true,
+    canEditHost: true,
+    canDeactivateHost: true,
     
     // User management
     canManageUsers: true,
@@ -42,18 +45,27 @@ export const PERMISSIONS = {
     canViewAnalytics: true,
     canViewDetailedAnalytics: true,
     canComparePerformance: true,
+    canViewSystemAnalytics: true,
     
     // Subscription & Billing
     canManageSubscription: true,
     canViewInvoices: true,
     canMakePayments: true,
     canViewPaymentHistory: true,
+    canViewAllPayments: true,
     
     // Schedules
     canManageSchedules: true,
     
     // Parking slots
     canManageParkingSlots: true,
+    
+    // System Settings
+    canManageSystemSettings: true,
+    
+    // Reports
+    canViewReports: true,
+    canExportReports: true,
   },
   
   [USER_ROLES.HOSTADMIN]: {
@@ -66,10 +78,16 @@ export const PERMISSIONS = {
     canManageCountryState: false,
     canViewOverdueInvoices: false,
     canManagePlans: false,
+    canViewSystemAnalytics: false,
+    canViewAllPayments: false,
+    canManageSystemSettings: false,
     
     // Host management
     canManageHosts: false,
     canViewHostDetails: true,
+    canCreateHost: false,
+    canEditHost: false,
+    canDeactivateHost: false,
     
     // User management (for their host)
     canManageUsers: true,
@@ -114,6 +132,10 @@ export const PERMISSIONS = {
     // Parking slots
     canManageParkingSlots: true,
     canCreateParkingSlots: true,
+    
+    // Reports
+    canViewReports: true,
+    canExportReports: true,
   },
   
   [USER_ROLES.HOSTUSER]: {
@@ -126,10 +148,16 @@ export const PERMISSIONS = {
     canManageCountryState: false,
     canViewOverdueInvoices: false,
     canManagePlans: false,
+    canViewSystemAnalytics: false,
+    canViewAllPayments: false,
+    canManageSystemSettings: false,
     
     // Host management
     canManageHosts: false,
     canViewHostDetails: false,
+    canCreateHost: false,
+    canEditHost: false,
+    canDeactivateHost: false,
     
     // User management
     canManageUsers: false,
@@ -173,6 +201,10 @@ export const PERMISSIONS = {
     // Parking slots (view only)
     canManageParkingSlots: false,
     canViewParkingSlots: true,
+    
+    // Reports (limited)
+    canViewReports: false,
+    canExportReports: false,
   },
 };
 
@@ -245,6 +277,22 @@ export const canAccessPage = (role, page) => {
     parkingSlots: ['canManageParkingSlots', 'canViewParkingSlots'],
     profile: ['canViewOwnProfile'],
     vehicles: ['canManageVehicles', 'canViewVehicles', 'canViewAssignedVehicles'],
+    
+    // SuperAdmin pages
+    hostManagement: ['canManageHosts'],
+    subscriptionPlansCRUD: ['canManageSubscriptionPlans'],
+    allPayments: ['canViewAllPayments'],
+    superAdminAnalytics: ['canViewSystemAnalytics'],
+    systemSettings: ['canManageSystemSettings'],
+    
+    // Host pages
+    reports: ['canViewReports'],
+    vehicleManagement: ['canManageVehicles', 'canViewVehicles'],
+    
+    // Valet pages
+    myVehicles: ['canViewAssignedVehicles'],
+    myPerformance: ['canViewOwnPerformance'],
+    qrScan: ['canScanQR', 'canScanQRCode'],
   };
   
   const requiredPermissions = pagePermissions[page];
