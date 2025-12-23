@@ -29,6 +29,22 @@ import Payments from './pages/Payments';
 import SubscriptionPlans from './pages/SubscriptionPlans';
 import QRCodeManagement from './pages/QRCodeManagement';
 import HostSchedules from './pages/HostSchedules';
+import DebugDashboard from './pages/DebugDashboard';
+
+// SuperAdmin Pages
+import SubscriptionPlansCRUD from './pages/admin/SubscriptionPlansCRUD';
+import HostManagement from './pages/admin/HostManagement';
+import SuperAdminAnalytics from './pages/admin/SuperAdminAnalytics';
+import SystemSettings from './pages/admin/SystemSettings';
+import AllPayments from './pages/admin/AllPayments';
+
+// Host Pages  
+import VehicleManagement from './pages/host/VehicleManagement';
+import Reports from './pages/host/Reports';
+
+// Valet Pages
+import MyVehicles from './pages/valet/MyVehicles';
+import MyPerformance from './pages/valet/MyPerformance';
 
 // Redux
 import { removeToast } from './redux/slices/notificationSlice';
@@ -68,6 +84,22 @@ function App() {
               <PublicRoute>
                 <Register />
               </PublicRoute>
+            }
+          />
+
+          {/* Debug Routes - No auth required for /debug, auth required for /debug-protected */}
+          <Route
+            path="/debug"
+            element={<DebugDashboard />}
+          />
+          <Route
+            path="/debug-protected"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <DebugDashboard />
+                </Layout>
+              </ProtectedRoute>
             }
           />
 
@@ -200,6 +232,102 @@ function App() {
               <ProtectedRoute page="hostSchedules">
                 <Layout>
                   <HostSchedules />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* SuperAdmin Routes */}
+          <Route
+            path="/subscription-plans-crud"
+            element={
+              <ProtectedRoute page="subscriptionPlansCRUD">
+                <Layout>
+                  <SubscriptionPlansCRUD />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/host-management"
+            element={
+              <ProtectedRoute page="hostManagement">
+                <Layout>
+                  <HostManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin-analytics"
+            element={
+              <ProtectedRoute page="superAdminAnalytics">
+                <Layout>
+                  <SuperAdminAnalytics />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/system-settings"
+            element={
+              <ProtectedRoute page="systemSettings">
+                <Layout>
+                  <SystemSettings />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/all-payments"
+            element={
+              <ProtectedRoute page="allPayments">
+                <Layout>
+                  <AllPayments />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Host Routes */}
+          <Route
+            path="/vehicle-management"
+            element={
+              <ProtectedRoute page="vehicleManagement">
+                <Layout>
+                  <VehicleManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute page="reports">
+                <Layout>
+                  <Reports />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Valet Routes */}
+          <Route
+            path="/my-vehicles"
+            element={
+              <ProtectedRoute page="myVehicles">
+                <Layout>
+                  <MyVehicles />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-performance"
+            element={
+              <ProtectedRoute page="myPerformance">
+                <Layout>
+                  <MyPerformance />
                 </Layout>
               </ProtectedRoute>
             }
