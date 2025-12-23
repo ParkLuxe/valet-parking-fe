@@ -131,7 +131,7 @@ const MyVehicles = () => {
               variant="primary"
               size="small"
               onClick={() =>
-                handleUpdateStatus(row.customerId, VEHICLE_STATUS.PARKED)
+                handleUpdateStatus(row.id || row.customerId, VEHICLE_STATUS.PARKED)
               }
               startIcon={<CheckCircle className="w-4 h-4" />}
             >
@@ -143,7 +143,7 @@ const MyVehicles = () => {
               variant="primary"
               size="small"
               onClick={() =>
-                handleUpdateStatus(row.customerId, VEHICLE_STATUS.DELIVERED)
+                handleUpdateStatus(row.id || row.customerId, VEHICLE_STATUS.DELIVERED)
               }
               startIcon={<CheckCircle className="w-4 h-4" />}
             >

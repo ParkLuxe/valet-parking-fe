@@ -366,9 +366,16 @@ const DebugDashboard = () => {
                 <div className="text-white/70 text-sm font-semibold mb-1">{key}</div>
                 <div className="bg-black/50 rounded p-2 overflow-auto max-h-32">
                   <pre className="text-xs text-white/80 font-mono">
-                    {typeof value === 'string' && value.startsWith('{') 
-                      ? JSON.stringify(JSON.parse(value), null, 2) 
-                      : value}
+                    {(() => {
+                      if (typeof value === 'string' && value.startsWith('{')) {
+                        try {
+                          return JSON.stringify(JSON.parse(value), null, 2);
+                        } catch (e) {
+                          return value;
+                        }
+                      }
+                      return value;
+                    })()}
                   </pre>
                 </div>
               </div>
