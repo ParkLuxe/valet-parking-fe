@@ -34,12 +34,17 @@ import DebugDashboard from './pages/DebugDashboard';
 // SuperAdmin Pages
 import SubscriptionPlansCRUD from './pages/admin/SubscriptionPlansCRUD';
 import HostManagement from './pages/admin/HostManagement';
+import SuperAdminAnalytics from './pages/admin/SuperAdminAnalytics';
+import SystemSettings from './pages/admin/SystemSettings';
+import AllPayments from './pages/admin/AllPayments';
 
 // Host Pages  
 import VehicleManagement from './pages/host/VehicleManagement';
+import Reports from './pages/host/Reports';
 
 // Valet Pages
 import MyVehicles from './pages/valet/MyVehicles';
+import MyPerformance from './pages/valet/MyPerformance';
 
 // Redux
 import { removeToast } from './redux/slices/notificationSlice';
@@ -253,6 +258,36 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/super-admin-analytics"
+            element={
+              <ProtectedRoute page="superAdminAnalytics">
+                <Layout>
+                  <SuperAdminAnalytics />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/system-settings"
+            element={
+              <ProtectedRoute page="systemSettings">
+                <Layout>
+                  <SystemSettings />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/all-payments"
+            element={
+              <ProtectedRoute page="allPayments">
+                <Layout>
+                  <AllPayments />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Host Routes */}
           <Route
@@ -265,6 +300,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute page="reports">
+                <Layout>
+                  <Reports />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Valet Routes */}
           <Route
@@ -273,6 +318,16 @@ function App() {
               <ProtectedRoute page="myVehicles">
                 <Layout>
                   <MyVehicles />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-performance"
+            element={
+              <ProtectedRoute page="myPerformance">
+                <Layout>
+                  <MyPerformance />
                 </Layout>
               </ProtectedRoute>
             }
