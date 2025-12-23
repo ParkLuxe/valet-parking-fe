@@ -29,6 +29,7 @@ import Payments from './pages/Payments';
 import SubscriptionPlans from './pages/SubscriptionPlans';
 import QRCodeManagement from './pages/QRCodeManagement';
 import HostSchedules from './pages/HostSchedules';
+import DebugDashboard from './pages/DebugDashboard';
 
 // Redux
 import { removeToast } from './redux/slices/notificationSlice';
@@ -68,6 +69,22 @@ function App() {
               <PublicRoute>
                 <Register />
               </PublicRoute>
+            }
+          />
+
+          {/* Debug Routes - No auth required for /debug, auth required for /debug-protected */}
+          <Route
+            path="/debug"
+            element={<DebugDashboard />}
+          />
+          <Route
+            path="/debug-protected"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <DebugDashboard />
+                </Layout>
+              </ProtectedRoute>
             }
           />
 
