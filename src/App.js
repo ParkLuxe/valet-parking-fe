@@ -31,6 +31,16 @@ import QRCodeManagement from './pages/QRCodeManagement';
 import HostSchedules from './pages/HostSchedules';
 import DebugDashboard from './pages/DebugDashboard';
 
+// SuperAdmin Pages
+import SubscriptionPlansCRUD from './pages/admin/SubscriptionPlansCRUD';
+import HostManagement from './pages/admin/HostManagement';
+
+// Host Pages  
+import VehicleManagement from './pages/host/VehicleManagement';
+
+// Valet Pages
+import MyVehicles from './pages/valet/MyVehicles';
+
 // Redux
 import { removeToast } from './redux/slices/notificationSlice';
 import { USER_ROLES } from './utils/constants';
@@ -217,6 +227,52 @@ function App() {
               <ProtectedRoute page="hostSchedules">
                 <Layout>
                   <HostSchedules />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* SuperAdmin Routes */}
+          <Route
+            path="/subscription-plans-crud"
+            element={
+              <ProtectedRoute page="subscriptionPlansCRUD">
+                <Layout>
+                  <SubscriptionPlansCRUD />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/host-management"
+            element={
+              <ProtectedRoute page="hostManagement">
+                <Layout>
+                  <HostManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Host Routes */}
+          <Route
+            path="/vehicle-management"
+            element={
+              <ProtectedRoute page="vehicleManagement">
+                <Layout>
+                  <VehicleManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Valet Routes */}
+          <Route
+            path="/my-vehicles"
+            element={
+              <ProtectedRoute page="myVehicles">
+                <Layout>
+                  <MyVehicles />
                 </Layout>
               </ProtectedRoute>
             }
