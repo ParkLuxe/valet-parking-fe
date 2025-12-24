@@ -27,7 +27,7 @@ const Invoices = () => {
   const { user } = useSelector((state) => state.auth);
   const { invoices, loading, error, pagination } = useSelector((state) => state.invoices);
   
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('UNPAID'); // Default to UNPAID (active invoices)
   const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
@@ -40,8 +40,18 @@ const Invoices = () => {
   const fetchInvoices = async () => {
     dispatch(setLoading(true));
     try {
-      const response = await invoiceService.getHostInvoices(
-        user.hostId,
+      // Use filter API to fetch invoices
+      const filters = {
+        hostId: user.hostId,
+      };
+      
+      // Add status filter if not ALL
+      if (statusFilter !== 'ALL') {
+        filters.status = statusFilter;
+      }
+      
+      const response = await invoiceService.filterInvoices(
+        filters,
         currentPage,
         pagination.pageSize
       );
@@ -87,10 +97,6 @@ const Invoices = () => {
     return statusMap[status] || 'bg-gray-100 text-gray-800';
   };
 
-  const filteredInvoices = statusFilter === 'ALL' 
-    ? invoices 
-    : invoices.filter(inv => inv.paymentStatus === statusFilter);
-
   if (loading && !invoices.length) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -112,11 +118,14 @@ const Invoices = () => {
       {/* Filters */}
       <Card>
         <div className="flex gap-2">
-          {['ALL', 'PAID', 'UNPAID', 'OVERDUE'].map((status) => (
+          {['UNPAID', 'PAID', 'OVERDUE', 'ALL'].map((status) => (
             <Button
               key={status}
               variant={statusFilter === status ? 'primary' : 'outline'}
-              onClick={() => setStatusFilter(status)}
+              onClick={() => {
+                setStatusFilter(status);
+                setCurrentPage(0); // Reset to first page when changing filter
+              }}
               className="text-sm"
             >
               {status}
@@ -134,7 +143,7 @@ const Invoices = () => {
 
       {/* Invoice List */}
       <div className="space-y-4">
-        {filteredInvoices.map((invoice) => (
+        {invoices.map((invoice) => (
           <Card key={invoice.id} className="hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -198,7 +207,7 @@ const Invoices = () => {
           </Card>
         ))}
 
-        {filteredInvoices.length === 0 && (
+        {invoices.length === 0 && (
           <Card>
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">No invoices found</p>

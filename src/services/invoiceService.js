@@ -49,6 +49,42 @@ const invoiceService = {
   },
 
   /**
+   * Filter invoices
+   * @param {object} filters - Filter criteria (status, hostId, dateRange, etc.)
+   * @param {number} page - Page number
+   * @param {number} size - Page size
+   * @returns {Promise} List of filtered invoices
+   */
+  filterInvoices: async (filters = {}, page = 0, size = 10) => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Add pagination
+      params.append('page', page);
+      params.append('size', size);
+      
+      // Add filters
+      if (filters.status) {
+        params.append('status', filters.status);
+      }
+      if (filters.hostId) {
+        params.append('hostId', filters.hostId);
+      }
+      if (filters.startDate) {
+        params.append('startDate', filters.startDate);
+      }
+      if (filters.endDate) {
+        params.append('endDate', filters.endDate);
+      }
+      
+      const response = await apiHelper.get(`/v1/invoices/filter?${params.toString()}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
    * Get host invoices
    * @param {string} hostId - Host ID
    * @param {number} page - Page number

@@ -7,7 +7,6 @@ import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
-  Camera,
   Mail,
   Phone,
   Shield,
@@ -183,25 +182,6 @@ const Profile = () => {
     }
   };
 
-  const handleProfilePictureUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    try {
-      const response = await authService.uploadProfilePicture(file);
-      dispatch(updateProfile({ profilePicture: response.url }));
-      dispatch(addToast({
-        type: 'success',
-        message: 'Profile picture updated!',
-      }));
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to upload profile picture',
-      }));
-    }
-  };
-
   // Mock stats and activity data
   const stats = useMemo(() => ({
     carsParked: 156,
@@ -223,7 +203,6 @@ const Profile = () => {
       user?.name,
       user?.email,
       user?.phone,
-      user?.profilePicture,
     ];
     const completed = fields.filter(Boolean).length;
     return Math.round((completed / fields.length) * 100);
@@ -247,29 +226,14 @@ const Profile = () => {
           {/* Profile Picture Card - REDUCED HEIGHT */}
           <Card>
             <div className="p-4 flex flex-col items-center">
-              {/* Avatar with gradient border - SMALLER */}
-              <div className="relative mb-3 group">
-                <div className="absolute inset-0 bg-gradient-primary rounded-full blur opacity-75 group-hover:opacity-100 transition-opacity" />
+              {/* Avatar with gradient border - SMALLER - NO UPLOAD */}
+              <div className="relative mb-3">
+                <div className="absolute inset-0 bg-gradient-primary rounded-full blur opacity-75 transition-opacity" />
                 <div className="relative w-24 h-24 rounded-full bg-gradient-primary p-1">
-                  <div className="w-full h-full rounded-full bg-[#1a1a2e] flex items-center justify-center text-3xl font-bold text-white overflow-hidden">
-                    {user?.profilePicture ? (
-                      <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      getInitials(user?.name)
-                    )}
+                  <div className="w-full h-full rounded-full bg-[#1a1a2e] flex items-center justify-center text-3xl font-bold text-white">
+                    {getInitials(user?.name)}
                   </div>
                 </div>
-                
-                {/* Upload button overlay */}
-                <label className="absolute bottom-0 right-0 bg-gradient-primary p-2 rounded-full cursor-pointer hover:scale-110 transition-transform shadow-glow-primary">
-                  <Camera className="w-5 h-5 text-white" />
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleProfilePictureUpload}
-                  />
-                </label>
               </div>
 
               <h3 className="text-xl font-bold text-white mb-1">

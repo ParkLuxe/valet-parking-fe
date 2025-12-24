@@ -92,7 +92,7 @@ const authService = {
    */
   getProfile: async () => {
     try {
-      const response = await apiHelper.get('/v1/auth/profile');
+      const response = await apiHelper.get('/v1/host-users/me');
       return response;
     } catch (error) {
       throw error;
