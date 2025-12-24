@@ -161,9 +161,6 @@ const AllPayments = () => {
   ];
 
   const totalAmount = invoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
-  const paidAmount = invoices
-    .filter(inv => inv.paymentStatus === 'PAID')
-    .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
   const unpaidAmount = invoices
     .filter(inv => inv.paymentStatus === 'UNPAID')
     .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
