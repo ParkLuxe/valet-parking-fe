@@ -14,63 +14,75 @@ import {
   Users,
   ParkingSquare,
   CreditCard,
-  Shield,
   User,
   ChevronLeft,
+  FileText,
+  DollarSign,
+  Package,
+  Calendar,
+  Building2,
+  Settings,
+  TrendingUp,
   Car,
+  Activity,
+  FileLineChart,
+  Bug,
 } from 'lucide-react';
-import { USER_ROLES } from '../../utils/constants';
 import { toggleSidebar } from '../../redux/slices/uiSlice';
 import { cn } from '../../utils/cn';
+import usePermissions from '../../hooks/usePermissions';
 
 const drawerWidth = 260;
 
-// Menu items configuration based on roles
-const getMenuItems = (role) => {
-  const commonItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: Home },
-    { path: '/profile', label: 'Profile', icon: User },
-  ];
-
-  const hostItems = [
-    { path: '/qr-scan', label: 'QR Scan & Entry', icon: QrCode },
-    { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/host-users', label: 'Host Users', icon: Users },
-    { path: '/parking-slots', label: 'Parking Slots', icon: ParkingSquare },
-    { path: '/subscription', label: 'Subscription', icon: CreditCard },
-  ];
-
-  const valetItems = [
-    { path: '/qr-scan', label: 'QR Scan & Entry', icon: QrCode },
-  ];
-
-  const superAdminItems = [
-    { path: '/super-admin', label: 'Super Admin', icon: Shield },
-    { path: '/analytics', label: 'All Analytics', icon: BarChart3 },
-  ];
-
-  switch (role) {
-    case USER_ROLES.SUPER_ADMIN:
-      return [...commonItems, ...superAdminItems];
-    case USER_ROLES.HOST:
-    case USER_ROLES.VALET_HEAD:
-      return [...commonItems, ...hostItems];
-    case USER_ROLES.VALET:
-      return [...commonItems, ...valetItems];
-    default:
-      return commonItems;
-  }
-};
+// Menu items configuration with permissions
+const getAllMenuItems = () => [
+  // Common
+  { path: '/dashboard', label: 'Dashboard', icon: Home, permission: null },
+  { path: '/profile', label: 'Profile', icon: User, permission: null },
+  
+  // SuperAdmin Only
+  { path: '/host-management', label: 'Hosts Management', icon: Building2, permission: 'canManageHosts' },
+  { path: '/subscription-plans-crud', label: 'Subscription Plans', icon: Package, permission: 'canManageSubscriptionPlans' },
+  { path: '/all-payments', label: 'All Payments', icon: DollarSign, permission: 'canViewAllPayments' },
+  { path: '/super-admin-analytics', label: 'System Analytics', icon: TrendingUp, permission: 'canViewSystemAnalytics' },
+  { path: '/system-settings', label: 'System Settings', icon: Settings, permission: 'canManageSystemSettings' },
+  
+  // Host Admin
+  { path: '/vehicle-management', label: 'Vehicles', icon: Car, permission: 'canManageVehicles' },
+  { path: '/parking-slots', label: 'Parking Slots', icon: ParkingSquare, permission: 'canManageParkingSlots' },
+  { path: '/qr-management', label: 'QR Codes', icon: QrCode, permission: 'canManageQR' },
+  { path: '/host-users', label: 'Host Users', icon: Users, permission: 'canManageUsers' },
+  { path: '/host-schedules', label: 'Operating Hours', icon: Calendar, permission: 'canManageSchedules' },
+  { path: '/analytics', label: 'Analytics', icon: BarChart3, permission: 'canViewAnalytics' },
+  { path: '/reports', label: 'Reports', icon: FileLineChart, permission: 'canViewReports' },
+  { path: '/invoices', label: 'Invoices', icon: FileText, permission: 'canViewInvoices' },
+  { path: '/payments', label: 'Payments', icon: DollarSign, permission: 'canViewPaymentHistory' },
+  { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'canManageSubscription' },
+  
+  // Valet/Host User
+  { path: '/my-vehicles', label: 'My Vehicles', icon: Car, permission: 'canViewAssignedVehicles' },
+  { path: '/qr-scan', label: 'QR Scanner', icon: QrCode, permission: 'canScanQR' },
+  { path: '/my-performance', label: 'My Performance', icon: Activity, permission: 'canViewOwnPerformance' },
+  
+  // Debug (dev environment only)
+  ...(process.env.NODE_ENV === 'development' ? [
+    { path: '/debug-protected', label: 'Debug Dashboard', icon: Bug, permission: null },
+  ] : []),
+];
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const { can } = usePermissions();
   
   const { user } = useSelector((state) => state.auth);
   const { sidebarOpen } = useSelector((state) => state.ui);
 
-  const menuItems = getMenuItems(user?.role);
+  // Filter menu items based on permissions
+  const menuItems = getAllMenuItems().filter(item => 
+    !item.permission || can(item.permission)
+  );
 
   const handleNavigate = (path) => {
     navigate(path);
@@ -119,7 +131,11 @@ const Sidebar = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-primary rounded-lg blur opacity-50" />
               <div className="relative bg-gradient-primary p-2 rounded-lg">
-                <Car className="w-6 h-6 text-white" />
+                <img 
+                  src="/parkluxe-logo-192.png" 
+                  alt="ParkLuxe Logo" 
+                  className="w-6 h-6"
+                />
               </div>
             </div>
             <span className="text-xl font-bold text-gradient-primary">

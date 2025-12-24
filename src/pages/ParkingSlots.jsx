@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Search,
   Plus,
@@ -245,86 +245,87 @@ const ParkingSlots = () => {
         </div>
       </Card>
 
-      {/* Slot Details Modal */}
-      <AnimatePresence>
-        {showSlotDetails && selectedSlot && selectedSlot.slotNumber && (
-          <Modal
-            open={showSlotDetails}
-            onClose={() => setShowSlotDetails(false)}
-            title={`Slot ${selectedSlot.slotNumber} Details`}
-          >
-            <div className="space-y-4">
-              {/* Slot Status */}
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                <span className="text-white/70">Status</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{getStatusIcon(selectedSlot?.status)}</span>
-                  <span className="font-medium capitalize text-white">
-                    {selectedSlot?.status || 'N/A'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Floor */}
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                <span className="text-white/70">Floor</span>
-                <span className="font-medium text-white">{selectedSlot?.floor || 1}</span>
-              </div>
-
-              {/* Vehicle Details (if occupied) */}
-              {selectedSlot?.status === 'occupied' && selectedSlot?.vehicleNumber && (
-                <>
-                  <div className="border-t border-white/10 pt-4">
-                    <h4 className="text-lg font-semibold text-white mb-3">Vehicle Information</h4>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                    <span className="text-white/70">Vehicle Number</span>
-                    <span className="font-medium text-white">{selectedSlot?.vehicleNumber || 'N/A'}</span>
-                  </div>
-
-                  {selectedSlot?.valetName && (
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                      <span className="text-white/70">Valet Assigned</span>
-                      <span className="font-medium text-white">{selectedSlot?.valetName}</span>
-                    </div>
-                  )}
-
-                  {selectedSlot?.parkedAt && (
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                      <span className="text-white/70">Parked Since</span>
-                      <span className="font-medium text-white">
-                        {new Date(selectedSlot.parkedAt).toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-4">
-                {selectedSlot?.status === 'available' && (
-                  <Button variant="gradient" className="flex-1">
-                    Assign Vehicle
-                  </Button>
-                )}
-                {selectedSlot?.status === 'occupied' && (
-                  <Button variant="gradient" className="flex-1">
-                    Release Slot
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={() => setShowSlotDetails(false)}
-                  className="flex-1"
-                >
-                  Close
-                </Button>
+      {/* Slot Details Modal - Radix UI handles its own animation */}
+      {showSlotDetails && selectedSlot && (
+        <Modal
+          open={showSlotDetails}
+          onClose={() => {
+            setShowSlotDetails(false);
+            setSelectedSlot(null);
+          }}
+          title={selectedSlot?.slotNumber ? `Slot ${selectedSlot.slotNumber} Details` : 'Slot Details'}
+        >
+          <div className="space-y-4">
+            {/* Slot Status */}
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+              <span className="text-white/70">Status</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{getStatusIcon(selectedSlot?.status)}</span>
+                <span className="font-medium capitalize text-white">
+                  {selectedSlot?.status || 'N/A'}
+                </span>
               </div>
             </div>
-          </Modal>
-        )}
-      </AnimatePresence>
+
+            {/* Floor */}
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+              <span className="text-white/70">Floor</span>
+              <span className="font-medium text-white">{selectedSlot?.floor || 1}</span>
+            </div>
+
+            {/* Vehicle Details (if occupied) */}
+            {selectedSlot?.status === 'occupied' && selectedSlot?.vehicleNumber && (
+              <>
+                <div className="border-t border-white/10 pt-4">
+                  <h4 className="text-lg font-semibold text-white mb-3">Vehicle Information</h4>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                  <span className="text-white/70">Vehicle Number</span>
+                  <span className="font-medium text-white">{selectedSlot?.vehicleNumber || 'N/A'}</span>
+                </div>
+
+                {selectedSlot?.valetName && (
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                    <span className="text-white/70">Valet Assigned</span>
+                    <span className="font-medium text-white">{selectedSlot?.valetName}</span>
+                  </div>
+                )}
+
+                {selectedSlot?.parkedAt && (
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                    <span className="text-white/70">Parked Since</span>
+                    <span className="font-medium text-white">
+                      {new Date(selectedSlot.parkedAt).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4">
+              {selectedSlot?.status === 'available' && (
+                <Button variant="gradient" className="flex-1">
+                  Assign Vehicle
+                </Button>
+              )}
+              {selectedSlot?.status === 'occupied' && (
+                <Button variant="gradient" className="flex-1">
+                  Release Slot
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => setShowSlotDetails(false)}
+                className="flex-1"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

@@ -1,147 +1,183 @@
 /**
  * Vehicle Service
  * Handles vehicle-related API operations
- * TODO: Replace mock data with actual API endpoints
  */
 
-// import { apiHelper } from './api'; // TODO: Uncomment when backend is ready
-import { VEHICLE_STATUS } from '../utils/constants';
+import { apiHelper } from './api';
 
 const vehicleService = {
   /**
-   * Get all active vehicles
-   * @returns {Promise} List of active vehicles
+   * Update vehicle status
+   * @param {string} customerId - Customer ID
+   * @param {object} statusData - Status update data
+   * @returns {Promise} Updated vehicle status
    */
-  getActiveVehicles: async () => {
+  updateVehicleStatus: async (customerId, statusData) => {
     try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get('/vehicles/active');
-      
-      // Mock data for development
-      return [
-        {
-          id: '1',
-          vehicleNumber: 'MH12AB1234',
-          vehicleType: 'car',
-          vehicleColor: 'Black',
-          customerPhone: '+919876543210',
-          customerName: 'Amit Sharma',
-          parkingSlot: 'A-101',
-          valetId: 'v1',
-          valetName: 'Rahul Kumar',
-          status: VEHICLE_STATUS.PARKED,
-          entryTime: new Date(Date.now() - 30 * 60000).toISOString(),
-          qrCode: 'QR123456',
-        },
-      ];
+      const response = await apiHelper.put(`/v1/vehicles/${customerId}/status`, statusData);
+      return response;
     } catch (error) {
       throw error;
     }
   },
 
   /**
-   * Get vehicle history
+   * Get vehicle status
+   * @param {string} customerId - Customer ID
+   * @returns {Promise} Vehicle status
+   */
+  getVehicleStatus: async (customerId) => {
+    try {
+      const response = await apiHelper.get(`/v1/vehicles/${customerId}/status`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Get vehicle status history
+   * @param {string} customerId - Customer ID
+   * @returns {Promise} Status history
+   */
+  getStatusHistory: async (customerId) => {
+    try {
+      const response = await apiHelper.get(`/v1/vehicles/${customerId}/history`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Assign valet to vehicle
+   * @param {string} customerId - Customer ID
+   * @param {string} valetId - Valet ID
+   * @returns {Promise}
+   */
+  assignValet: async (customerId, valetId) => {
+    try {
+      const response = await apiHelper.post(`/v1/vehicles/${customerId}/assign-valet?valetId=${valetId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Get vehicles by status
+   * @param {string} hostId - Host ID
+   * @param {string} status - Vehicle status
+   * @returns {Promise} List of vehicles
+   */
+  getVehiclesByStatus: async (hostId, status) => {
+    try {
+      const response = await apiHelper.get(`/v1/vehicles/host/${hostId}/status/${status}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Get vehicle status counts
+   * @param {string} hostId - Host ID
+   * @returns {Promise} Status counts
+   */
+  getStatusCounts: async (hostId) => {
+    try {
+      const response = await apiHelper.get(`/v1/vehicles/host/${hostId}/counts`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Request vehicle retrieval
+   * @param {string} customerId - Customer ID
+   * @returns {Promise}
+   */
+  requestRetrieval: async (customerId) => {
+    try {
+      const response = await apiHelper.post(`/v1/vehicles/${customerId}/retrieval-request`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Mark vehicle as out for delivery
+   * @param {string} customerId - Customer ID
+   * @param {string} valetId - Valet ID
+   * @returns {Promise}
+   */
+  markOutForDelivery: async (customerId, valetId) => {
+    try {
+      const response = await apiHelper.post(`/v1/vehicles/${customerId}/out-for-delivery?valetId=${valetId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Mark vehicle as delivered
+   * @param {string} customerId - Customer ID
+   * @returns {Promise}
+   */
+  markDelivered: async (customerId) => {
+    try {
+      const response = await apiHelper.post(`/v1/vehicles/${customerId}/delivered`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Get parking duration
+   * @param {string} customerId - Customer ID
+   * @returns {Promise} Duration data
+   */
+  getParkingDuration: async (customerId) => {
+    try {
+      const response = await apiHelper.get(`/v1/vehicles/${customerId}/duration`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Get all active vehicles (legacy method for backward compatibility)
+   * @param {string} hostId - Host ID
+   * @returns {Promise} List of active vehicles
+   */
+  getActiveVehicles: async (hostId) => {
+    try {
+      if (!hostId) {
+        console.warn('No hostId provided for getActiveVehicles');
+        return [];
+      }
+      const response = await apiHelper.get(`/v1/vehicles/host/${hostId}/status/PARKED`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Get vehicle history (legacy method)
    * @param {object} filters - Filters (date range, status, etc.)
    * @returns {Promise} List of historical vehicles
    */
   getVehicleHistory: async (filters = {}) => {
-    // TODO: Replace with actual API endpoint
-    // const response = await apiHelper.get('/vehicles/history', { params: filters });
-    
-    return [];
-  },
-
-  /**
-   * Add new vehicle
-   * @param {object} vehicleData - Vehicle details
-   * @returns {Promise} Created vehicle data
-   */
-  addVehicle: async (vehicleData) => {
     try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.post('/vehicles', vehicleData);
-      
-      // Mock response
-      return {
-        id: Date.now().toString(),
-        ...vehicleData,
-        status: VEHICLE_STATUS.BEING_ASSIGNED,
-        entryTime: new Date().toISOString(),
-        qrCode: 'QR' + Date.now(),
-      };
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Update vehicle status
-   * @param {string} vehicleId - Vehicle ID
-   * @param {string} status - New status
-   * @param {object} additionalData - Additional data to update
-   * @returns {Promise} Updated vehicle data
-   */
-  updateVehicleStatus: async (vehicleId, status, additionalData = {}) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.patch(`/vehicles/${vehicleId}/status`, {
-      //   status,
-      //   ...additionalData
-      // });
-      
-      return { success: true, status, ...additionalData };
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Get vehicle by ID
-   * @param {string} vehicleId - Vehicle ID
-   * @returns {Promise} Vehicle data
-   */
-  getVehicleById: async (vehicleId) => {
-    // TODO: Replace with actual API endpoint
-    // const response = await apiHelper.get(`/vehicles/${vehicleId}`);
-    
-    return null;
-  },
-
-  /**
-   * Search vehicles by QR code
-   * @param {string} qrCode - QR code
-   * @returns {Promise} Vehicle data
-   */
-  searchByQRCode: async (qrCode) => {
-    // TODO: Replace with actual API endpoint
-    // const response = await apiHelper.get(`/vehicles/search/qr/${qrCode}`);
-    
-    return null;
-  },
-
-  /**
-   * Search vehicles by vehicle number
-   * @param {string} vehicleNumber - Vehicle number
-   * @returns {Promise} Vehicle data
-   */
-  searchByVehicleNumber: async (vehicleNumber) => {
-    // TODO: Replace with actual API endpoint
-    // const response = await apiHelper.get(`/vehicles/search/number/${vehicleNumber}`);
-    
-    return null;
-  },
-
-  /**
-   * Generate QR code for vehicle
-   * @param {string} vehicleId - Vehicle ID
-   * @returns {Promise} QR code data
-   */
-  generateQRCode: async (vehicleId) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.post(`/vehicles/${vehicleId}/qr-code`);
-      
-      return { qrCode: 'QR' + Date.now() };
+      // This might need adjustment based on backend implementation
+      const response = await apiHelper.get('/v1/vehicles/history', { params: filters });
+      return response;
     } catch (error) {
       throw error;
     }

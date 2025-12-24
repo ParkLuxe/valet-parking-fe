@@ -8,14 +8,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Car, Users, Building, Shield, Mail, Lock, AlertCircle, Info } from 'lucide-react';
+import { Car, Users, Building, Shield, User, Lock, AlertCircle } from 'lucide-react';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { loginSuccess, setLoading } from '../redux/slices/authSlice';
 import { addToast } from '../redux/slices/notificationSlice';
 import authService from '../services/authService';
-import { validateEmail, validateRequired } from '../utils/validators';
-import { PLACEHOLDER_CREDENTIALS } from '../utils/constants';
+import { validateRequired } from '../utils/validators';
 import { cn } from '../utils/cn';
 
 const Login = () => {
@@ -24,14 +23,14 @@ const Login = () => {
   
   const [selectedTab, setSelectedTab] = useState(0); // 0: Host, 1: Host User, 2: Super Admin
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoadingState] = useState(false);
   const [error, setError] = useState('');
 
-  const roles = ['host', 'valet', 'super_admin'];
+  const roles = ['HOSTADMIN', 'HOSTUSER', 'SUPERADMIN'];
   const roleLabels = ['Host', 'Host User (Valet)', 'Super Admin'];
 
   const handleChange = (e) => {
@@ -52,9 +51,9 @@ const Login = () => {
   const validate = () => {
     const newErrors = {};
     
-    const emailValidation = validateEmail(formData.email);
-    if (!emailValidation.isValid) {
-      newErrors.email = emailValidation.error;
+    const usernameValidation = validateRequired(formData.username, 'Username');
+    if (!usernameValidation.isValid) {
+      newErrors.username = usernameValidation.error;
     }
     
     const passwordValidation = validateRequired(formData.password, 'Password');
@@ -103,15 +102,7 @@ const Login = () => {
     }
   };
 
-  // Get placeholder credentials for current role
-  const getPlaceholderCreds = () => {
-    const role = roles[selectedTab];
-    if (role === 'super_admin') return PLACEHOLDER_CREDENTIALS.superAdmin;
-    if (role === 'valet') return PLACEHOLDER_CREDENTIALS.valet;
-    return PLACEHOLDER_CREDENTIALS.host;
-  };
 
-  const placeholderCreds = getPlaceholderCreds();
 
   // Floating stats for hero section
   const stats = [
@@ -150,7 +141,11 @@ const Login = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-white rounded-lg blur opacity-50" />
               <div className="relative bg-white/20 backdrop-blur-sm p-3 rounded-lg">
-                <Car className="w-8 h-8" />
+                <img 
+                  src="/parkluxe-logo-192.png" 
+                  alt="ParkLuxe Logo" 
+                  className="w-8 h-8"
+                />
               </div>
             </div>
             <div>
@@ -223,7 +218,11 @@ const Login = () => {
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <div className="bg-gradient-primary p-3 rounded-lg">
-              <Car className="w-8 h-8 text-white" />
+              <img 
+                src="/parkluxe-logo-192.png" 
+                alt="ParkLuxe Logo" 
+                className="w-8 h-8"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Park-Luxe</h1>
@@ -287,23 +286,6 @@ const Login = () => {
             )}
           </AnimatePresence>
 
-          {/* Dev Credentials Notice */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="glass-card p-4 mb-6 border-l-4 border-primary"
-          >
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <p className="text-white font-semibold mb-1">Development Credentials</p>
-                <p className="text-white/70">Email: {placeholderCreds.email}</p>
-                <p className="text-white/70">Password: {placeholderCreds.password}</p>
-              </div>
-            </div>
-          </motion.div>
-
           {/* Login Form */}
           <motion.form
             initial={{ opacity: 0 }}
@@ -313,17 +295,17 @@ const Login = () => {
             className="space-y-5"
           >
             <Input
-              label="Email Address"
-              name="email"
-              type="email"
-              value={formData.email}
+              label="Username"
+              name="username"
+              type="text"
+              value={formData.username}
               onChange={handleChange}
-              error={!!errors.email}
-              helperText={errors.email}
+              error={!!errors.username}
+              helperText={errors.username}
               required
-              autoComplete="email"
+              autoComplete="username"
               autoFocus
-              icon={<Mail className="w-5 h-5" />}
+              icon={<User className="w-5 h-5" />}
             />
 
             <Input

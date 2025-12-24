@@ -1,41 +1,24 @@
 /**
  * Authentication Service
  * Handles login, register, logout, and profile operations
- * TODO: Replace mock data with actual API endpoints
  */
 
-// import { apiHelper } from './api'; // TODO: Uncomment when backend is ready
+import { apiHelper } from './api';
 
 const authService = {
   /**
    * Login user
-   * @param {object} credentials - Login credentials (email, password, role)
+   * @param {object} credentials - Login credentials (username, password, role)
    * @returns {Promise} User data and token
    */
   login: async (credentials) => {
     try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.post('/auth/login', credentials);
-      
-      // Mock response for development
-      const mockResponse = {
-        success: true,
-        data: {
-          user: {
-            id: '1',
-            name: 'John Doe',
-            email: credentials.email,
-            phone: '+919876543210',
-            role: credentials.role || 'host',
-            profilePicture: null,
-            createdAt: new Date().toISOString(),
-          },
-          token: 'mock_jwt_token_' + Date.now(),
-          refreshToken: 'mock_refresh_token_' + Date.now(),
-        },
-      };
-      
-      return mockResponse.data;
+      const response = await apiHelper.post('/v1/auth/login', {
+        userName: credentials.email || credentials.username,
+        password: credentials.password,
+        role: credentials.role,
+      });
+      return response;
     } catch (error) {
       throw error;
     }
@@ -48,29 +31,8 @@ const authService = {
    */
   register: async (userData) => {
     try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.post('/auth/register', userData);
-      
-      // Mock response for development
-      const mockResponse = {
-        success: true,
-        data: {
-          user: {
-            id: Date.now().toString(),
-            name: userData.name,
-            email: userData.email,
-            phone: userData.phone,
-            role: 'host',
-            businessName: userData.businessName,
-            profilePicture: null,
-            createdAt: new Date().toISOString(),
-          },
-          token: 'mock_jwt_token_' + Date.now(),
-          refreshToken: 'mock_refresh_token_' + Date.now(),
-        },
-      };
-      
-      return mockResponse.data;
+      const response = await apiHelper.post('/v1/admin/host/register', userData);
+      return response;
     } catch (error) {
       throw error;
     }
@@ -82,12 +44,43 @@ const authService = {
    */
   logout: async () => {
     try {
-      // TODO: Replace with actual API endpoint
-      // await apiHelper.post('/auth/logout');
+      const refreshToken = localStorage.getItem('park_luxe_refresh_token');
+      await apiHelper.post('/v1/auth/logout', { refreshToken });
       
       // Clear local storage
       localStorage.clear();
       return { success: true };
+    } catch (error) {
+      // Clear local storage even if API call fails
+      localStorage.clear();
+      throw error;
+    }
+  },
+
+  /**
+   * Validate token
+   * @returns {Promise} Token validation result
+   */
+  validateToken: async () => {
+    try {
+      const response = await apiHelper.get('/v1/auth/validate-token');
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Refresh access token
+   * @param {string} refreshToken - Refresh token
+   * @returns {Promise} New tokens
+   */
+  refreshToken: async (refreshToken) => {
+    try {
+      const response = await apiHelper.post('/v1/auth/refresh-token', {
+        refreshToken,
+      });
+      return response;
     } catch (error) {
       throw error;
     }
@@ -99,12 +92,8 @@ const authService = {
    */
   getProfile: async () => {
     try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get('/auth/profile');
-      
-      // Mock response for development
-      const mockUser = JSON.parse(localStorage.getItem('park_luxe_user_data') || '{}');
-      return mockUser;
+      const response = await apiHelper.get('/v1/auth/profile');
+      return response;
     } catch (error) {
       throw error;
     }
@@ -117,15 +106,8 @@ const authService = {
    */
   updateProfile: async (profileData) => {
     try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.put('/auth/profile', profileData);
-      
-      // Mock response for development
-      const currentUser = JSON.parse(localStorage.getItem('park_luxe_user_data') || '{}');
-      const updatedUser = { ...currentUser, ...profileData };
-      localStorage.setItem('park_luxe_user_data', JSON.stringify(updatedUser));
-      
-      return updatedUser;
+      const response = await apiHelper.put('/v1/auth/profile', profileData);
+      return response;
     } catch (error) {
       throw error;
     }
@@ -137,11 +119,12 @@ const authService = {
    * @returns {Promise}
    */
   changePassword: async (passwordData) => {
-    // TODO: Replace with actual API endpoint
-    // const response = await apiHelper.post('/auth/change-password', passwordData);
-    
-    // Mock response for development
-    return { success: true, message: 'Password changed successfully' };
+    try {
+      const response = await apiHelper.post('/v1/auth/change-password', passwordData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
 
   /**
@@ -150,16 +133,16 @@ const authService = {
    * @returns {Promise} Uploaded file URL
    */
   uploadProfilePicture: async (file) => {
-    // TODO: Replace with actual API endpoint
-    // const formData = new FormData();
-    // formData.append('profilePicture', file);
-    // const response = await apiHelper.post('/auth/upload-picture', formData, {
-    //   headers: { 'Content-Type': 'multipart/form-data' }
-    // });
-    
-    // Mock response for development
-    const mockUrl = URL.createObjectURL(file);
-    return { url: mockUrl };
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+      const response = await apiHelper.post('/v1/auth/upload-picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
 
   /**
@@ -168,10 +151,12 @@ const authService = {
    * @returns {Promise}
    */
   verifyEmail: async (token) => {
-    // TODO: Replace with actual API endpoint
-    // const response = await apiHelper.post('/auth/verify-email', { token });
-    
-    return { success: true, message: 'Email verified successfully' };
+    try {
+      const response = await apiHelper.post('/v1/auth/verify-email', { token });
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
 
   /**
@@ -180,10 +165,12 @@ const authService = {
    * @returns {Promise}
    */
   requestPasswordReset: async (email) => {
-    // TODO: Replace with actual API endpoint
-    // const response = await apiHelper.post('/auth/forgot-password', { email });
-    
-    return { success: true, message: 'Password reset link sent to email' };
+    try {
+      const response = await apiHelper.post('/v1/auth/forgot-password', { email });
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
 
   /**
@@ -193,10 +180,15 @@ const authService = {
    * @returns {Promise}
    */
   resetPassword: async (token, newPassword) => {
-    // TODO: Replace with actual API endpoint
-    // const response = await apiHelper.post('/auth/reset-password', { token, newPassword });
-    
-    return { success: true, message: 'Password reset successfully' };
+    try {
+      const response = await apiHelper.post('/v1/auth/reset-password', { 
+        token, 
+        newPassword 
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
 };
 

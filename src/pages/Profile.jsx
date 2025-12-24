@@ -244,14 +244,14 @@ const Profile = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Profile Card & Stats */}
         <div className="space-y-6">
-          {/* Profile Picture Card */}
+          {/* Profile Picture Card - REDUCED HEIGHT */}
           <Card>
-            <div className="p-6 flex flex-col items-center">
-              {/* Avatar with gradient border */}
-              <div className="relative mb-4 group">
+            <div className="p-4 flex flex-col items-center">
+              {/* Avatar with gradient border - SMALLER */}
+              <div className="relative mb-3 group">
                 <div className="absolute inset-0 bg-gradient-primary rounded-full blur opacity-75 group-hover:opacity-100 transition-opacity" />
-                <div className="relative w-32 h-32 rounded-full bg-gradient-primary p-1">
-                  <div className="w-full h-full rounded-full bg-[#1a1a2e] flex items-center justify-center text-4xl font-bold text-white overflow-hidden">
+                <div className="relative w-24 h-24 rounded-full bg-gradient-primary p-1">
+                  <div className="w-full h-full rounded-full bg-[#1a1a2e] flex items-center justify-center text-3xl font-bold text-white overflow-hidden">
                     {user?.profilePicture ? (
                       <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
@@ -272,20 +272,20 @@ const Profile = () => {
                 </label>
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-1">
+              <h3 className="text-xl font-bold text-white mb-1">
                 {user?.name || 'User'}
               </h3>
-              <p className="text-white/60 text-sm mb-4">
+              <p className="text-white/60 text-xs mb-3">
                 {user?.role?.replace('_', ' ').toUpperCase()}
               </p>
 
-              {/* Profile Completion */}
+              {/* Profile Completion - COMPACT */}
               <div className="w-full">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-white/70 text-sm">Profile Completion</span>
-                  <span className="text-white font-semibold">{profileCompletion}%</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-white/70 text-xs">Profile Completion</span>
+                  <span className="text-white font-semibold text-sm">{profileCompletion}%</span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${profileCompletion}%` }}
@@ -297,58 +297,58 @@ const Profile = () => {
             </div>
           </Card>
 
-          {/* Stats Cards */}
+          {/* Stats Cards - COMPACT */}
           <Card>
-            <div className="p-4">
-              <h3 className="text-xl font-bold text-white mb-4">Your Stats</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-500/20 rounded-lg">
-                      <Car className="w-5 h-5 text-purple-400" />
+            <div className="p-3">
+              <h3 className="text-lg font-bold text-white mb-2">Your Stats</h3>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-purple-500/20 rounded-lg">
+                      <Car className="w-4 h-4 text-purple-400" />
                     </div>
-                    <span className="text-white/70">Cars Parked</span>
+                    <span className="text-white/70 text-sm">Cars Parked</span>
                   </div>
-                  <span className="text-white font-bold">{stats.carsParked}</span>
+                  <span className="text-white font-bold text-sm">{stats.carsParked}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-500/20 rounded-lg">
-                      <Clock className="w-5 h-5 text-blue-400" />
+                <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-blue-500/20 rounded-lg">
+                      <Clock className="w-4 h-4 text-blue-400" />
                     </div>
-                    <span className="text-white/70">Avg. Time</span>
+                    <span className="text-white/70 text-sm">Avg. Time</span>
                   </div>
-                  <span className="text-white font-bold">{stats.avgTime}</span>
+                  <span className="text-white font-bold text-sm">{stats.avgTime}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-500/20 rounded-lg">
-                      <TrendingUp className="w-5 h-5 text-green-400" />
+                <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-green-500/20 rounded-lg">
+                      <TrendingUp className="w-4 h-4 text-green-400" />
                     </div>
-                    <span className="text-white/70">Total Revenue</span>
+                    <span className="text-white/70 text-sm">Total Revenue</span>
                   </div>
-                  <span className="text-white font-bold">₹{stats.totalRevenue.toLocaleString()}</span>
+                  <span className="text-white font-bold text-sm">₹{stats.totalRevenue.toLocaleString()}</span>
                 </div>
               </div>
             </div>
           </Card>
 
-          {/* Account Info */}
+          {/* Account Info - COMPACT */}
           <Card>
-            <div className="p-4">
-              <h3 className="text-xl font-bold text-white mb-4">Account Info</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-white/70">
-                  <Shield className="w-5 h-5" />
-                  <span className="text-sm">
+            <div className="p-3">
+              <h3 className="text-lg font-bold text-white mb-2">Account Info</h3>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-white/70">
+                  <Shield className="w-4 h-4" />
+                  <span className="text-xs">
                     {user?.role?.replace('_', ' ').toUpperCase()}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-white/70">
-                  <Calendar className="w-5 h-5" />
-                  <span className="text-sm">
+                <div className="flex items-center gap-2 text-white/70">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-xs">
                     Member since {new Date(user?.createdAt).toLocaleDateString()}
                   </span>
                 </div>

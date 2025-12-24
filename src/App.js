@@ -5,8 +5,6 @@
 
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { ToastProvider, ToastViewport, ToastWithIcon } from './components/common/Toast';
 
@@ -25,34 +23,33 @@ import Analytics from './pages/Analytics';
 import HostUserManagement from './pages/HostUserManagement';
 import ParkingSlots from './pages/ParkingSlots';
 import Subscription from './pages/Subscription';
+import Invoices from './pages/Invoices';
+import InvoiceDetails from './pages/InvoiceDetails';
+import Payments from './pages/Payments';
+import SubscriptionPlans from './pages/SubscriptionPlans';
+import QRCodeManagement from './pages/QRCodeManagement';
+import HostSchedules from './pages/HostSchedules';
+import DebugDashboard from './pages/DebugDashboard';
+
+// SuperAdmin Pages
+import SubscriptionPlansCRUD from './pages/admin/SubscriptionPlansCRUD';
+import HostManagement from './pages/admin/HostManagement';
+import SuperAdminAnalytics from './pages/admin/SuperAdminAnalytics';
+import SystemSettings from './pages/admin/SystemSettings';
+import AllPayments from './pages/admin/AllPayments';
+
+// Host Pages  
+import VehicleManagement from './pages/host/VehicleManagement';
+import Reports from './pages/host/Reports';
+
+// Valet Pages
+import MyVehicles from './pages/valet/MyVehicles';
+import MyPerformance from './pages/valet/MyPerformance';
 
 // Redux
 import { removeToast } from './redux/slices/notificationSlice';
 import { USER_ROLES } from './utils/constants';
 import { initializeStore } from './utils/initializeStore';
-
-// Create Material-UI theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-  typography: {
-    fontFamily: [
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
-  },
-});
 
 function App() {
   const dispatch = useDispatch();
@@ -69,8 +66,7 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <>
       <Router>
         <Routes>
           {/* Public Routes */}
@@ -88,6 +84,22 @@ function App() {
               <PublicRoute>
                 <Register />
               </PublicRoute>
+            }
+          />
+
+          {/* Debug Routes - No auth required for /debug, auth required for /debug-protected */}
+          <Route
+            path="/debug"
+            element={<DebugDashboard />}
+          />
+          <Route
+            path="/debug-protected"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <DebugDashboard />
+                </Layout>
+              </ProtectedRoute>
             }
           />
 
@@ -125,7 +137,7 @@ function App() {
           <Route
             path="/analytics"
             element={
-              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD]}>
+              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD, USER_ROLES.SUPERADMIN]}>
                 <Layout>
                   <Analytics />
                 </Layout>
@@ -162,6 +174,164 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
+          {/* New Routes */}
+          <Route
+            path="/invoices"
+            element={
+              <ProtectedRoute page="invoices">
+                <Layout>
+                  <Invoices />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/invoices/:id"
+            element={
+              <ProtectedRoute page="invoices">
+                <Layout>
+                  <InvoiceDetails />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute page="payments">
+                <Layout>
+                  <Payments />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscription-plans"
+            element={
+              <ProtectedRoute page="subscriptionPlans">
+                <Layout>
+                  <SubscriptionPlans />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/qr-management"
+            element={
+              <ProtectedRoute page="qrManagement">
+                <Layout>
+                  <QRCodeManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/host-schedules"
+            element={
+              <ProtectedRoute page="hostSchedules">
+                <Layout>
+                  <HostSchedules />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* SuperAdmin Routes */}
+          <Route
+            path="/subscription-plans-crud"
+            element={
+              <ProtectedRoute page="subscriptionPlansCRUD">
+                <Layout>
+                  <SubscriptionPlansCRUD />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/host-management"
+            element={
+              <ProtectedRoute page="hostManagement">
+                <Layout>
+                  <HostManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin-analytics"
+            element={
+              <ProtectedRoute page="superAdminAnalytics">
+                <Layout>
+                  <SuperAdminAnalytics />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/system-settings"
+            element={
+              <ProtectedRoute page="systemSettings">
+                <Layout>
+                  <SystemSettings />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/all-payments"
+            element={
+              <ProtectedRoute page="allPayments">
+                <Layout>
+                  <AllPayments />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Host Routes */}
+          <Route
+            path="/vehicle-management"
+            element={
+              <ProtectedRoute page="vehicleManagement">
+                <Layout>
+                  <VehicleManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute page="reports">
+                <Layout>
+                  <Reports />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Valet Routes */}
+          <Route
+            path="/my-vehicles"
+            element={
+              <ProtectedRoute page="myVehicles">
+                <Layout>
+                  <MyVehicles />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-performance"
+            element={
+              <ProtectedRoute page="myPerformance">
+                <Layout>
+                  <MyPerformance />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Redirect root to dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -184,7 +354,7 @@ function App() {
         ))}
         <ToastViewport />
       </ToastProvider>
-    </ThemeProvider>
+    </>
   );
 }
 
