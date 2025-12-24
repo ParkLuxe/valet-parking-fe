@@ -1,6 +1,6 @@
 /**
  * All Payments Page (SuperAdmin)
- * View all active invoices across all hosts
+ * View all invoices across all hosts (with optional status filtering)
  */
 
 import React, { useState, useEffect } from 'react';
@@ -94,6 +94,14 @@ const AllPayments = () => {
         message: 'Failed to download invoice',
       }));
     }
+  };
+
+  const handlePreviousPage = () => {
+    setPagination(prev => ({ ...prev, currentPage: Math.max(0, prev.currentPage - 1) }));
+  };
+
+  const handleNextPage = () => {
+    setPagination(prev => ({ ...prev, currentPage: Math.min(pagination.totalPages - 1, prev.currentPage + 1) }));
   };
 
   const columns = [
@@ -249,7 +257,7 @@ const AllPayments = () => {
         <div className="flex justify-center gap-2">
           <Button
             variant="outline"
-            onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.max(0, prev.currentPage - 1) }))}
+            onClick={handlePreviousPage}
             disabled={pagination.currentPage === 0}
           >
             Previous
@@ -259,7 +267,7 @@ const AllPayments = () => {
           </span>
           <Button
             variant="outline"
-            onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.min(pagination.totalPages - 1, prev.currentPage + 1) }))}
+            onClick={handleNextPage}
             disabled={pagination.currentPage >= pagination.totalPages - 1}
           >
             Next

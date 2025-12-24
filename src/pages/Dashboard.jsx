@@ -118,7 +118,7 @@ const Dashboard = () => {
   // Check if user is SuperAdmin
   const isSuperAdmin = user?.role === USER_ROLES.SUPERADMIN;
   // Check if user is Host/HostAdmin (should see stats)
-  const isHostAdmin = user?.role === USER_ROLES.HOSTADMIN || user?.role === USER_ROLES.HOST;
+  const isHostAdmin = user?.role === USER_ROLES.HOSTADMIN;
 
   useEffect(() => {
     // Fetch dashboard metrics only for Host/HostAdmin
