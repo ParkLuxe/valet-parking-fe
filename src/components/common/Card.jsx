@@ -26,7 +26,7 @@ const Card = ({
         hover && 'hover:-translate-y-1 hover:shadow-2xl cursor-pointer',
         glow && 'hover:shadow-glow-primary',
         gradient && 'bg-gradient-card',
-        'h-full flex flex-col',
+        'flex flex-col',
         className
       )}
       {...props}

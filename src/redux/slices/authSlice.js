@@ -7,9 +7,17 @@ import { createSlice } from '@reduxjs/toolkit';
 import { STORAGE_KEYS } from '../../utils/constants';
 
 // Initial state with data from local storage if available
+let storedUser = null;
+try {
+  const raw = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+  storedUser = raw ? JSON.parse(raw) : null;
+} catch (e) {
+  storedUser = null;
+}
+
 const initialState = {
-  user: JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_DATA)) || null,
-  token: localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || null,
+  user: storedUser,
+  token: localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || "",
   refreshToken: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) || null,
   isAuthenticated: !!localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN),
   loading: false,
@@ -20,24 +28,36 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Set loading state
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
     
-    // Login success - store user data and token
     loginSuccess: (state, action) => {
-      const { user, token, refreshToken } = action.payload;
+      const resp = action.payload?.data ?? action.payload ?? {};
+      const accessToken = resp.accessToken ?? resp.token ?? "";
+      const refreshToken = resp.refreshToken ?? null;
+      const { accessToken: _a, refreshToken: _r, ...userObj } = resp;
+      if (Object.keys(userObj).length) {
+        if (userObj.username) {
+          userObj.name = userObj.username;
+          userObj.email = userObj.username;
+        }
+      }
+      const user = Object.keys(userObj).length ? userObj : null;
+
       state.user = user;
-      state.token = token;
+      state.token = accessToken;
       state.refreshToken = refreshToken;
       state.isAuthenticated = true;
       state.loading = false;
       state.error = null;
-      
-      // Store in local storage
-      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+
+      if (user) {
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
+      }
+      if (accessToken) {
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+      }
       if (refreshToken) {
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
       }
@@ -72,7 +92,7 @@ const authSlice = createSlice({
     
     // Update token (for refresh token flow)
     updateToken: (state, action) => {
-      const { token, refreshToken } = action.payload;
+      const { accessToken: token, refreshToken } = action.payload;
       state.token = token;
       if (refreshToken) {
         state.refreshToken = refreshToken;
