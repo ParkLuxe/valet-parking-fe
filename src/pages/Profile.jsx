@@ -12,8 +12,6 @@ import {
   Shield,
   Calendar,
   Car,
-  Clock,
-  TrendingUp,
   CheckCircle,
   Lock,
   User,
@@ -182,13 +180,13 @@ const Profile = () => {
     }
   };
 
-  // Mock stats and activity data
-  const stats = useMemo(() => ({
-    carsParked: 156,
-    avgTime: '2h 15m',
-    totalRevenue: 45600,
-    rating: 4.8,
-  }), []);
+  // Mock stats and activity data (removed unused variable)
+  // const stats = useMemo(() => ({
+  //   carsParked: 156,
+  //   avgTime: '2h 15m',
+  //   totalRevenue: 45600,
+  //   rating: 4.8,
+  // }), []);
 
   const activityTimeline = useMemo(() => [
     { id: 1, action: 'Updated profile information', time: '2 hours ago', icon: User },

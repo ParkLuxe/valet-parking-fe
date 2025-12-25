@@ -40,7 +40,7 @@ export const validatePhone = (phone: string): ValidationResult => {
   }
   
   // Remove spaces, dashes, and brackets
-  const cleanedPhone = phone.replace(/[\s\-\(\)]/g, '');
+  const cleanedPhone = phone.replace(/[\s\-()]/g, '');
   
   // Check if it's a valid Indian phone number (10 digits)
   const phoneRegex = /^[6-9]\d{9}$/;
@@ -110,7 +110,7 @@ export const validateVehicleNumber = (vehicleNumber: string): ValidationResult =
   }
   
   // Indian vehicle number format: XX00XX0000 or XX-00-XX-0000
-  const cleanedNumber = vehicleNumber.replace(/[\s\-]/g, '').toUpperCase();
+  const cleanedNumber = vehicleNumber.replace(/[\s-]/g, '').toUpperCase();
   const vehicleRegex = /^[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}$/;
   
   if (!vehicleRegex.test(cleanedNumber)) {
