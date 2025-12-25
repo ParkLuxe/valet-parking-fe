@@ -95,25 +95,29 @@ export const invoiceColumns = [
           <Button
             size="small"
             variant="secondary"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               downloadPDF.mutate(invoice.id);
             }}
             loading={downloadPDF.isPending}
             startIcon={<Download className="w-4 h-4" />}
             title="Download PDF"
-          />
+          >
+            
+          </Button>
           <Button
             size="small"
             variant="ghost"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               sendEmail.mutate(invoice.id);
             }}
             loading={sendEmail.isPending}
             startIcon={<Mail className="w-4 h-4" />}
             title="Send Email"
-          />
+          >
+            
+          </Button>
         </div>
       );
     },

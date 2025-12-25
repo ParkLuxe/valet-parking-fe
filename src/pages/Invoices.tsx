@@ -11,7 +11,7 @@ import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { DataTable } from '../components/tables/DataTable';
 import { invoiceColumns } from '../components/tables/columns/invoiceColumns';
-import { useInvoices, useUnpaidInvoices } from '../hooks/queries/useInvoices';
+import { useInvoices } from '../hooks/queries/useInvoices';
 import { useGenerateInvoice } from '../hooks/mutations/useInvoiceMutations';
 import { addToast } from '../redux/slices/notificationSlice';
 import { useDispatch } from 'react-redux';
@@ -85,13 +85,21 @@ const Invoices: React.FC = () => {
           onClick={handleGenerateInvoice}
           loading={generateInvoice.isPending}
           startIcon={<Plus className="w-5 h-5" />}
+          endIcon={undefined}
+          className=""
         >
           Generate Invoice
         </Button>
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card
+        title=""
+        subtitle=""
+        actions={null}
+        headerAction={null}
+        className=""
+      >
         <div className="flex gap-2 flex-wrap">
           {(['UNPAID', 'PAID', 'OVERDUE', 'ALL'] as StatusFilter[]).map((status) => (
             <Button
@@ -102,6 +110,9 @@ const Invoices: React.FC = () => {
                 setCurrentPage(0);
               }}
               size="small"
+              startIcon={undefined}
+              endIcon={undefined}
+              className=""
             >
               {status}
             </Button>

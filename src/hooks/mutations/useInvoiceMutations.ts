@@ -17,14 +17,16 @@ export const useGenerateInvoice = (
   const queryClient = useQueryClient();
 
   return useMutation({
+    ...options,
     mutationFn: (hostId: string) => invoiceService.generateInvoice(hostId),
     onSuccess: (data, variables, context) => {
       // Invalidate invoice queries to refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
-      // Optionally call the user's onSuccess
-      options?.onSuccess?.(data, variables, context);
+      // Call the original onSuccess if provided
+      if (options?.onSuccess) {
+        options.onSuccess(data, variables, context);
+      }
     },
-    ...options,
   });
 };
 
@@ -35,6 +37,7 @@ export const useDownloadInvoicePDF = (
   options?: Omit<UseMutationOptions<Blob, Error, string>, 'mutationFn'>
 ) => {
   return useMutation({
+    ...options,
     mutationFn: (invoiceId: string) => invoiceService.downloadPDF(invoiceId),
     onSuccess: (blob, invoiceId, context) => {
       // Create download link
@@ -47,10 +50,11 @@ export const useDownloadInvoicePDF = (
       link.remove();
       window.URL.revokeObjectURL(url);
       
-      // Call user's onSuccess if provided
-      options?.onSuccess?.(blob, invoiceId, context);
+      // Call the original onSuccess if provided
+      if (options?.onSuccess) {
+        options.onSuccess(blob, invoiceId, context);
+      }
     },
-    ...options,
   });
 };
 
@@ -63,13 +67,15 @@ export const useGenerateInvoicePDF = (
   const queryClient = useQueryClient();
 
   return useMutation({
+    ...options,
     mutationFn: (invoiceId: string) => invoiceService.generatePDF(invoiceId),
     onSuccess: (data, invoiceId, context) => {
       // Invalidate specific invoice to refetch updated data
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(invoiceId) });
-      options?.onSuccess?.(data, invoiceId, context);
+      if (options?.onSuccess) {
+        options.onSuccess(data, invoiceId, context);
+      }
     },
-    ...options,
   });
 };
 
@@ -82,13 +88,15 @@ export const useRegenerateInvoicePDF = (
   const queryClient = useQueryClient();
 
   return useMutation({
+    ...options,
     mutationFn: (invoiceId: string) => invoiceService.regeneratePDF(invoiceId),
     onSuccess: (data, invoiceId, context) => {
       // Invalidate specific invoice to refetch updated data
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(invoiceId) });
-      options?.onSuccess?.(data, invoiceId, context);
+      if (options?.onSuccess) {
+        options.onSuccess(data, invoiceId, context);
+      }
     },
-    ...options,
   });
 };
 
