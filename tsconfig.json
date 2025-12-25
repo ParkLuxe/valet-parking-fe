@@ -13,8 +13,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "allowJs": true,
-    "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["./src/*"]
     }
