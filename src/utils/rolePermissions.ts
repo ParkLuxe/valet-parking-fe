@@ -210,62 +210,48 @@ export const PERMISSIONS = {
 
 /**
  * Check if a role has a specific permission
- * @param {string} role - User role
- * @param {string} permission - Permission to check
- * @returns {boolean} - True if role has permission
  */
-export const hasPermission = (role, permission) => {
+export const hasPermission = (role: string, permission: string): boolean => {
   // Normalize role
   const normalizedRole = role?.toUpperCase();
   
   // Check if role exists
-  if (!PERMISSIONS[normalizedRole]) {
+  if (!PERMISSIONS[normalizedRole as keyof typeof PERMISSIONS]) {
     console.warn(`Unknown role: ${role}`);
     return false;
   }
   
   // Check permission
-  return PERMISSIONS[normalizedRole][permission] === true;
+  return PERMISSIONS[normalizedRole as keyof typeof PERMISSIONS][permission as keyof typeof PERMISSIONS[keyof typeof PERMISSIONS]] === true;
 };
 
 /**
  * Check if a role has any of the specified permissions
- * @param {string} role - User role
- * @param {Array<string>} permissions - Array of permissions to check
- * @returns {boolean} - True if role has any of the permissions
  */
-export const hasAnyPermission = (role, permissions) => {
+export const hasAnyPermission = (role: string, permissions: string[]): boolean => {
   return permissions.some(permission => hasPermission(role, permission));
 };
 
 /**
  * Check if a role has all of the specified permissions
- * @param {string} role - User role
- * @param {Array<string>} permissions - Array of permissions to check
- * @returns {boolean} - True if role has all of the permissions
  */
-export const hasAllPermissions = (role, permissions) => {
+export const hasAllPermissions = (role: string, permissions: string[]): boolean => {
   return permissions.every(permission => hasPermission(role, permission));
 };
 
 /**
  * Get all permissions for a role
- * @param {string} role - User role
- * @returns {object} - Object containing all permissions for the role
  */
-export const getRolePermissions = (role) => {
+export const getRolePermissions = (role: string) => {
   const normalizedRole = role?.toUpperCase();
-  return PERMISSIONS[normalizedRole] || {};
+  return PERMISSIONS[normalizedRole as keyof typeof PERMISSIONS] || {};
 };
 
 /**
  * Check if user can access a specific route/page
- * @param {string} role - User role
- * @param {string} page - Page identifier
- * @returns {boolean} - True if user can access the page
  */
-export const canAccessPage = (role, page) => {
-  const pagePermissions = {
+export const canAccessPage = (role: string, page: string): boolean => {
+  const pagePermissions: Record<string, string[]> = {
     dashboard: ['canViewVehicles', 'canViewAnalytics'],
     analytics: ['canViewAnalytics'],
     invoices: ['canViewInvoices'],
