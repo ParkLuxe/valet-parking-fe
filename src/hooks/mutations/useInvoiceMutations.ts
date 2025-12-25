@@ -18,11 +18,11 @@ export const useGenerateInvoice = (
 
   return useMutation({
     mutationFn: (hostId: string) => invoiceService.generateInvoice(hostId),
-    onSuccess: (data, variables) => {
+    onSuccess: (data, variables, context) => {
       // Invalidate invoice queries to refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       // Optionally call the user's onSuccess
-      options?.onSuccess?.(data, variables, undefined);
+      options?.onSuccess?.(data, variables, context);
     },
     ...options,
   });
@@ -36,7 +36,7 @@ export const useDownloadInvoicePDF = (
 ) => {
   return useMutation({
     mutationFn: (invoiceId: string) => invoiceService.downloadPDF(invoiceId),
-    onSuccess: (blob, invoiceId) => {
+    onSuccess: (blob, invoiceId, context) => {
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -48,7 +48,7 @@ export const useDownloadInvoicePDF = (
       window.URL.revokeObjectURL(url);
       
       // Call user's onSuccess if provided
-      options?.onSuccess?.(blob, invoiceId, undefined);
+      options?.onSuccess?.(blob, invoiceId, context);
     },
     ...options,
   });
@@ -64,10 +64,10 @@ export const useGenerateInvoicePDF = (
 
   return useMutation({
     mutationFn: (invoiceId: string) => invoiceService.generatePDF(invoiceId),
-    onSuccess: (data, invoiceId) => {
+    onSuccess: (data, invoiceId, context) => {
       // Invalidate specific invoice to refetch updated data
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(invoiceId) });
-      options?.onSuccess?.(data, invoiceId, undefined);
+      options?.onSuccess?.(data, invoiceId, context);
     },
     ...options,
   });
@@ -83,10 +83,10 @@ export const useRegenerateInvoicePDF = (
 
   return useMutation({
     mutationFn: (invoiceId: string) => invoiceService.regeneratePDF(invoiceId),
-    onSuccess: (data, invoiceId) => {
+    onSuccess: (data, invoiceId, context) => {
       // Invalidate specific invoice to refetch updated data
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(invoiceId) });
-      options?.onSuccess?.(data, invoiceId, undefined);
+      options?.onSuccess?.(data, invoiceId, context);
     },
     ...options,
   });
