@@ -3,7 +3,7 @@
  * Base API service with JWT interceptor and error handling
  */
 
-import axios from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_BASE_URL, STORAGE_KEYS } from '../utils/constants';
 
 // Create axios instance with base configuration
@@ -22,25 +22,25 @@ api.interceptors.request.use(
     const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
     
     // If token exists, add it to request headers
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor - Handle common errors and token refresh
 api.interceptors.response.use(
-  (response) => {
+  (response: AxiosResponse) => {
     // Return successful response
     return response;
   },
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
     
     // If error is 401 (Unauthorized) and we haven't retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -65,7 +65,9 @@ api.interceptors.response.use(
           }
           
           // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${token}`;
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+          }
           return api(originalRequest);
         } else {
           // No refresh token, logout user
@@ -109,13 +111,10 @@ api.interceptors.response.use(
 export const apiHelper = {
   /**
    * GET request
-   * @param {string} url - Endpoint URL
-   * @param {object} config - Additional axios config
-   * @returns {Promise} Response data
    */
-  get: async (url, config = {}) => {
+  get: async <T = any>(url: string, config: AxiosRequestConfig = {}): Promise<T> => {
     try {
-      const response = await api.get(url, config);
+      const response = await api.get<T>(url, config);
       return response.data;
     } catch (error) {
       throw error;
@@ -124,14 +123,10 @@ export const apiHelper = {
 
   /**
    * POST request
-   * @param {string} url - Endpoint URL
-   * @param {object} data - Request body data
-   * @param {object} config - Additional axios config
-   * @returns {Promise} Response data
    */
-  post: async (url, data = {}, config = {}) => {
+  post: async <T = any>(url: string, data: any = {}, config: AxiosRequestConfig = {}): Promise<T> => {
     try {
-      const response = await api.post(url, data, config);
+      const response = await api.post<T>(url, data, config);
       return response.data;
     } catch (error) {
       throw error;
@@ -140,14 +135,10 @@ export const apiHelper = {
 
   /**
    * PUT request
-   * @param {string} url - Endpoint URL
-   * @param {object} data - Request body data
-   * @param {object} config - Additional axios config
-   * @returns {Promise} Response data
    */
-  put: async (url, data = {}, config = {}) => {
+  put: async <T = any>(url: string, data: any = {}, config: AxiosRequestConfig = {}): Promise<T> => {
     try {
-      const response = await api.put(url, data, config);
+      const response = await api.put<T>(url, data, config);
       return response.data;
     } catch (error) {
       throw error;
@@ -156,14 +147,10 @@ export const apiHelper = {
 
   /**
    * PATCH request
-   * @param {string} url - Endpoint URL
-   * @param {object} data - Request body data
-   * @param {object} config - Additional axios config
-   * @returns {Promise} Response data
    */
-  patch: async (url, data = {}, config = {}) => {
+  patch: async <T = any>(url: string, data: any = {}, config: AxiosRequestConfig = {}): Promise<T> => {
     try {
-      const response = await api.patch(url, data, config);
+      const response = await api.patch<T>(url, data, config);
       return response.data;
     } catch (error) {
       throw error;
@@ -172,13 +159,10 @@ export const apiHelper = {
 
   /**
    * DELETE request
-   * @param {string} url - Endpoint URL
-   * @param {object} config - Additional axios config
-   * @returns {Promise} Response data
    */
-  delete: async (url, config = {}) => {
+  delete: async <T = any>(url: string, config: AxiosRequestConfig = {}): Promise<T> => {
     try {
-      const response = await api.delete(url, config);
+      const response = await api.delete<T>(url, config);
       return response.data;
     } catch (error) {
       throw error;
