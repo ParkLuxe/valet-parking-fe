@@ -5,93 +5,8 @@
 
 import { USER_ROLES } from './constants';
 
-<<<<<<< HEAD
 // Permission definitions
 export const PERMISSIONS = {
-=======
-interface RolePermissions {
-  // SuperAdmin permissions
-  canViewAllHosts?: boolean;
-  canManageSubscriptionPlans?: boolean;
-  canViewAllInvoices?: boolean;
-  canViewRevenue?: boolean;
-  canPerformanceComparison?: boolean;
-  canManageCountryState?: boolean;
-  canViewOverdueInvoices?: boolean;
-  canManagePlans?: boolean;
-  canManageSystemSettings?: boolean;
-  canViewAllPayments?: boolean;
-  canViewSystemAnalytics?: boolean;
-  
-  // Host management
-  canManageHosts?: boolean;
-  canViewHostDetails?: boolean;
-  canCreateHost?: boolean;
-  canEditHost?: boolean;
-  canDeactivateHost?: boolean;
-  
-  // User management
-  canManageUsers?: boolean;
-  canViewUsers?: boolean;
-  canCreateHostUsers?: boolean;
-  canEditHostUsers?: boolean;
-  canViewOwnProfile?: boolean;
-  canChangeOwnPassword?: boolean;
-  
-  // Vehicle operations
-  canManageVehicles?: boolean;
-  canViewVehicles?: boolean;
-  canViewAssignedVehicles?: boolean;
-  canScanQR?: boolean;
-  canUpdateVehicleStatus?: boolean;
-  canAssignValet?: boolean;
-  canRequestRetrieval?: boolean;
-  canAcceptRequests?: boolean;
-  canCompleteDelivery?: boolean;
-  
-  // QR Code management
-  canManageQR?: boolean;
-  canGenerateQR?: boolean;
-  canExportQR?: boolean;
-  canLinkQRToSlot?: boolean;
-  canDeactivateQR?: boolean;
-  canViewQR?: boolean;
-  canScanQRCode?: boolean;
-  
-  // Analytics
-  canViewAnalytics?: boolean;
-  canViewDetailedAnalytics?: boolean;
-  canComparePerformance?: boolean;
-  canViewValetPerformance?: boolean;
-  canViewOwnPerformance?: boolean;
-  
-  // Subscription & Billing
-  canManageSubscription?: boolean;
-  canViewInvoices?: boolean;
-  canMakePayments?: boolean;
-  canViewPaymentHistory?: boolean;
-  canChangeSubscriptionPlan?: boolean;
-  
-  // Schedules
-  canManageSchedules?: boolean;
-  canCreateSchedules?: boolean;
-  canEditSchedules?: boolean;
-  canDeleteSchedules?: boolean;
-  canViewSchedules?: boolean;
-  
-  // Parking slots
-  canManageParkingSlots?: boolean;
-  canCreateParkingSlots?: boolean;
-  canViewParkingSlots?: boolean;
-  
-  // Reports
-  canViewReports?: boolean;
-  canExportReports?: boolean;
-}
-
-// Permission definitions
-export const PERMISSIONS: Record<string, RolePermissions> = {
->>>>>>> master
   [USER_ROLES.SUPERADMIN]: {
     // Full system access
     canViewAllHosts: true,
@@ -295,96 +210,47 @@ export const PERMISSIONS: Record<string, RolePermissions> = {
 
 /**
  * Check if a role has a specific permission
-<<<<<<< HEAD
  */
 export const hasPermission = (role: string, permission: string): boolean => {
-=======
- * @param role - User role
- * @param permission - Permission to check
- * @returns True if role has permission
- */
-export const hasPermission = (role: string | null | undefined, permission: string): boolean => {
->>>>>>> master
   // Normalize role
   const normalizedRole = role?.toUpperCase();
   
   // Check if role exists
-<<<<<<< HEAD
   if (!PERMISSIONS[normalizedRole as keyof typeof PERMISSIONS]) {
-=======
-  if (!normalizedRole || !PERMISSIONS[normalizedRole]) {
->>>>>>> master
     console.warn(`Unknown role: ${role}`);
     return false;
   }
   
   // Check permission
-<<<<<<< HEAD
   return PERMISSIONS[normalizedRole as keyof typeof PERMISSIONS][permission as keyof typeof PERMISSIONS[keyof typeof PERMISSIONS]] === true;
-=======
-  return PERMISSIONS[normalizedRole][permission as keyof RolePermissions] === true;
->>>>>>> master
 };
 
 /**
  * Check if a role has any of the specified permissions
-<<<<<<< HEAD
  */
 export const hasAnyPermission = (role: string, permissions: string[]): boolean => {
-=======
- * @param role - User role
- * @param permissions - Array of permissions to check
- * @returns True if role has any of the permissions
- */
-export const hasAnyPermission = (role: string | null | undefined, permissions: string[]): boolean => {
->>>>>>> master
   return permissions.some(permission => hasPermission(role, permission));
 };
 
 /**
  * Check if a role has all of the specified permissions
-<<<<<<< HEAD
  */
 export const hasAllPermissions = (role: string, permissions: string[]): boolean => {
-=======
- * @param role - User role
- * @param permissions - Array of permissions to check
- * @returns True if role has all of the permissions
- */
-export const hasAllPermissions = (role: string | null | undefined, permissions: string[]): boolean => {
->>>>>>> master
   return permissions.every(permission => hasPermission(role, permission));
 };
 
 /**
  * Get all permissions for a role
-<<<<<<< HEAD
  */
 export const getRolePermissions = (role: string) => {
   const normalizedRole = role?.toUpperCase();
   return PERMISSIONS[normalizedRole as keyof typeof PERMISSIONS] || {};
-=======
- * @param role - User role
- * @returns Object containing all permissions for the role
- */
-export const getRolePermissions = (role: string | null | undefined): RolePermissions => {
-  const normalizedRole = role?.toUpperCase();
-  return (normalizedRole && PERMISSIONS[normalizedRole]) || {};
->>>>>>> master
 };
 
 /**
  * Check if user can access a specific route/page
-<<<<<<< HEAD
  */
 export const canAccessPage = (role: string, page: string): boolean => {
-=======
- * @param role - User role
- * @param page - Page identifier
- * @returns True if user can access the page
- */
-export const canAccessPage = (role: string | null | undefined, page: string): boolean => {
->>>>>>> master
   const pagePermissions: Record<string, string[]> = {
     dashboard: ['canViewVehicles', 'canViewAnalytics'],
     analytics: ['canViewAnalytics'],

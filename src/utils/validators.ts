@@ -3,16 +3,11 @@
  * Contains validators for email, phone, password, vehicle number, etc.
  */
 
-<<<<<<< HEAD
 export interface ValidationResult {
-=======
-interface ValidationResult {
->>>>>>> master
   isValid: boolean;
   error: string | null;
 }
 
-<<<<<<< HEAD
 export interface FormValidationResult {
   isValid: boolean;
   errors: Record<string, string>;
@@ -22,12 +17,6 @@ type ValidationRule<T = any> = (value: T) => ValidationResult;
 
 /**
  * Validate email address
-=======
-/**
- * Validate email address
- * @param email - Email to validate
- * @returns Validation result with isValid and error message
->>>>>>> master
  */
 export const validateEmail = (email: string): ValidationResult => {
   if (!email) {
@@ -44,11 +33,6 @@ export const validateEmail = (email: string): ValidationResult => {
 
 /**
  * Validate phone number (Indian format)
-<<<<<<< HEAD
-=======
- * @param phone - Phone number to validate
- * @returns Validation result with isValid and error message
->>>>>>> master
  */
 export const validatePhone = (phone: string): ValidationResult => {
   if (!phone) {
@@ -56,10 +40,6 @@ export const validatePhone = (phone: string): ValidationResult => {
   }
   
   // Remove spaces, dashes, and brackets
-<<<<<<< HEAD
-=======
-  // eslint-disable-next-line no-useless-escape
->>>>>>> master
   const cleanedPhone = phone.replace(/[\s\-\(\)]/g, '');
   
   // Check if it's a valid Indian phone number (10 digits)
@@ -73,11 +53,6 @@ export const validatePhone = (phone: string): ValidationResult => {
 
 /**
  * Validate password strength
-<<<<<<< HEAD
-=======
- * @param password - Password to validate
- * @returns Validation result with isValid and error message
->>>>>>> master
  */
 export const validatePassword = (password: string): ValidationResult => {
   if (!password) {
@@ -104,10 +79,6 @@ export const validatePassword = (password: string): ValidationResult => {
   }
   
   // Check for at least one special character
-<<<<<<< HEAD
-=======
-  // eslint-disable-next-line no-useless-escape
->>>>>>> master
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
     return { isValid: false, error: 'Password must contain at least one special character' };
   }
@@ -117,12 +88,6 @@ export const validatePassword = (password: string): ValidationResult => {
 
 /**
  * Validate if passwords match
-<<<<<<< HEAD
-=======
- * @param password - Password
- * @param confirmPassword - Confirm password
- * @returns Validation result with isValid and error message
->>>>>>> master
  */
 export const validatePasswordMatch = (password: string, confirmPassword: string): ValidationResult => {
   if (!confirmPassword) {
@@ -138,11 +103,6 @@ export const validatePasswordMatch = (password: string, confirmPassword: string)
 
 /**
  * Validate vehicle number (Indian format)
-<<<<<<< HEAD
-=======
- * @param vehicleNumber - Vehicle number to validate
- * @returns Validation result with isValid and error message
->>>>>>> master
  */
 export const validateVehicleNumber = (vehicleNumber: string): ValidationResult => {
   if (!vehicleNumber) {
@@ -150,10 +110,6 @@ export const validateVehicleNumber = (vehicleNumber: string): ValidationResult =
   }
   
   // Indian vehicle number format: XX00XX0000 or XX-00-XX-0000
-<<<<<<< HEAD
-=======
-  // eslint-disable-next-line no-useless-escape
->>>>>>> master
   const cleanedNumber = vehicleNumber.replace(/[\s\-]/g, '').toUpperCase();
   const vehicleRegex = /^[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}$/;
   
@@ -166,12 +122,6 @@ export const validateVehicleNumber = (vehicleNumber: string): ValidationResult =
 
 /**
  * Validate name
-<<<<<<< HEAD
-=======
- * @param name - Name to validate
- * @param fieldName - Field name for error message
- * @returns Validation result with isValid and error message
->>>>>>> master
  */
 export const validateName = (name: string, fieldName: string = 'Name'): ValidationResult => {
   if (!name) {
@@ -191,12 +141,6 @@ export const validateName = (name: string, fieldName: string = 'Name'): Validati
 
 /**
  * Validate required field
-<<<<<<< HEAD
-=======
- * @param value - Value to validate
- * @param fieldName - Field name for error message
- * @returns Validation result with isValid and error message
->>>>>>> master
  */
 export const validateRequired = (value: any, fieldName: string = 'This field'): ValidationResult => {
   if (value === null || value === undefined || value === '') {
@@ -212,24 +156,11 @@ export const validateRequired = (value: any, fieldName: string = 'This field'): 
 
 /**
  * Validate number within range
-<<<<<<< HEAD
  */
 export const validateNumber = (
   value: any, 
   min: number | null = null, 
   max: number | null = null, 
-=======
- * @param value - Value to validate
- * @param min - Minimum value
- * @param max - Maximum value
- * @param fieldName - Field name for error message
- * @returns Validation result with isValid and error message
- */
-export const validateNumber = (
-  value: any,
-  min: number | null = null,
-  max: number | null = null,
->>>>>>> master
   fieldName: string = 'Value'
 ): ValidationResult => {
   if (isNaN(value)) {
@@ -249,40 +180,17 @@ export const validateNumber = (
   return { isValid: true, error: null };
 };
 
-<<<<<<< HEAD
 /**
  * Validate form data with multiple fields
  */
 export const validateForm = <T extends Record<string, any>>(
   formData: T,
   validationRules: Record<keyof T, ValidationRule[]>
-=======
-type ValidatorFn = (value: any) => ValidationResult;
-
-interface FormValidationResult {
-  isValid: boolean;
-  errors: Record<string, string>;
-}
-
-/**
- * Validate form data with multiple fields
- * @param formData - Form data object
- * @param validationRules - Validation rules for each field
- * @returns Validation result with errors object
- */
-export const validateForm = (
-  formData: Record<string, any>,
-  validationRules: Record<string, ValidatorFn[]>
->>>>>>> master
 ): FormValidationResult => {
   const errors: Record<string, string> = {};
   let isValid = true;
   
-<<<<<<< HEAD
   (Object.keys(validationRules) as Array<keyof T>).forEach((fieldName) => {
-=======
-  Object.keys(validationRules).forEach((fieldName) => {
->>>>>>> master
     const value = formData[fieldName];
     const rules = validationRules[fieldName];
     
@@ -290,11 +198,7 @@ export const validateForm = (
     for (const rule of rules) {
       const result = rule(value);
       if (!result.isValid) {
-<<<<<<< HEAD
         errors[fieldName as string] = result.error || 'Validation failed';
-=======
-        errors[fieldName] = result.error || 'Validation failed';
->>>>>>> master
         isValid = false;
         break; // Stop at first error for this field
       }
@@ -306,11 +210,6 @@ export const validateForm = (
 
 /**
  * Validate URL
-<<<<<<< HEAD
-=======
- * @param url - URL to validate
- * @returns Validation result with isValid and error message
->>>>>>> master
  */
 export const validateURL = (url: string): ValidationResult => {
   if (!url) {
@@ -327,16 +226,8 @@ export const validateURL = (url: string): ValidationResult => {
 
 /**
  * Validate file size
-<<<<<<< HEAD
  */
 export const validateFileSize = (file: File | null, maxSizeMB: number = 5): ValidationResult => {
-=======
- * @param file - File to validate
- * @param maxSizeMB - Maximum size in MB
- * @returns Validation result with isValid and error message
- */
-export const validateFileSize = (file: File, maxSizeMB: number = 5): ValidationResult => {
->>>>>>> master
   if (!file) {
     return { isValid: false, error: 'No file selected' };
   }
@@ -351,18 +242,9 @@ export const validateFileSize = (file: File, maxSizeMB: number = 5): ValidationR
 
 /**
  * Validate file type
-<<<<<<< HEAD
  */
 export const validateFileType = (
   file: File | null, 
-=======
- * @param file - File to validate
- * @param allowedTypes - Array of allowed MIME types
- * @returns Validation result with isValid and error message
- */
-export const validateFileType = (
-  file: File,
->>>>>>> master
   allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/jpg']
 ): ValidationResult => {
   if (!file) {
