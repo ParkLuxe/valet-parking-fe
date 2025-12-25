@@ -3,8 +3,6 @@
  * Contains API endpoints, role definitions, vehicle statuses, and other constant values
  */
 
-import type { UserRole, VehicleStatus, VehicleType } from '../types/api';
-
 // API Base URL - Replace with your actual API endpoint
 export const API_BASE_URL: string = process.env.REACT_APP_API_URL || 'https://parkluxe.co.in';
 
@@ -24,17 +22,17 @@ export const USER_ROLES = {
 } as const;
 
 // Vehicle Status Constants - Updated to match backend
-export const VEHICLE_STATUS: Record<string, VehicleStatus> = {
-  BEING_ASSIGNED: 'BEING_ASSIGNED',
-  PARKING_IN_PROGRESS: 'PARKING_IN_PROGRESS',
-  PARKED: 'PARKED',
-  RETRIEVAL_REQUESTED: 'RETRIEVAL_REQUESTED',
-  OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
-  DELIVERED: 'DELIVERED',
-} as const;
+export const VEHICLE_STATUS = {
+  BEING_ASSIGNED: 'BEING_ASSIGNED' as const,
+  PARKING_IN_PROGRESS: 'PARKING_IN_PROGRESS' as const,
+  PARKED: 'PARKED' as const,
+  RETRIEVAL_REQUESTED: 'RETRIEVAL_REQUESTED' as const,
+  OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY' as const,
+  DELIVERED: 'DELIVERED' as const,
+};
 
 // Vehicle Status Display Names
-export const VEHICLE_STATUS_DISPLAY: Record<VehicleStatus, string> = {
+export const VEHICLE_STATUS_DISPLAY: Record<string, string> = {
   [VEHICLE_STATUS.BEING_ASSIGNED]: 'Being Assigned',
   [VEHICLE_STATUS.PARKING_IN_PROGRESS]: 'Parking In Progress',
   [VEHICLE_STATUS.PARKED]: 'Parked',
@@ -44,12 +42,12 @@ export const VEHICLE_STATUS_DISPLAY: Record<VehicleStatus, string> = {
 } as const;
 
 // Vehicle Types
-export const VEHICLE_TYPES: Record<string, VehicleType> = {
-  CAR: 'car',
-  BIKE: 'bike',
-  SUV: 'suv',
-  VAN: 'van',
-} as const;
+export const VEHICLE_TYPES = {
+  CAR: 'car' as const,
+  BIKE: 'bike' as const,
+  SUV: 'suv' as const,
+  VAN: 'van' as const,
+};
 
 // Subscription Constants
 export const SUBSCRIPTION = {
