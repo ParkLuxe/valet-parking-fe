@@ -243,7 +243,7 @@ const SubscriptionPlansCRUD = () => {
   const columns = [
     {
       header: 'Plan Name',
-      accessor: 'name',
+      accessor: 'planName',
       sortable: true,
       render: (value, row) => (
         <div>
@@ -256,7 +256,7 @@ const SubscriptionPlansCRUD = () => {
     },
     {
       header: 'Base Price',
-      accessor: 'basePrice',
+      accessor: 'initialPackageAmount',
       sortable: true,
       render: (value) => (
         <span className="text-white">{formatCurrency(value)}</span>
@@ -264,16 +264,26 @@ const SubscriptionPlansCRUD = () => {
     },
     {
       header: 'Base Scans',
-      accessor: 'baseScans',
+      accessor: 'initialScansCount',
       sortable: true,
       render: (value) => <span className="text-white">{value}</span>,
     },
     {
       header: 'Additional Scan Price',
-      accessor: 'additionalScanPrice',
+      accessor: 'perScanPrice',
       sortable: true,
       render: (value) => (
         <span className="text-white">{formatCurrency(value)}</span>
+      ),
+    },
+    {
+      header: 'Description',
+      accessor: 'planDescription',
+      sortable: false,
+      render: (value) => (
+        <span className="text-white/70">
+          {value ? value : 'No description provided'}
+        </span>
       ),
     },
     {

@@ -260,45 +260,7 @@ const Profile = () => {
               </div>
             </div>
           </Card>
-
-          {/* Stats Cards - COMPACT */}
-          <Card>
-            <div className="p-3">
-              <h3 className="text-lg font-bold text-white mb-2">Your Stats</h3>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-purple-500/20 rounded-lg">
-                      <Car className="w-4 h-4 text-purple-400" />
-                    </div>
-                    <span className="text-white/70 text-sm">Cars Parked</span>
-                  </div>
-                  <span className="text-white font-bold text-sm">{stats.carsParked}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-500/20 rounded-lg">
-                      <Clock className="w-4 h-4 text-blue-400" />
-                    </div>
-                    <span className="text-white/70 text-sm">Avg. Time</span>
-                  </div>
-                  <span className="text-white font-bold text-sm">{stats.avgTime}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-green-500/20 rounded-lg">
-                      <TrendingUp className="w-4 h-4 text-green-400" />
-                    </div>
-                    <span className="text-white/70 text-sm">Total Revenue</span>
-                  </div>
-                  <span className="text-white font-bold text-sm">₹{stats.totalRevenue.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-
+          
           {/* Account Info - COMPACT */}
           <Card>
             <div className="p-3">

@@ -3,6 +3,7 @@
  * Handles subscription plan management operations
  */
 
+import { RESPONSE_VALUES } from '../utils/constants';
 import { apiHelper } from './api';
 
 const subscriptionPlanService = {
@@ -70,7 +71,9 @@ const subscriptionPlanService = {
   getAllPlans: async () => {
     try {
       const response = await apiHelper.get('/v1/subscription-plans');
-      return response;
+      if (response?.infoType === RESPONSE_VALUES.SUCCESS)
+        return response?.data || [];
+      else throw new Error(response?.message || "Failed to fetch plans");
     } catch (error) {
       throw error;
     }
