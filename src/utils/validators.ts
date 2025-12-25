@@ -3,12 +3,17 @@
  * Contains validators for email, phone, password, vehicle number, etc.
  */
 
+interface ValidationResult {
+  isValid: boolean;
+  error: string | null;
+}
+
 /**
  * Validate email address
- * @param {string} email - Email to validate
- * @returns {object} Validation result with isValid and error message
+ * @param email - Email to validate
+ * @returns Validation result with isValid and error message
  */
-export const validateEmail = (email) => {
+export const validateEmail = (email: string): ValidationResult => {
   if (!email) {
     return { isValid: false, error: 'Email is required' };
   }
@@ -23,10 +28,10 @@ export const validateEmail = (email) => {
 
 /**
  * Validate phone number (Indian format)
- * @param {string} phone - Phone number to validate
- * @returns {object} Validation result with isValid and error message
+ * @param phone - Phone number to validate
+ * @returns Validation result with isValid and error message
  */
-export const validatePhone = (phone) => {
+export const validatePhone = (phone: string): ValidationResult => {
   if (!phone) {
     return { isValid: false, error: 'Phone number is required' };
   }
@@ -46,10 +51,10 @@ export const validatePhone = (phone) => {
 
 /**
  * Validate password strength
- * @param {string} password - Password to validate
- * @returns {object} Validation result with isValid and error message
+ * @param password - Password to validate
+ * @returns Validation result with isValid and error message
  */
-export const validatePassword = (password) => {
+export const validatePassword = (password: string): ValidationResult => {
   if (!password) {
     return { isValid: false, error: 'Password is required' };
   }
@@ -84,11 +89,11 @@ export const validatePassword = (password) => {
 
 /**
  * Validate if passwords match
- * @param {string} password - Password
- * @param {string} confirmPassword - Confirm password
- * @returns {object} Validation result with isValid and error message
+ * @param password - Password
+ * @param confirmPassword - Confirm password
+ * @returns Validation result with isValid and error message
  */
-export const validatePasswordMatch = (password, confirmPassword) => {
+export const validatePasswordMatch = (password: string, confirmPassword: string): ValidationResult => {
   if (!confirmPassword) {
     return { isValid: false, error: 'Please confirm your password' };
   }
@@ -102,10 +107,10 @@ export const validatePasswordMatch = (password, confirmPassword) => {
 
 /**
  * Validate vehicle number (Indian format)
- * @param {string} vehicleNumber - Vehicle number to validate
- * @returns {object} Validation result with isValid and error message
+ * @param vehicleNumber - Vehicle number to validate
+ * @returns Validation result with isValid and error message
  */
-export const validateVehicleNumber = (vehicleNumber) => {
+export const validateVehicleNumber = (vehicleNumber: string): ValidationResult => {
   if (!vehicleNumber) {
     return { isValid: false, error: 'Vehicle number is required' };
   }
@@ -124,11 +129,11 @@ export const validateVehicleNumber = (vehicleNumber) => {
 
 /**
  * Validate name
- * @param {string} name - Name to validate
- * @param {string} fieldName - Field name for error message
- * @returns {object} Validation result with isValid and error message
+ * @param name - Name to validate
+ * @param fieldName - Field name for error message
+ * @returns Validation result with isValid and error message
  */
-export const validateName = (name, fieldName = 'Name') => {
+export const validateName = (name: string, fieldName: string = 'Name'): ValidationResult => {
   if (!name) {
     return { isValid: false, error: `${fieldName} is required` };
   }
@@ -146,11 +151,11 @@ export const validateName = (name, fieldName = 'Name') => {
 
 /**
  * Validate required field
- * @param {any} value - Value to validate
- * @param {string} fieldName - Field name for error message
- * @returns {object} Validation result with isValid and error message
+ * @param value - Value to validate
+ * @param fieldName - Field name for error message
+ * @returns Validation result with isValid and error message
  */
-export const validateRequired = (value, fieldName = 'This field') => {
+export const validateRequired = (value: any, fieldName: string = 'This field'): ValidationResult => {
   if (value === null || value === undefined || value === '') {
     return { isValid: false, error: `${fieldName} is required` };
   }
@@ -164,13 +169,18 @@ export const validateRequired = (value, fieldName = 'This field') => {
 
 /**
  * Validate number within range
- * @param {number} value - Value to validate
- * @param {number} min - Minimum value
- * @param {number} max - Maximum value
- * @param {string} fieldName - Field name for error message
- * @returns {object} Validation result with isValid and error message
+ * @param value - Value to validate
+ * @param min - Minimum value
+ * @param max - Maximum value
+ * @param fieldName - Field name for error message
+ * @returns Validation result with isValid and error message
  */
-export const validateNumber = (value, min = null, max = null, fieldName = 'Value') => {
+export const validateNumber = (
+  value: any,
+  min: number | null = null,
+  max: number | null = null,
+  fieldName: string = 'Value'
+): ValidationResult => {
   if (isNaN(value)) {
     return { isValid: false, error: `${fieldName} must be a number` };
   }
@@ -188,14 +198,24 @@ export const validateNumber = (value, min = null, max = null, fieldName = 'Value
   return { isValid: true, error: null };
 };
 
+type ValidatorFn = (value: any) => ValidationResult;
+
+interface FormValidationResult {
+  isValid: boolean;
+  errors: Record<string, string>;
+}
+
 /**
  * Validate form data with multiple fields
- * @param {object} formData - Form data object
- * @param {object} validationRules - Validation rules for each field
- * @returns {object} Validation result with errors object
+ * @param formData - Form data object
+ * @param validationRules - Validation rules for each field
+ * @returns Validation result with errors object
  */
-export const validateForm = (formData, validationRules) => {
-  const errors = {};
+export const validateForm = (
+  formData: Record<string, any>,
+  validationRules: Record<string, ValidatorFn[]>
+): FormValidationResult => {
+  const errors: Record<string, string> = {};
   let isValid = true;
   
   Object.keys(validationRules).forEach((fieldName) => {
@@ -206,7 +226,7 @@ export const validateForm = (formData, validationRules) => {
     for (const rule of rules) {
       const result = rule(value);
       if (!result.isValid) {
-        errors[fieldName] = result.error;
+        errors[fieldName] = result.error || 'Validation failed';
         isValid = false;
         break; // Stop at first error for this field
       }
@@ -218,10 +238,10 @@ export const validateForm = (formData, validationRules) => {
 
 /**
  * Validate URL
- * @param {string} url - URL to validate
- * @returns {object} Validation result with isValid and error message
+ * @param url - URL to validate
+ * @returns Validation result with isValid and error message
  */
-export const validateURL = (url) => {
+export const validateURL = (url: string): ValidationResult => {
   if (!url) {
     return { isValid: false, error: 'URL is required' };
   }
@@ -236,11 +256,11 @@ export const validateURL = (url) => {
 
 /**
  * Validate file size
- * @param {File} file - File to validate
- * @param {number} maxSizeMB - Maximum size in MB
- * @returns {object} Validation result with isValid and error message
+ * @param file - File to validate
+ * @param maxSizeMB - Maximum size in MB
+ * @returns Validation result with isValid and error message
  */
-export const validateFileSize = (file, maxSizeMB = 5) => {
+export const validateFileSize = (file: File, maxSizeMB: number = 5): ValidationResult => {
   if (!file) {
     return { isValid: false, error: 'No file selected' };
   }
@@ -255,11 +275,14 @@ export const validateFileSize = (file, maxSizeMB = 5) => {
 
 /**
  * Validate file type
- * @param {File} file - File to validate
- * @param {Array} allowedTypes - Array of allowed MIME types
- * @returns {object} Validation result with isValid and error message
+ * @param file - File to validate
+ * @param allowedTypes - Array of allowed MIME types
+ * @returns Validation result with isValid and error message
  */
-export const validateFileType = (file, allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']) => {
+export const validateFileType = (
+  file: File,
+  allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/jpg']
+): ValidationResult => {
   if (!file) {
     return { isValid: false, error: 'No file selected' };
   }
