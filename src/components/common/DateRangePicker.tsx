@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import Input from './Input';
 import Button from './Button';
-import { cn } from '../../utils/cn';
+import { cn } from '../../utils';
 
 
 

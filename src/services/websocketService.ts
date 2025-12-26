@@ -5,7 +5,7 @@
  */
 
 import { io, Socket } from 'socket.io-client';
-import { WS_URL, STORAGE_KEYS } from '../utils/constants';
+import {  WS_URL, STORAGE_KEYS  } from '../utils';
 
 class WebSocketService {
   private socket: Socket | null = null;

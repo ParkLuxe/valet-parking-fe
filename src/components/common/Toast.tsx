@@ -6,7 +6,7 @@
 import React from 'react';
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../utils';
 
 type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 

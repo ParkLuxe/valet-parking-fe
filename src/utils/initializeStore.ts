@@ -4,7 +4,7 @@
  * this function is simplified to just return without doing anything
  */
 
-import type { AppDispatch } from '../redux/store';
+import type {  AppDispatch  } from '../redux';
 
 export const initializeStore = (_dispatch: AppDispatch): void => {
   // Data initialization is now handled by TanStack Query

@@ -5,16 +5,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../../redux/store';
+import type {  RootState  } from '../../redux';
 import { Car, CheckCircle } from 'lucide-react';
-import Card from '../../components/common/Card';
-import Button from '../../components/common/Button';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import DataTable from '../../components/common/DataTable';
-import Modal from '../../components/common/Modal';
-import vehicleService from '../../services/vehicleService';
-import { addToast } from '../../redux/slices/notificationSlice';
-import { VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY } from '../../utils/constants';
+import { Card } from '../../components';
+import { Button } from '../../components';
+import { LoadingSpinner } from '../../components';
+import { DataTable } from '../../components';
+import { Modal } from '../../components';
+import { vehicleService } from '../../services';
+import {  addToast  } from '../../redux';
+import {  VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY  } from '../../utils';
 
 const MyVehicles = () => {
   const dispatch = useDispatch();

@@ -6,13 +6,13 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { DollarSign, Filter, Download } from 'lucide-react';
-import Card from '../../components/common/Card';
-import Button from '../../components/common/Button';
-import DataTable from '../../components/common/DataTable';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import invoiceService from '../../services/invoiceService';
-import { addToast } from '../../redux/slices/notificationSlice';
-import { formatCurrency, formatDate } from '../../utils/helpers';
+import { Card } from '../../components';
+import { Button } from '../../components';
+import { DataTable } from '../../components';
+import { LoadingSpinner } from '../../components';
+import { invoiceService } from '../../services';
+import {  addToast  } from '../../redux';
+import {  formatCurrency, formatDate  } from '../../utils';
 
 const AllPayments = () => {
   const dispatch = useDispatch();

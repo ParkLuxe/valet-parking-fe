@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import { API_BASE_URL, STORAGE_KEYS } from '../utils/constants';
+import {  API_BASE_URL, STORAGE_KEYS  } from '../utils';
 
 // Create axios instance with base configuration
 const api = axios.create({

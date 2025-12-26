@@ -5,15 +5,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import Modal from '../components/common/Modal';
-import Input from '../components/common/Input';
-import hostSchedulesService from '../services/hostSchedulesService';
-import { addToast } from '../redux/slices/notificationSlice';
-import usePermissions from '../hooks/usePermissions';
+import type {  RootState  } from '../redux';
+import { Card } from '../components';
+import { Button } from '../components';
+import { LoadingSpinner } from '../components';
+import { Modal } from '../components';
+import { Input } from '../components';
+import { hostSchedulesService } from '../services';
+import {  addToast  } from '../redux';
+import { usePermissions } from '../hooks';
 
 const DAYS_OF_WEEK = [
   'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'

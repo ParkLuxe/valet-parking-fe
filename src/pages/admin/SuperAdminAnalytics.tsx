@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { TrendingUp, Users, Building2, DollarSign } from 'lucide-react';
-import Card from '../../components/common/Card';
+import { Card } from '../../components';
 
 const SuperAdminAnalytics = () => {
   // Mock data - would be fetched from API

@@ -3,7 +3,7 @@
  * Handles subscription plan management operations
  */
 
-import { RESPONSE_VALUES } from '../utils/constants';
+import {  RESPONSE_VALUES  } from '../utils';
 import { apiHelper } from './api';
 
 const subscriptionPlanService = {

@@ -4,7 +4,7 @@
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { STORAGE_KEYS } from '../../utils/constants';
+import {  STORAGE_KEYS  } from '../../utils';
 import type { User, AuthResponse } from '../../types/api';
 
 interface AuthState {

@@ -6,11 +6,11 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Button, { ButtonVariant } from '../common/Button';
-import paymentService from '../../services/paymentService';
-import { addToast } from '../../redux/slices/notificationSlice';
-import { updateInvoice } from '../../redux/slices/invoiceSlice';
-import { addPayment } from '../../redux/slices/paymentSlice';
-import { RAZORPAY_KEY } from '../../utils/constants';
+import { paymentService } from '../../services';
+import {  addToast  } from '../../redux';
+import {  updateInvoice  } from '../../redux';
+import {  addPayment  } from '../../redux';
+import {  RAZORPAY_KEY  } from '../../utils';
 
 interface RazorpayButtonProps {
   invoiceId: string;
