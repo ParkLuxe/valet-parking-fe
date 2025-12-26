@@ -18,13 +18,14 @@ import {
 import { toggleSidebar } from '../../redux/slices/uiSlice';
 import { logout } from '../../redux/slices/authSlice';
 import { getInitials } from '../../utils/helpers';
+import type { RootState } from '../../redux/store';
 
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  const { user } = useSelector((state) => state.auth);
-  const { unreadCount } = useSelector((state) => state.notifications);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { unreadCount } = useSelector((state: RootState) => state.notifications);
   
   const [showNotifications, setShowNotifications] = useState(false);
 

@@ -35,7 +35,7 @@ const AllPayments = () => {
   const fetchAllInvoices = async () => {
     setLoading(true);
     try {
-      const filters = {};
+      const filters: any = {};
       
       // Add status filter if selected
       if (statusFilter) {

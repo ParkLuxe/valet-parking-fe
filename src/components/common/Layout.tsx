@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
-interface LayoutProps {
+export interface LayoutProps {
   children?: any;
 }
 

@@ -6,36 +6,59 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
 
-const Input = ({
-  label,
-  name,
-  value,
-  onChange,
-  onBlur,
-  error = false,
-  helperText = '',
-  type = 'text',
-  placeholder = ' ',
-  required = false,
-  disabled = false,
-  fullWidth = true,
-  multiline = false,
-  rows = 4,
-  select = false,
-  children,
-  icon,
-  className,
-  ...props
-}) => {
-  const [isFocused, setIsFocused] = useState(false);
+interface InputProps {
+  label?: string;
+  name?: string;
+  value?: string | number;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  error?: boolean;
+  helperText?: string;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  fullWidth?: boolean;
+  multiline?: boolean;
+  rows?: number;
+  select?: boolean;
+  children?: React.ReactNode;
+  icon?: React.ReactNode;
+  className?: string;
+  [key: string]: any;
+}
 
-  const handleFocus = () => setIsFocused(true);
-  const handleBlur = (e) => {
-    setIsFocused(false);
-    if (onBlur) onBlur(e);
-  };
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ 
+    label,
+    name,
+    value,
+    onChange,
+    onBlur,
+    error = false,
+    helperText = '',
+    type = 'text',
+    placeholder = ' ',
+    required = false,
+    disabled = false,
+    fullWidth = true,
+    multiline = false,
+    rows = 4,
+    select = false,
+    children,
+    icon,
+    className,
+    ...props
+  }, ref) => {
+    const [isFocused, setIsFocused] = useState(false);
 
-  const hasValue = value && value.length > 0;
+    const handleFocus = () => setIsFocused(true);
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      setIsFocused(false);
+      if (onBlur) onBlur(e);
+    };
+
+    const hasValue = value && String(value).length > 0;
 
   // Render select if select prop is true
   if (select) {
@@ -194,6 +217,8 @@ const Input = ({
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 export default Input;

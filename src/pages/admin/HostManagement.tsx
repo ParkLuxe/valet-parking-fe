@@ -42,7 +42,7 @@ const HostManagement = () => {
     address: '',
     subscriptionPlanId: '',
   });
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const HostManagement = () => {
   };
 
   const validateForm = () => {
-    const errors = {};
+    const errors: any = {};
 
     if (!formData.name.trim()) {
       errors.name = 'Name is required';
@@ -372,7 +372,7 @@ const HostManagement = () => {
 
       {/* Create/Edit Modal */}
       <Modal
-        isOpen={showModal}
+        open={showModal}
         onClose={() => setShowModal(false)}
         title={editingHost ? 'Edit Host' : 'Create Host'}
       >
@@ -382,7 +382,7 @@ const HostManagement = () => {
             name="businessName"
             value={formData.businessName}
             onChange={handleInputChange}
-            error={formErrors.businessName}
+            error={!!formErrors.businessName} helperText={formErrors.businessName}
             placeholder="e.g., Grand Hotel"
             required
           />
@@ -392,7 +392,7 @@ const HostManagement = () => {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            error={formErrors.name}
+            error={!!formErrors.name} helperText={formErrors.name}
             placeholder="e.g., John Doe"
             required
           />
@@ -404,7 +404,7 @@ const HostManagement = () => {
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              error={formErrors.email}
+              error={!!formErrors.email} helperText={formErrors.email}
               placeholder="email@example.com"
               required
             />
@@ -414,7 +414,7 @@ const HostManagement = () => {
               type="tel"
               value={formData.phone}
               onChange={handleInputChange}
-              error={formErrors.phone}
+              error={!!formErrors.phone} helperText={formErrors.phone}
               placeholder="+91 9876543210"
               required
             />
@@ -445,7 +445,7 @@ const HostManagement = () => {
 
       {/* View Host Modal */}
       <Modal
-        isOpen={!!viewingHost}
+        open={!!viewingHost}
         onClose={() => setViewingHost(null)}
         title="Host Details"
       >
@@ -509,7 +509,7 @@ const HostManagement = () => {
 
       {/* Toggle Confirmation Dialog */}
       <ConfirmDialog
-        isOpen={toggleConfirm.isOpen}
+        open={toggleConfirm.isOpen}
         onClose={() => setToggleConfirm({ isOpen: false, host: null })}
         onConfirm={handleToggleActive}
         title={`${toggleConfirm.host?.isActive !== false ? 'Deactivate' : 'Activate'} Host`}

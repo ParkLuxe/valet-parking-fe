@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import Card from '../components/common/Card';
 import Input from '../components/common/Input';
@@ -23,9 +24,9 @@ import { cn } from '../utils/cn';
 
 const QRScanPage = () => {
   const dispatch = useDispatch();
-  const { slots } = useSelector((state) => state.parkingSlots);
-  const { valetList } = useSelector((state) => state.valets);
-  const { status: subscriptionStatus, usage } = useSelector((state) => state.subscription);
+  const { slots } = useSelector((state: RootState) => (state as any).parkingSlots || {});
+  const { valetList } = useSelector((state: RootState) => (state as any).valets || {});
+  const { status: subscriptionStatus, usage } = useSelector((state: RootState) => (state as any).subscription || {});
   
   const [qrValue, setQrValue] = useState('');
   const [formData, setFormData] = useState({
@@ -37,7 +38,7 @@ const QRScanPage = () => {
     parkingSlotId: '',
     valetId: '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   const generateQRCode = React.useCallback(() => {
@@ -67,7 +68,7 @@ const QRScanPage = () => {
   };
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: any = {};
     
     const vehicleNumberValidation = validateVehicleNumber(formData.vehicleNumber);
     if (!vehicleNumberValidation.isValid) {

@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../redux/store';
 import { motion } from 'framer-motion';
 import {
   CreditCard,
@@ -26,7 +27,7 @@ import useRazorpay from '../hooks/useRazorpay';
 import { addPayment } from '../redux/slices/subscriptionSlice';
 
 const Subscription = () => {
-  const { status, usage, billing, paymentHistory } = useSelector((state) => state.subscription);
+  const { status, usage, billing, paymentHistory } = useSelector((state: RootState) => (state as any).subscription || {});
   const dispatch = useDispatch();
 
   // Payment state management

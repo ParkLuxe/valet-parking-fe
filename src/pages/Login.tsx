@@ -26,7 +26,7 @@ const Login = () => {
     username: '',
     password: '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoadingState] = useState(false);
   const [error, setError] = useState('');
 
@@ -49,7 +49,7 @@ const Login = () => {
   };
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: any = {};
     
     const usernameValidation = validateRequired(formData.username, 'Username');
     if (!usernameValidation.isValid) {

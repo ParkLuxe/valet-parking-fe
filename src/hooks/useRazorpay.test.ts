@@ -7,7 +7,13 @@ import useRazorpay from './useRazorpay';
 import { apiHelper } from '../services/api';
 
 // Mock the API helper
-jest.mock('../services/api');
+jest.mock('../services/api', () => ({
+  apiHelper: {
+    post: jest.fn(),
+  },
+}));
+
+const mockedApiHelper = apiHelper as jest.Mocked<typeof apiHelper>;
 
 describe('useRazorpay', () => {
   beforeEach(() => {
@@ -15,13 +21,13 @@ describe('useRazorpay', () => {
     jest.clearAllMocks();
     
     // Mock window.Razorpay
-    global.window.Razorpay = jest.fn();
+    (global as any).window.Razorpay = jest.fn();
   });
 
   test('should initialize with correct default values', () => {
     const { result } = renderHook(() => 
       useRazorpay({ 
-        invoiceId: 1, 
+        invoiceId: '1', 
         onSuccess: jest.fn(), 
         onFailure: jest.fn() 
       })
@@ -43,16 +49,16 @@ describe('useRazorpay', () => {
       customerPhone: '1234567890',
     };
 
-    apiHelper.post.mockResolvedValueOnce(mockOrderData);
+    mockedApiHelper.post.mockResolvedValueOnce(mockOrderData);
 
     const mockRazorpayInstance = {
       open: jest.fn(),
     };
-    global.window.Razorpay.mockReturnValue(mockRazorpayInstance);
+    ((global as any).window.Razorpay as jest.Mock).mockReturnValue(mockRazorpayInstance);
 
     const { result } = renderHook(() => 
       useRazorpay({ 
-        invoiceId: 1, 
+        invoiceId: '1', 
         onSuccess: jest.fn(), 
         onFailure: jest.fn() 
       })
@@ -62,19 +68,19 @@ describe('useRazorpay', () => {
       await result.current.initiatePayment();
     });
 
-    expect(apiHelper.post).toHaveBeenCalledWith('/v1/payment/create-order?invoiceId=1');
+    expect(mockedApiHelper.post).toHaveBeenCalledWith('/v1/payment/create-order?invoiceId=1');
     expect(mockRazorpayInstance.open).toHaveBeenCalled();
   });
 
   test('should handle payment creation error', async () => {
     const errorMessage = 'Failed to create payment order';
-    apiHelper.post.mockRejectedValueOnce({ message: errorMessage });
+    mockedApiHelper.post.mockRejectedValueOnce({ message: errorMessage });
 
     const onFailureMock = jest.fn();
 
     const { result } = renderHook(() => 
       useRazorpay({ 
-        invoiceId: 1, 
+        invoiceId: '1', 
         onSuccess: jest.fn(), 
         onFailure: onFailureMock 
       })

@@ -11,7 +11,7 @@ import { hasRole } from '../utils/helpers';
 import { canAccessPage } from '../utils/rolePermissions';
 import type { RootState } from '../redux/store';
 
-interface ProtectedRouteProps {
+export interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRoles?: string[] | null;
   page?: string | null;

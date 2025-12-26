@@ -7,10 +7,13 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
+export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost' | 'outline' | 'gradient';
+export type ButtonSize = 'small' | 'medium' | 'large' | 'sm' | 'md' | 'lg';
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
-  size?: 'small' | 'medium' | 'large';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -20,6 +23,14 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   type?: 'button' | 'submit' | 'reset';
   className?: string;
 }
+
+// Normalize size aliases
+const normalizeSize = (size?: ButtonSize): 'small' | 'medium' | 'large' => {
+  if (size === 'sm') return 'small';
+  if (size === 'md') return 'medium';
+  if (size === 'lg') return 'large';
+  return size || 'medium';
+};
 
 const Button: React.FC<ButtonProps> = ({
   children,
@@ -35,6 +46,8 @@ const Button: React.FC<ButtonProps> = ({
   className,
   ...props
 }) => {
+  const normalizedSize = normalizeSize(size);
+
   // Base button styles
   const baseStyles = cn(
     'relative inline-flex items-center justify-center',
@@ -52,7 +65,7 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   // Variant styles with gradients and effects
-  const variantStyles = {
+  const variantStyles: Record<ButtonVariant, string> = {
     primary: cn(
       'bg-gradient-to-r from-[#667eea] to-[#764ba2]',
       'text-white shadow-lg',
@@ -86,6 +99,20 @@ const Button: React.FC<ButtonProps> = ({
       'hover:bg-white/5',
       'focus:ring-white/30'
     ),
+    outline: cn(
+      'bg-transparent border-2 border-primary',
+      'text-primary hover:bg-primary/10',
+      'hover:border-primary hover:-translate-y-0.5',
+      'focus:ring-primary',
+      'active:translate-y-0'
+    ),
+    gradient: cn(
+      'bg-gradient-to-r from-[#667eea] via-[#764ba2] to-[#00d2ff]',
+      'text-white shadow-lg',
+      'hover:shadow-glow-primary hover:-translate-y-0.5',
+      'focus:ring-primary',
+      'active:translate-y-0'
+    ),
   };
 
   return (
@@ -95,7 +122,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       className={cn(
         baseStyles,
-        sizeStyles[size],
+        sizeStyles[normalizedSize],
         variantStyles[variant],
         className
       )}

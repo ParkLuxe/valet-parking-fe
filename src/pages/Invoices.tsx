@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -24,8 +25,8 @@ const Invoices = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { can } = usePermissions();
-  const { user } = useSelector((state) => state.auth);
-  const { invoices, loading, error, pagination } = useSelector((state) => state.invoices);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { invoices, loading, error, pagination } = useSelector((state: RootState) => (state as any).invoices || {});
   
   const [statusFilter, setStatusFilter] = useState('UNPAID'); // Default to UNPAID (active invoices)
   const [currentPage, setCurrentPage] = useState(0);
@@ -41,7 +42,7 @@ const Invoices = () => {
     dispatch(setLoading(true));
     try {
       // Use filter API to fetch invoices
-      const filters = {
+      const filters: any = {
         hostId: user.hostId,
       };
       

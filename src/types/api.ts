@@ -30,9 +30,11 @@ export interface User {
   name: string;
   username?: string;
   email: string;
+  phone?: string;
   role: UserRole;
   hostId?: string;
   active?: boolean;
+  profilePicture?: string;
   createdAt?: string;
   updatedAt?: string;
 }

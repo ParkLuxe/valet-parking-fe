@@ -182,6 +182,20 @@ const vehicleService = {
       throw error;
     }
   },
+
+  /**
+   * Add a new vehicle
+   * @param {object} vehicleData - Vehicle data
+   * @returns {Promise} Created vehicle
+   */
+  addVehicle: async (vehicleData: any) => {
+    try {
+      const response = await apiHelper.post('/v1/vehicles', vehicleData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default vehicleService;

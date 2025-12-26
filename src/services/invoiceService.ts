@@ -55,13 +55,13 @@ const invoiceService = {
    * @param {number} size - Page size
    * @returns {Promise} List of filtered invoices
    */
-  filterInvoices: async (filters = {}, page = 0, size = 10) => {
+  filterInvoices: async (filters: any = {}, page = 0, size = 10) => {
     try {
       const params = new URLSearchParams();
       
       // Add pagination
-      params.append('page', page);
-      params.append('size', size);
+      params.append('page', page.toString());
+      params.append('size', size.toString());
       
       // Add filters
       if (filters.status) {
