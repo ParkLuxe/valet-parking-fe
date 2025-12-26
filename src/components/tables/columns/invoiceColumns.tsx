@@ -102,8 +102,10 @@ export const invoiceColumns = [
             loading={downloadPDF.isPending}
             startIcon={<Download className="w-4 h-4" />}
             title="Download PDF"
+            endIcon={undefined}
+            className=""
           >
-            
+            PDF
           </Button>
           <Button
             size="small"
@@ -115,8 +117,10 @@ export const invoiceColumns = [
             loading={sendEmail.isPending}
             startIcon={<Mail className="w-4 h-4" />}
             title="Send Email"
+            endIcon={undefined}
+            className=""
           >
-            
+            Email
           </Button>
         </div>
       );
