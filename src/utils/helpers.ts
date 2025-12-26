@@ -158,7 +158,8 @@ export const truncateText = (text: string | null | undefined, maxLength: number 
 /**
  * Check if user has required role
  */
-export const hasRole = (userRole: string, requiredRoles: string | string[]): boolean => {
+export const hasRole = (userRole: string | undefined, requiredRoles: string | string[]): boolean => {
+  if (!userRole) return false;
   if (Array.isArray(requiredRoles)) {
     return requiredRoles.includes(userRole);
   }

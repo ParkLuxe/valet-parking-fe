@@ -3,21 +3,41 @@
  * Manages real-time alerts and toast notifications
  */
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+interface Notification {
+  id: number;
+  timestamp: string;
+  isRead: boolean;
+  message: string;
+  type?: 'success' | 'error' | 'info' | 'warning';
+  title?: string;
+}
+
+interface ToastNotification {
+  id: number | string;
+  message: string;
+  type?: 'success' | 'error' | 'info' | 'warning';
+}
+
+interface NotificationState {
+  notifications: Notification[];
+  unreadCount: number;
+  toastQueue: ToastNotification[];
+}
+
+const initialState: NotificationState = {
   notifications: [],
   unreadCount: 0,
-  toastQueue: [], // Queue of toast notifications to display
+  toastQueue: [],
 };
 
 const notificationSlice = createSlice({
   name: 'notifications',
   initialState,
   reducers: {
-    // Add notification
-    addNotification: (state, action) => {
-      const notification = {
+    addNotification: (state, action: PayloadAction<Omit<Notification, 'id' | 'timestamp' | 'isRead'>>) => {
+      const notification: Notification = {
         id: Date.now(),
         timestamp: new Date().toISOString(),
         isRead: false,
@@ -26,14 +46,12 @@ const notificationSlice = createSlice({
       state.notifications.unshift(notification);
       state.unreadCount += 1;
       
-      // Keep only last 100 notifications
       if (state.notifications.length > 100) {
         state.notifications = state.notifications.slice(0, 100);
       }
     },
     
-    // Mark notification as read
-    markAsRead: (state, action) => {
+    markAsRead: (state, action: PayloadAction<number>) => {
       const notificationId = action.payload;
       const notification = state.notifications.find(n => n.id === notificationId);
       if (notification && !notification.isRead) {
@@ -42,7 +60,6 @@ const notificationSlice = createSlice({
       }
     },
     
-    // Mark all notifications as read
     markAllAsRead: (state) => {
       state.notifications.forEach(notification => {
         notification.isRead = true;
@@ -50,8 +67,7 @@ const notificationSlice = createSlice({
       state.unreadCount = 0;
     },
     
-    // Delete notification
-    deleteNotification: (state, action) => {
+    deleteNotification: (state, action: PayloadAction<number>) => {
       const notificationId = action.payload;
       const notification = state.notifications.find(n => n.id === notificationId);
       if (notification && !notification.isRead) {
@@ -60,29 +76,25 @@ const notificationSlice = createSlice({
       state.notifications = state.notifications.filter(n => n.id !== notificationId);
     },
     
-    // Clear all notifications
     clearAllNotifications: (state) => {
       state.notifications = [];
       state.unreadCount = 0;
     },
     
-    // Add toast notification
-    addToast: (state, action) => {
-      const toast = {
+    addToast: (state, action: PayloadAction<Omit<ToastNotification, 'id'>>) => {
+      const toast: ToastNotification = {
         id: Date.now() + Math.random(),
         ...action.payload,
       };
       state.toastQueue.push(toast);
     },
     
-    // Remove toast notification
-    removeToast: (state, action) => {
+    removeToast: (state, action: PayloadAction<number | string>) => {
       const toastId = action.payload;
       state.toastQueue = state.toastQueue.filter(t => t.id !== toastId);
     },
     
-    // Set notifications
-    setNotifications: (state, action) => {
+    setNotifications: (state, action: PayloadAction<Notification[]>) => {
       state.notifications = action.payload;
       state.unreadCount = action.payload.filter(n => !n.isRead).length;
     },

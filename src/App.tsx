@@ -50,10 +50,11 @@ import MyPerformance from './pages/valet/MyPerformance';
 import { removeToast } from './redux/slices/notificationSlice';
 import { USER_ROLES } from './utils/constants';
 import { initializeStore } from './utils/initializeStore';
+import type { RootState } from './redux/store';
 
-function App() {
+const App: React.FC = () => {
   const dispatch = useDispatch();
-  const { toastQueue } = useSelector((state) => state.notifications);
+  const { toastQueue } = useSelector((state: RootState) => state.notifications);
 
   // Initialize store with dummy data on mount
   useEffect(() => {
@@ -61,7 +62,7 @@ function App() {
   }, [dispatch]);
 
   // Handle toast notifications
-  const handleCloseToast = (toastId) => {
+  const handleCloseToast = (toastId: string | number) => {
     dispatch(removeToast(toastId));
   };
 
@@ -356,6 +357,6 @@ function App() {
       </ToastProvider>
     </>
   );
-}
+};
 
 export default App;

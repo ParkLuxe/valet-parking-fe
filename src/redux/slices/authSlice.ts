@@ -3,11 +3,21 @@
  * Manages user authentication, login, logout, and token storage
  */
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { STORAGE_KEYS } from '../../utils/constants';
+import type { User, AuthResponse } from '../../types/api';
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
+}
 
 // Initial state with data from local storage if available
-let storedUser = null;
+let storedUser: User | null = null;
 try {
   const raw = localStorage.getItem(STORAGE_KEYS.USER_DATA);
   storedUser = raw ? JSON.parse(raw) : null;
@@ -15,9 +25,9 @@ try {
   storedUser = null;
 }
 
-const initialState = {
+const initialState: AuthState = {
   user: storedUser,
-  token: localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || "",
+  token: localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) || null,
   refreshToken: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) || null,
   isAuthenticated: !!localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN),
   loading: false,
@@ -28,22 +38,28 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setLoading: (state, action) => {
+    setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
     
-    loginSuccess: (state, action) => {
-      const resp = action.payload?.data ?? action.payload ?? {};
-      const accessToken = resp.accessToken ?? resp.token ?? "";
+    loginSuccess: (state, action: PayloadAction<AuthResponse | { data: AuthResponse }>) => {
+      const resp = 'data' in action.payload ? action.payload.data : action.payload;
+      const accessToken = resp.accessToken ?? resp.token ?? '';
       const refreshToken = resp.refreshToken ?? null;
-      const { accessToken: _a, refreshToken: _r, ...userObj } = resp;
-      if (Object.keys(userObj).length) {
-        if (userObj.username) {
-          userObj.name = userObj.username;
-          userObj.email = userObj.username;
+      
+      // Extract user object
+      const { accessToken: _a, refreshToken: _r, token: _t, ...userObj } = resp;
+      let user: User | null = null;
+      
+      if (Object.keys(userObj).length > 0) {
+        user = userObj as User;
+        if (!user.name && user.username) {
+          user.name = user.username;
+        }
+        if (!user.email && user.username) {
+          user.email = user.username;
         }
       }
-      const user = Object.keys(userObj).length ? userObj : null;
 
       state.user = user;
       state.token = accessToken;
@@ -63,13 +79,11 @@ const authSlice = createSlice({
       }
     },
     
-    // Login failure - set error
-    loginFailure: (state, action) => {
+    loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
     
-    // Logout - clear all auth data
     logout: (state) => {
       state.user = null;
       state.token = null;
@@ -78,32 +92,30 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
       
-      // Clear local storage
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
       localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     },
     
-    // Update user profile
-    updateProfile: (state, action) => {
-      state.user = { ...state.user, ...action.payload };
-      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(state.user));
+    updateProfile: (state, action: PayloadAction<Partial<User>>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(state.user));
+      }
     },
     
-    // Update token (for refresh token flow)
-    updateToken: (state, action) => {
-      const { accessToken: token, refreshToken } = action.payload;
-      state.token = token;
+    updateToken: (state, action: PayloadAction<{ accessToken: string; refreshToken?: string }>) => {
+      const { accessToken, refreshToken } = action.payload;
+      state.token = accessToken;
       if (refreshToken) {
         state.refreshToken = refreshToken;
       }
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
       if (refreshToken) {
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
       }
     },
     
-    // Clear error
     clearError: (state) => {
       state.error = null;
     },
