@@ -17,7 +17,16 @@ jest.mock('axios', () => ({
 }));
 
 // Mock the API helper
-jest.mock('./api');
+jest.mock('./api', () => ({
+  apiHelper: {
+    post: jest.fn(),
+    get: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+  },
+}));
+
+const mockedApiHelper = apiHelper as jest.Mocked<typeof apiHelper>;
 
 describe('authService', () => {
   beforeEach(() => {
@@ -34,7 +43,7 @@ describe('authService', () => {
         user: { id: 1, name: 'Test User' }
       };
       
-      apiHelper.post.mockResolvedValueOnce(mockResponse);
+      mockedApiHelper.post.mockResolvedValueOnce(mockResponse);
 
       const credentials = {
         username: 'testuser',
@@ -45,7 +54,7 @@ describe('authService', () => {
       const result = await authService.login(credentials);
 
       // Verify the API was called with userName (camelCase) not username
-      expect(apiHelper.post).toHaveBeenCalledWith('/v1/auth/login', {
+      expect(mockedApiHelper.post).toHaveBeenCalledWith('/v1/auth/login', {
         userName: 'testuser',
         password: 'testpassword123',
         role: 'SUPERADMIN'
@@ -59,7 +68,7 @@ describe('authService', () => {
         user: { id: 1, name: 'Test User' }
       };
       
-      apiHelper.post.mockResolvedValueOnce(mockResponse);
+      mockedApiHelper.post.mockResolvedValueOnce(mockResponse);
 
       const credentials = {
         email: 'test@example.com',
@@ -71,7 +80,7 @@ describe('authService', () => {
       await authService.login(credentials);
 
       // Verify email is preferred over username
-      expect(apiHelper.post).toHaveBeenCalledWith('/v1/auth/login', {
+      expect(mockedApiHelper.post).toHaveBeenCalledWith('/v1/auth/login', {
         userName: 'test@example.com',
         password: 'password123',
         role: 'USER'
@@ -80,7 +89,7 @@ describe('authService', () => {
 
     test('should handle login errors', async () => {
       const errorMessage = 'Invalid credentials';
-      apiHelper.post.mockRejectedValueOnce(new Error(errorMessage));
+      mockedApiHelper.post.mockRejectedValueOnce(new Error(errorMessage));
 
       const credentials = {
         username: 'testuser',

@@ -9,7 +9,7 @@ import { WS_URL, STORAGE_KEYS } from '../utils/constants';
 
 class WebSocketService {
   private socket: Socket | null = null;
-  private listeners: Record<string, Function[]> = {};
+  private listeners: Record<string, ((...args: any[]) => void)[]> = {};
 
   /**
    * Connect to WebSocket server
@@ -59,7 +59,7 @@ class WebSocketService {
    * @param {string} event - Event name
    * @param {Function} callback - Callback function
    */
-  on(event: string, callback: Function) {
+  on(event: string, callback: (...args: any[]) => void) {
     if (!this.socket) {
       console.error('WebSocket not connected');
       return;
@@ -79,7 +79,7 @@ class WebSocketService {
    * @param {string} event - Event name
    * @param {Function} callback - Callback function (optional)
    */
-  off(event: string, callback?: Function) {
+  off(event: string, callback?: (...args: any[]) => void) {
     if (!this.socket) {
       return;
     }
@@ -115,7 +115,7 @@ class WebSocketService {
    * Subscribe to vehicle status updates
    * @param {Function} callback - Callback function
    */
-  onVehicleStatusUpdate(callback: Function) {
+  onVehicleStatusUpdate(callback: (...args: any[]) => void) {
     this.on('vehicle:status:update', callback);
   }
 
@@ -123,7 +123,7 @@ class WebSocketService {
    * Subscribe to new parking requests
    * @param {Function} callback - Callback function
    */
-  onNewParkingRequest(callback: Function) {
+  onNewParkingRequest(callback: (...args: any[]) => void) {
     this.on('vehicle:new:request', callback);
   }
 
@@ -131,7 +131,7 @@ class WebSocketService {
    * Subscribe to valet assignments
    * @param {Function} callback - Callback function
    */
-  onValetAssignment(callback: Function) {
+  onValetAssignment(callback: (...args: any[]) => void) {
     this.on('valet:assignment', callback);
   }
 
@@ -139,7 +139,7 @@ class WebSocketService {
    * Subscribe to notifications
    * @param {Function} callback - Callback function
    */
-  onNotification(callback: Function) {
+  onNotification(callback: (...args: any[]) => void) {
     this.on('notification', callback);
   }
 

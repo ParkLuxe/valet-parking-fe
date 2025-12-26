@@ -26,7 +26,7 @@ import { cn } from '../utils/cn';
 import { USER_ROLES } from '../utils/constants';
 
 // Animated Counter Component
-interface AnimatedCounterProps {
+export interface AnimatedCounterProps {
   end?: any;
   duration?: any;
   suffix?: any;

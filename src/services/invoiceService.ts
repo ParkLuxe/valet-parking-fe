@@ -55,7 +55,7 @@ const invoiceService = {
    * @param {number} size - Page size
    * @returns {Promise} List of filtered invoices
    */
-  filterInvoices: async (filters = {}, page = 0, size = 10) => {
+  filterInvoices: async (filters: any = {}, page = 0, size = 10) => {
     try {
       const params = new URLSearchParams();
       

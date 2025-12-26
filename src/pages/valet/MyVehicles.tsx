@@ -229,7 +229,7 @@ const MyVehicles = () => {
 
       {/* Vehicle Details Modal */}
       <Modal
-        isOpen={!!selectedVehicle}
+        open={!!selectedVehicle}
         onClose={() => setSelectedVehicle(null)}
         title="Vehicle Details"
       >
