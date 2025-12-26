@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type { RootState } from '../types';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -18,11 +18,8 @@ import {
   Circle,
   Filter,
 } from 'lucide-react';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import Modal from '../components/common/Modal';
-import Input from '../components/common/Input';
-import { cn } from '../utils/cn';
+import { Card, Button, Modal, Input } from '../components';
+import { cn } from '../utils';
 import { getInitials } from '../utils/helpers';
 
 const HostUserManagement = () => {

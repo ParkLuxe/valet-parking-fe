@@ -5,22 +5,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type { RootState } from '../types';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
-import Card from '../components/common/Card';
-import Input from '../components/common/Input';
-import Button from '../components/common/Button';
-import { addVehicle } from '../redux/slices/vehicleSlice';
-import { addToast } from '../redux/slices/notificationSlice';
-import { incrementScanCount } from '../redux/slices/subscriptionSlice';
-import vehicleService from '../services/vehicleService';
-import { VEHICLE_TYPES } from '../utils/constants';
+import { Card, Input, Button } from '../components';
+import { addToast } from '../redux';
+import { vehicleService } from '../services';
 import {
+  VEHICLE_TYPES,
   validateVehicleNumber,
   validatePhone,
   validateRequired,
-} from '../utils/validators';
-import { cn } from '../utils/cn';
+  cn,
+} from '../utils';
+// Note: Import vehicle and subscription slice actions directly
+import { addVehicle } from '../redux/slices/vehicleSlice';
+import { incrementScanCount } from '../redux/slices/subscriptionSlice';
 
 const QRScanPage = () => {
   const dispatch = useDispatch();

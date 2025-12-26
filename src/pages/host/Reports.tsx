@@ -5,9 +5,7 @@
 
 import React, { useState } from 'react';
 import { FileLineChart, Download } from 'lucide-react';
-import Card from '../../components/common/Card';
-import Button from '../../components/common/Button';
-import DateRangePicker from '../../components/common/DateRangePicker';
+import { Card, Button, DateRangePicker } from '../../components';
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });

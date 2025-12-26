@@ -5,16 +5,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type { RootState } from '../types';
 import { QRCodeSVG } from 'qrcode.react';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import Modal from '../components/common/Modal';
-import Input from '../components/common/Input';
-import qrCodeService from '../services/qrCodeService';
-import { addToast } from '../redux/slices/notificationSlice';
-import usePermissions from '../hooks/usePermissions';
+import { Card, Button, LoadingSpinner, Modal, Input } from '../components';
+import { qrCodeService } from '../services';
+import { addToast } from '../redux';
+import { usePermissions } from '../hooks';
 
 const QRCodeManagement = () => {
   const dispatch = useDispatch();

@@ -3,4 +3,4 @@
  * Exports all payment-related components
  */
 
-export * from './RazorpayButton';
+export { default as RazorpayButton } from './RazorpayButton';

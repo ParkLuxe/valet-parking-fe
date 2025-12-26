@@ -5,20 +5,19 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import paymentService from '../services/paymentService';
+import type { RootState } from '../types';
+import { Card, Button, LoadingSpinner } from '../components';
+import { paymentService } from '../services';
+import { addToast } from '../redux';
+import { formatCurrency, formatDate } from '../utils';
+import { usePermissions } from '../hooks';
+// Note: Import payment slice actions directly due to naming conflicts
 import {
   setPaymentsWithPagination,
   setPaymentStats,
   setLoading,
   setError,
 } from '../redux/slices/paymentSlice';
-import { addToast } from '../redux/slices/notificationSlice';
-import { formatCurrency, formatDate } from '../utils/helpers';
-import usePermissions from '../hooks/usePermissions';
 
 const Payments = () => {
   const dispatch = useDispatch();

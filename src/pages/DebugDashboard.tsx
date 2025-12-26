@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type { RootState } from '../types';
 import { useLocation } from 'react-router-dom';
 import {
   RefreshCw,
@@ -21,9 +21,8 @@ import {
   AlertCircle,
   Code,
 } from 'lucide-react';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import { API_BASE_URL, WS_URL } from '../utils/constants';
+import { Card, Button } from '../components';
+import { API_BASE_URL, WS_URL } from '../utils';
 
 const DebugDashboard = () => {
   const location = useLocation();

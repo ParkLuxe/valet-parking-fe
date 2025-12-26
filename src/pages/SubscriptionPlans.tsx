@@ -5,15 +5,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import subscriptionPlanService from '../services/subscriptionPlanService';
-import subscriptionService from '../services/subscriptionService';
-import { addToast } from '../redux/slices/notificationSlice';
-import { formatCurrency } from '../utils/helpers';
-import usePermissions from '../hooks/usePermissions';
+import type { RootState } from '../types';
+import { Card, Button, LoadingSpinner } from '../components';
+import { subscriptionPlanService, subscriptionService } from '../services';
+import { addToast } from '../redux';
+import { formatCurrency } from '../utils';
+import { usePermissions } from '../hooks';
 
 const SubscriptionPlans = () => {
   const dispatch = useDispatch();

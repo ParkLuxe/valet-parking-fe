@@ -28,9 +28,8 @@ import {
   DollarSign,
   CreditCard,
 } from 'lucide-react';
-import Card from '../components/common/Card';
-import { cn } from '../utils/cn';
-import { formatCurrency } from '../utils/helpers';
+import { Card } from '../components';
+import { cn, formatCurrency } from '../utils';
 
 // Mock data generators - using deterministic values
 const generateVehicleData = () => {

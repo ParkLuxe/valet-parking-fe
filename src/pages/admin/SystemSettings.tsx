@@ -5,11 +5,9 @@
 
 import React, { useState } from 'react';
 import { Settings, Save } from 'lucide-react';
-import Card from '../../components/common/Card';
-import Button from '../../components/common/Button';
-import Input from '../../components/common/Input';
+import { Card, Button, Input } from '../../components';
 import { useDispatch } from 'react-redux';
-import { addToast } from '../../redux/slices/notificationSlice';
+import { addToast } from '../../redux';
 
 const SystemSettings = () => {
   const dispatch = useDispatch();
