@@ -3,9 +3,32 @@
  * Manages loading states, modals, errors, and other UI elements
  */
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+type ModalName = 
+  | 'addVehicle'
+  | 'addValet'
+  | 'addSlot'
+  | 'payment'
+  | 'confirmDelete'
+  | 'vehicleDetails'
+  | 'valetPerformance';
+
+interface UIState {
+  sidebarOpen: boolean;
+  loading: {
+    global: boolean;
+    page: boolean;
+  };
+  modals: Record<ModalName, boolean>;
+  errors: {
+    global: string | null;
+    page: string | null;
+  };
+  selectedItem: unknown | null;
+}
+
+const initialState: UIState = {
   sidebarOpen: true,
   loading: {
     global: false,
@@ -24,82 +47,70 @@ const initialState = {
     global: null,
     page: null,
   },
-  selectedItem: null, // For storing selected item (vehicle, valet, etc.) for modals
+  selectedItem: null,
 };
 
 const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    // Toggle sidebar
     toggleSidebar: (state) => {
       state.sidebarOpen = !state.sidebarOpen;
     },
     
-    // Set sidebar state
-    setSidebarOpen: (state, action) => {
+    setSidebarOpen: (state, action: PayloadAction<boolean>) => {
       state.sidebarOpen = action.payload;
     },
     
-    // Set global loading
-    setGlobalLoading: (state, action) => {
+    setGlobalLoading: (state, action: PayloadAction<boolean>) => {
       state.loading.global = action.payload;
     },
     
-    // Set page loading
-    setPageLoading: (state, action) => {
+    setPageLoading: (state, action: PayloadAction<boolean>) => {
       state.loading.page = action.payload;
     },
     
-    // Open modal
-    openModal: (state, action) => {
+    openModal: (state, action: PayloadAction<{ modalName: ModalName; data?: unknown }>) => {
       const { modalName, data } = action.payload;
-      if (state.modals.hasOwnProperty(modalName)) {
+      if (modalName in state.modals) {
         state.modals[modalName] = true;
-        if (data) {
+        if (data !== undefined) {
           state.selectedItem = data;
         }
       }
     },
     
-    // Close modal
-    closeModal: (state, action) => {
+    closeModal: (state, action: PayloadAction<ModalName>) => {
       const modalName = action.payload;
-      if (state.modals.hasOwnProperty(modalName)) {
+      if (modalName in state.modals) {
         state.modals[modalName] = false;
         state.selectedItem = null;
       }
     },
     
-    // Close all modals
     closeAllModals: (state) => {
-      Object.keys(state.modals).forEach(key => {
+      (Object.keys(state.modals) as ModalName[]).forEach(key => {
         state.modals[key] = false;
       });
       state.selectedItem = null;
     },
     
-    // Set global error
-    setGlobalError: (state, action) => {
+    setGlobalError: (state, action: PayloadAction<string | null>) => {
       state.errors.global = action.payload;
     },
     
-    // Set page error
-    setPageError: (state, action) => {
+    setPageError: (state, action: PayloadAction<string | null>) => {
       state.errors.page = action.payload;
     },
     
-    // Clear global error
     clearGlobalError: (state) => {
       state.errors.global = null;
     },
     
-    // Clear page error
     clearPageError: (state) => {
       state.errors.page = null;
     },
     
-    // Clear all errors
     clearAllErrors: (state) => {
       state.errors = {
         global: null,
@@ -107,12 +118,10 @@ const uiSlice = createSlice({
       };
     },
     
-    // Set selected item
-    setSelectedItem: (state, action) => {
+    setSelectedItem: (state, action: PayloadAction<unknown>) => {
       state.selectedItem = action.payload;
     },
     
-    // Clear selected item
     clearSelectedItem: (state) => {
       state.selectedItem = null;
     },

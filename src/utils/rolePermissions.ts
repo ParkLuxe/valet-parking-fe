@@ -242,7 +242,8 @@ export const hasAllPermissions = (role: string, permissions: string[]): boolean 
 /**
  * Get all permissions for a role
  */
-export const getRolePermissions = (role: string) => {
+export const getRolePermissions = (role: string | undefined) => {
+  if (!role) return {};
   const normalizedRole = role?.toUpperCase();
   return PERMISSIONS[normalizedRole as keyof typeof PERMISSIONS] || {};
 };
