@@ -61,13 +61,3 @@ export type Permission =
   | 'manage_subscriptions'
   | 'manage_parking_slots'
   | 'scan_qr_code';
-
-// Route params
-export interface RouteParams {
-  id?: string;
-  invoiceId?: string;
-  paymentId?: string;
-  vehicleId?: string;
-  hostId?: string;
-  [key: string]: string | undefined;
-}
