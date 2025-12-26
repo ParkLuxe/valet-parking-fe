@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as Tabs from '@radix-ui/react-tabs';
 import { Car, Users, Building, Shield, User, Lock, AlertCircle } from 'lucide-react';
 import { Input, Button } from '../components';
-import { loginSuccess, setAuthLoading, addToast, setUserData } from '../redux';
+import { loginSuccess, setAuthLoading, addToast, setUserData, logout } from '../redux';
 import { authService } from '../services';
 import { validateRequired, cn } from '../utils';
 
@@ -84,10 +84,16 @@ const Login = () => {
       dispatch(loginSuccess(loginResponse));
       
       // Step 2: Fetch user data from /me API
-      const userData = await authService.getProfile();
-      
-      // Dispatch user data
-      dispatch(setUserData(userData));
+      try {
+        const userData = await authService.getProfile();
+        // Dispatch user data
+        dispatch(setUserData(userData));
+      } catch (profileError) {
+        // If profile fetch fails, log out to maintain consistent state
+        console.error('Failed to fetch user profile:', profileError);
+        dispatch(logout());
+        throw new Error('Failed to load user profile. Please try again.');
+      }
       
       dispatch(addToast({
         type: 'success',

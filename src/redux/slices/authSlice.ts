@@ -44,7 +44,9 @@ const authSlice = createSlice({
     
     loginSuccess: (state, action: PayloadAction<AuthResponse>) => {
       // Extract only tokens from login response
-      const { accessToken, refreshToken } = action.payload;
+      // Support both accessToken and token field for backward compatibility
+      const accessToken = action.payload.accessToken ?? action.payload.token ?? '';
+      const { refreshToken } = action.payload;
       
       state.token = accessToken;
       state.refreshToken = refreshToken || null;
@@ -53,7 +55,9 @@ const authSlice = createSlice({
       state.error = null;
       
       // Store tokens
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+      if (accessToken) {
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
+      }
       if (refreshToken) {
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
       }

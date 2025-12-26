@@ -79,15 +79,38 @@ describe('authSlice', () => {
 
       const loginResponse = {
         accessToken: 'test-access-token',
+        refreshToken: undefined,
       };
 
-      const newState = authReducer(initialState, loginSuccess(loginResponse as any));
+      const newState = authReducer(initialState, loginSuccess(loginResponse));
 
       expect(newState.token).toBe('test-access-token');
       expect(newState.refreshToken).toBe(null);
       expect(newState.isAuthenticated).toBe(true);
       expect(localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)).toBe('test-access-token');
       expect(localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)).toBe(null);
+    });
+
+    it('should support legacy token field for backward compatibility', () => {
+      const initialState = {
+        user: null,
+        token: null,
+        refreshToken: null,
+        isAuthenticated: false,
+        loading: false,
+        error: null,
+      };
+
+      const loginResponse = {
+        token: 'legacy-token',
+        accessToken: undefined,
+      };
+
+      const newState = authReducer(initialState, loginSuccess(loginResponse));
+
+      expect(newState.token).toBe('legacy-token');
+      expect(newState.isAuthenticated).toBe(true);
+      expect(localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)).toBe('legacy-token');
     });
   });
 
