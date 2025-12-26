@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type {  RootState  } from '../redux';
 import { motion } from 'framer-motion';
 import {
   CreditCard,
@@ -18,13 +18,13 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import { formatCurrency } from '../utils/helpers';
-import { SUBSCRIPTION } from '../utils/constants';
-import { cn } from '../utils/cn';
-import useRazorpay from '../hooks/useRazorpay';
-import { addPayment } from '../redux/slices/subscriptionSlice';
+import { Card } from '../components';
+import { Button } from '../components';
+import {  formatCurrency  } from '../utils';
+import {  SUBSCRIPTION  } from '../utils';
+import { cn } from '../utils';
+import { useRazorpay } from '../hooks';
+import {  addPayment  } from '../redux';
 
 const Subscription = () => {
   const { status, usage, billing, paymentHistory } = useSelector((state: RootState) => (state as any).subscription || {});

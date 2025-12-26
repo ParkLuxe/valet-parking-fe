@@ -5,17 +5,17 @@
 
 import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type {  RootState  } from '../redux';
 import { motion } from 'framer-motion';
 import {
   Search,
   Plus,
   Car,
 } from 'lucide-react';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import Modal from '../components/common/Modal';
-import { cn } from '../utils/cn';
+import { Card } from '../components';
+import { Button } from '../components';
+import { Modal } from '../components';
+import { cn } from '../utils';
 
 const ParkingSlots = () => {
   const { slots = [] } = useSelector((state: RootState) => (state as any).parkingSlots || {}) || {};

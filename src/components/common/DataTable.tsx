@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../utils';
 import Button from './Button';
 import Input from './Input';
 

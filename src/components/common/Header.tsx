@@ -15,10 +15,10 @@ import {
   LogOut,
   Settings,
 } from 'lucide-react';
-import { toggleSidebar } from '../../redux/slices/uiSlice';
-import { logout } from '../../redux/slices/authSlice';
-import { getInitials } from '../../utils/helpers';
-import type { RootState } from '../../redux/store';
+import {  toggleSidebar  } from '../../redux';
+import {  logout  } from '../../redux';
+import {  getInitials  } from '../../utils';
+import type {  RootState  } from '../../redux';
 
 const Header = () => {
   const navigate = useNavigate();

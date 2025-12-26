@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Loader2 } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../utils';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost' | 'outline' | 'gradient';
 export type ButtonSize = 'small' | 'medium' | 'large' | 'sm' | 'md' | 'lg';

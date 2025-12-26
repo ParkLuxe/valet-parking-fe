@@ -6,16 +6,13 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import RazorpayButton from '../components/payment/RazorpayButton';
-import invoiceService from '../services/invoiceService';
+import type { RootState } from '../redux';
+import { Card, Button, LoadingSpinner, RazorpayButton } from '../components';
+import { invoiceService } from '../services';
 import { setCurrentInvoice, setLoading, setError } from '../redux/slices/invoiceSlice';
-import { addToast } from '../redux/slices/notificationSlice';
-import { formatCurrency, formatDate } from '../utils/helpers';
-import usePermissions from '../hooks/usePermissions';
+import { addToast } from '../redux';
+import { formatCurrency, formatDate } from '../utils';
+import { usePermissions } from '../hooks';
 
 const InvoiceDetails = () => {
   const { id } = useParams();

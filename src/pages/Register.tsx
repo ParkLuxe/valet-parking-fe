@@ -7,12 +7,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Car } from 'lucide-react';
-import Card from '../components/common/Card';
-import Input from '../components/common/Input';
-import Button from '../components/common/Button';
-import { loginSuccess, setLoading } from '../redux/slices/authSlice';
-import { addToast } from '../redux/slices/notificationSlice';
-import authService from '../services/authService';
+import { Card, Input, Button } from '../components';
+import { loginSuccess, setLoading, addToast } from '../redux';
+import { authService } from '../services';
 import {
   validateEmail,
   validatePhone,
@@ -20,7 +17,7 @@ import {
   validatePasswordMatch,
   validateName,
   validateRequired,
-} from '../utils/validators';
+} from '../utils';
 
 const Register = () => {
   const navigate = useNavigate();

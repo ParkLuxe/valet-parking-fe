@@ -15,15 +15,15 @@ import {
   Users,
   Car,
 } from 'lucide-react';
-import Card from '../../components/common/Card';
-import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
-import Input from '../../components/common/Input';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import DataTable from '../../components/common/DataTable';
-import ConfirmDialog from '../../components/common/ConfirmDialog';
-import hostService from '../../services/hostService';
-import { addToast } from '../../redux/slices/notificationSlice';
+import { Card } from '../../components';
+import { Button } from '../../components';
+import { Modal } from '../../components';
+import { Input } from '../../components';
+import { LoadingSpinner } from '../../components';
+import { DataTable } from '../../components';
+import { ConfirmDialog } from '../../components';
+import { hostService } from '../../services';
+import {  addToast  } from '../../redux';
 
 const HostManagement = () => {
   const dispatch = useDispatch();

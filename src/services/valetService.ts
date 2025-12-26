@@ -4,8 +4,6 @@
  * TODO: Replace mock data with actual API endpoints
  */
 
-import { apiHelper } from './api';
-
 const valetService = {
   /**
    * Get all valets
@@ -38,14 +36,10 @@ const valetService = {
    * @returns {Promise} List of active valets
    */
   getActiveValets: async () => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get('/valets/active');
-      
-      return [];
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.get('/valets/active');
+    
+    return [];
   },
 
   /**
@@ -92,14 +86,10 @@ const valetService = {
    * @returns {Promise}
    */
   deleteValet: async (valetId) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.delete(`/valets/${valetId}`);
-      
-      return { success: true };
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.delete(`/valets/${valetId}`);
+    
+    return { success: true };
   },
 
   /**
@@ -131,14 +121,10 @@ const valetService = {
    * @returns {Promise} List of performance data
    */
   getAllValetsPerformance: async (filters = {}) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get('/valets/performance', { params: filters });
-      
-      return [];
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.get('/valets/performance', { params: filters });
+    
+    return [];
   },
 
   /**

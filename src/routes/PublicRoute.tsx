@@ -6,7 +6,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type {  RootState  } from '../redux';
 
 export interface PublicRouteProps {
   children: React.ReactNode;

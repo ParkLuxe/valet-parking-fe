@@ -4,7 +4,7 @@
  */
 
 import { createSlice } from '@reduxjs/toolkit';
-import { SUBSCRIPTION } from '../../utils/constants';
+import {  SUBSCRIPTION  } from '../../utils';
 
 const initialState = {
   status: 'active', // active, expired, grace_period

@@ -4,14 +4,14 @@
  */
 
 import { useSelector } from 'react-redux';
-import {
+import { 
   hasPermission,
   hasAnyPermission,
   hasAllPermissions,
   getRolePermissions,
   canAccessPage,
-} from '../utils/rolePermissions';
-import type { RootState } from '../redux/store';
+ } from '../utils';
+import type {  RootState  } from '../redux';
 import type { UserRole } from '../types/api';
 
 interface UsePermissionsReturn {
