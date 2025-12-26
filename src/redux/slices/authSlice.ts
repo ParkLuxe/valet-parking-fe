@@ -42,41 +42,26 @@ const authSlice = createSlice({
       state.loading = action.payload;
     },
     
-    loginSuccess: (state, action: PayloadAction<AuthResponse | { data: AuthResponse }>) => {
-      const resp = 'data' in action.payload ? action.payload.data : action.payload;
-      const accessToken = resp.accessToken ?? resp.token ?? '';
-      const refreshToken = resp.refreshToken ?? null;
+    loginSuccess: (state, action: PayloadAction<AuthResponse>) => {
+      // Extract only tokens from login response
+      const { accessToken, refreshToken } = action.payload;
       
-      // Extract user object
-      const { accessToken: _a, refreshToken: _r, token: _t, ...userObj } = resp;
-      let user: User | null = null;
-      
-      if (Object.keys(userObj).length > 0) {
-        user = userObj as User;
-        if (!user.name && user.username) {
-          user.name = user.username;
-        }
-        if (!user.email && user.username) {
-          user.email = user.username;
-        }
-      }
-
-      state.user = user;
       state.token = accessToken;
-      state.refreshToken = refreshToken;
+      state.refreshToken = refreshToken || null;
       state.isAuthenticated = true;
       state.loading = false;
       state.error = null;
-
-      if (user) {
-        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
-      }
-      if (accessToken) {
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
-      }
+      
+      // Store tokens
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, accessToken);
       if (refreshToken) {
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
       }
+    },
+    
+    setUserData: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(action.payload));
     },
     
     loginFailure: (state, action: PayloadAction<string>) => {
@@ -130,6 +115,7 @@ export const {
   updateProfile,
   updateToken,
   clearError,
+  setUserData,
 } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -14,7 +14,8 @@ export {
   updateProfile, 
   updateToken, 
   clearError as clearAuthError,
-  setLoading as setAuthLoading 
+  setLoading as setAuthLoading,
+  setUserData
 } from './slices/authSlice';
 
 // UI slice exports
