@@ -100,4 +100,30 @@ describe('authService', () => {
       await expect(authService.login(credentials)).rejects.toThrow(errorMessage);
     });
   });
+
+  describe('getProfile', () => {
+    test('should fetch user profile from /v1/host-users/me', async () => {
+      const mockUserData = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'HOSTADMIN',
+        username: 'testuser'
+      };
+      
+      mockedApiHelper.get.mockResolvedValueOnce(mockUserData);
+
+      const result = await authService.getProfile();
+
+      expect(mockedApiHelper.get).toHaveBeenCalledWith('/v1/host-users/me');
+      expect(result).toEqual(mockUserData);
+    });
+
+    test('should handle getProfile errors', async () => {
+      const errorMessage = 'Unauthorized';
+      mockedApiHelper.get.mockRejectedValueOnce(new Error(errorMessage));
+
+      await expect(authService.getProfile()).rejects.toThrow(errorMessage);
+    });
+  });
 });
