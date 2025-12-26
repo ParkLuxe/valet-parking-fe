@@ -77,10 +77,10 @@ describe('authSlice', () => {
         error: null,
       };
 
+      // Only include accessToken, omit refreshToken
       const loginResponse = {
         accessToken: 'test-access-token',
-        refreshToken: undefined,
-      };
+      } as any;
 
       const newState = authReducer(initialState, loginSuccess(loginResponse));
 
@@ -101,10 +101,10 @@ describe('authSlice', () => {
         error: null,
       };
 
+      // Only include token field (legacy), omit accessToken
       const loginResponse = {
         token: 'legacy-token',
-        accessToken: undefined,
-      };
+      } as any;
 
       const newState = authReducer(initialState, loginSuccess(loginResponse));
 
