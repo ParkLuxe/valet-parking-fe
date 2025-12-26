@@ -5,22 +5,34 @@
 
 import React, { useState } from 'react';
 import { Download, FileText, FileSpreadsheet } from 'lucide-react';
-import Button from './Button';
+import Button, { ButtonVariant, ButtonSize } from './Button';
 
+interface ExportColumn {
+  accessor: string;
+  header?: string;
+}
 
+interface ExportButtonProps {
+  data?: any[];
+  filename?: string;
+  columns?: ExportColumn[];
+  format?: 'csv' | 'json' | 'excel' | 'pdf';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+}
 
-const ExportButton = ({
+const ExportButton: React.FC<ExportButtonProps> = ({
   data = [],
   filename = 'export',
   columns = [],
   format = 'csv',
-  variant = 'secondary',
-  size = 'medium',
+  variant = 'secondary' as ButtonVariant,
+  size = 'medium' as ButtonSize,
 }) => {
   const [exporting, setExporting] = useState(false);
 
   // Convert data to CSV
-  const convertToCSV = (data, columns) => {
+  const convertToCSV = (data: any[], columns: ExportColumn[]) => {
     if (!data || data.length === 0) return '';
 
     // Get headers

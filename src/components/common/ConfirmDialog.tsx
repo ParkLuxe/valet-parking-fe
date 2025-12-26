@@ -6,9 +6,21 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import Modal from './Modal';
-import Button from './Button';
+import Button, { ButtonVariant } from './Button';
 
-const ConfirmDialog = ({
+interface ConfirmDialogProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+  onConfirm?: () => void;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: ButtonVariant;
+  loading?: boolean;
+}
+
+const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen = false,
   onClose = () => {},
   onConfirm = () => {},

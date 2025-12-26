@@ -8,7 +8,16 @@ import * as ToastPrimitive from '@radix-ui/react-toast';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
-const Toast = React.forwardRef(({ className, variant = 'info', ...props }, ref) => {
+type ToastVariant = 'success' | 'error' | 'warning' | 'info';
+
+interface ToastProps extends React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root> {
+  variant?: ToastVariant;
+}
+
+const Toast = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitive.Root>,
+  ToastProps
+>(({ className, variant = 'info', ...props }, ref) => {
   const variantStyles = {
     success: 'bg-gradient-to-r from-success/90 to-success/70 border-success',
     error: 'bg-gradient-to-r from-error/90 to-error/70 border-error',
@@ -34,7 +43,10 @@ const Toast = React.forwardRef(({ className, variant = 'info', ...props }, ref) 
 
 Toast.displayName = 'Toast';
 
-const ToastAction = React.forwardRef(({ className, ...props }, ref) => (
+const ToastAction = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitive.Action>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Action>
+>(({ className, ...props }, ref) => (
   <ToastPrimitive.Action
     ref={ref}
     className={cn(
@@ -50,7 +62,10 @@ const ToastAction = React.forwardRef(({ className, ...props }, ref) => (
 
 ToastAction.displayName = 'ToastAction';
 
-const ToastClose = React.forwardRef(({ className, ...props }, ref) => (
+const ToastClose = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitive.Close>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Close>
+>(({ className, ...props }, ref) => (
   <ToastPrimitive.Close
     ref={ref}
     className={cn(
@@ -69,7 +84,10 @@ const ToastClose = React.forwardRef(({ className, ...props }, ref) => (
 
 ToastClose.displayName = 'ToastClose';
 
-const ToastTitle = React.forwardRef(({ className, ...props }, ref) => (
+const ToastTitle = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Title>
+>(({ className, ...props }, ref) => (
   <ToastPrimitive.Title
     ref={ref}
     className={cn('text-sm font-semibold text-white', className)}
@@ -79,7 +97,10 @@ const ToastTitle = React.forwardRef(({ className, ...props }, ref) => (
 
 ToastTitle.displayName = 'ToastTitle';
 
-const ToastDescription = React.forwardRef(({ className, ...props }, ref) => (
+const ToastDescription = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Description>
+>(({ className, ...props }, ref) => (
   <ToastPrimitive.Description
     ref={ref}
     className={cn('text-sm text-white/90 mt-1', className)}
@@ -90,7 +111,10 @@ const ToastDescription = React.forwardRef(({ className, ...props }, ref) => (
 ToastDescription.displayName = 'ToastDescription';
 
 const ToastProvider = ToastPrimitive.Provider;
-const ToastViewport = React.forwardRef(({ className, ...props }, ref) => (
+const ToastViewport = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitive.Viewport>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Viewport>
+>(({ className, ...props }, ref) => (
   <ToastPrimitive.Viewport
     ref={ref}
     className={cn(
@@ -106,7 +130,7 @@ const ToastViewport = React.forwardRef(({ className, ...props }, ref) => (
 ToastViewport.displayName = 'ToastViewport';
 
 // Icon mapping
-const toastIcons = {
+const toastIcons: Record<ToastVariant, typeof CheckCircle> = {
   success: CheckCircle,
   error: AlertCircle,
   warning: AlertTriangle,
@@ -114,14 +138,14 @@ const toastIcons = {
 };
 
 // Helper component to render toast with icon
-export interface ToastWithIconProps {
-  variant?: any;
-  title?: any;
-  description?: any;
-  onClose?: any;
+interface ToastWithIconProps {
+  variant?: ToastVariant;
+  title: string;
+  description?: string;
+  onClose?: () => void;
 }
 
-const ToastWithIcon = ({ variant = 'info', title, description, onClose }) => {
+const ToastWithIcon: React.FC<ToastWithIconProps> = ({ variant = 'info', title, description, onClose }) => {
   const Icon = toastIcons[variant];
 
   return (

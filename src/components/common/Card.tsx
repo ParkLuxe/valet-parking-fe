@@ -6,7 +6,20 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 
-const Card = ({
+interface CardProps {
+  title?: string;
+  subtitle?: string;
+  children?: React.ReactNode;
+  actions?: React.ReactNode;
+  headerAction?: React.ReactNode;
+  className?: string;
+  hover?: boolean;
+  glow?: boolean;
+  gradient?: boolean;
+  onClick?: () => void;
+}
+
+const Card: React.FC<CardProps> = ({
   title,
   subtitle,
   children,
@@ -16,6 +29,7 @@ const Card = ({
   hover = false,
   glow = false,
   gradient = false,
+  onClick,
   ...props
 }) => {
   return (

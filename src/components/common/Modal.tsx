@@ -8,9 +8,15 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children: React.ReactNode;
+  className?: string;
+}
 
-
-const Modal = ({
+const Modal: React.FC<ModalProps> = ({
   open,
   onClose,
   title,

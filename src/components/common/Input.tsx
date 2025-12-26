@@ -6,36 +6,49 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
 
-const Input = ({
-  label,
-  name,
-  value,
-  onChange,
-  onBlur,
-  error = false,
-  helperText = '',
-  type = 'text',
-  placeholder = ' ',
-  required = false,
-  disabled = false,
-  fullWidth = true,
-  multiline = false,
-  rows = 4,
-  select = false,
-  children,
-  icon,
-  className,
-  ...props
-}) => {
-  const [isFocused, setIsFocused] = useState(false);
+interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
+  label?: string;
+  error?: boolean;
+  helperText?: string;
+  icon?: React.ReactNode;
+  fullWidth?: boolean;
+  select?: boolean;
+  children?: React.ReactNode;
+  multiline?: boolean;
+  rows?: number;
+}
 
-  const handleFocus = () => setIsFocused(true);
-  const handleBlur = (e) => {
-    setIsFocused(false);
-    if (onBlur) onBlur(e);
-  };
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ 
+    label,
+    name,
+    value,
+    onChange,
+    onBlur,
+    error = false,
+    helperText = '',
+    type = 'text',
+    placeholder = ' ',
+    required = false,
+    disabled = false,
+    fullWidth = true,
+    multiline = false,
+    rows = 4,
+    select = false,
+    children,
+    icon,
+    className,
+    ...props
+  }, ref) => {
+    const [isFocused, setIsFocused] = useState(false);
 
-  const hasValue = value && value.length > 0;
+    const handleFocus = () => setIsFocused(true);
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      setIsFocused(false);
+      if (onBlur) onBlur(e as any);
+    };
+
+    const hasValue = value && String(value).length > 0;
 
   // Render select if select prop is true
   if (select) {
@@ -194,6 +207,8 @@ const Input = ({
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 export default Input;

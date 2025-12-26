@@ -60,8 +60,8 @@ const invoiceService = {
       const params = new URLSearchParams();
       
       // Add pagination
-      params.append('page', page);
-      params.append('size', size);
+      params.append('page', page.toString());
+      params.append('size', size.toString());
       
       // Add filters
       if (filters.status) {

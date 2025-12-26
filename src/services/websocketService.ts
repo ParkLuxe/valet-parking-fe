@@ -4,14 +4,12 @@
  * TODO: Replace with actual WebSocket server URL
  */
 
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { WS_URL, STORAGE_KEYS } from '../utils/constants';
 
 class WebSocketService {
-  constructor() {
-    this.socket = null;
-    this.listeners = {};
-  }
+  private socket: Socket | null = null;
+  private listeners: Record<string, Function[]> = {};
 
   /**
    * Connect to WebSocket server
@@ -61,7 +59,7 @@ class WebSocketService {
    * @param {string} event - Event name
    * @param {Function} callback - Callback function
    */
-  on(event, callback) {
+  on(event: string, callback: Function) {
     if (!this.socket) {
       console.error('WebSocket not connected');
       return;
@@ -81,7 +79,7 @@ class WebSocketService {
    * @param {string} event - Event name
    * @param {Function} callback - Callback function (optional)
    */
-  off(event, callback) {
+  off(event: string, callback?: Function) {
     if (!this.socket) {
       return;
     }
@@ -104,7 +102,7 @@ class WebSocketService {
    * @param {string} event - Event name
    * @param {*} data - Data to send
    */
-  emit(event, data) {
+  emit(event: string, data: any) {
     if (!this.socket) {
       console.error('WebSocket not connected');
       return;
@@ -117,7 +115,7 @@ class WebSocketService {
    * Subscribe to vehicle status updates
    * @param {Function} callback - Callback function
    */
-  onVehicleStatusUpdate(callback) {
+  onVehicleStatusUpdate(callback: Function) {
     this.on('vehicle:status:update', callback);
   }
 
@@ -125,7 +123,7 @@ class WebSocketService {
    * Subscribe to new parking requests
    * @param {Function} callback - Callback function
    */
-  onNewParkingRequest(callback) {
+  onNewParkingRequest(callback: Function) {
     this.on('vehicle:new:request', callback);
   }
 
@@ -133,7 +131,7 @@ class WebSocketService {
    * Subscribe to valet assignments
    * @param {Function} callback - Callback function
    */
-  onValetAssignment(callback) {
+  onValetAssignment(callback: Function) {
     this.on('valet:assignment', callback);
   }
 
@@ -141,7 +139,7 @@ class WebSocketService {
    * Subscribe to notifications
    * @param {Function} callback - Callback function
    */
-  onNotification(callback) {
+  onNotification(callback: Function) {
     this.on('notification', callback);
   }
 
@@ -150,7 +148,7 @@ class WebSocketService {
    * @param {string} vehicleId - Vehicle ID
    * @param {string} status - New status
    */
-  updateVehicleStatus(vehicleId, status) {
+  updateVehicleStatus(vehicleId: string, status: string) {
     this.emit('vehicle:status:update', { vehicleId, status });
   }
 
@@ -158,7 +156,7 @@ class WebSocketService {
    * Join a room (for host-specific updates)
    * @param {string} roomId - Room ID (usually host ID)
    */
-  joinRoom(roomId) {
+  joinRoom(roomId: string) {
     this.emit('room:join', { roomId });
   }
 
@@ -166,7 +164,7 @@ class WebSocketService {
    * Leave a room
    * @param {string} roomId - Room ID
    */
-  leaveRoom(roomId) {
+  leaveRoom(roomId: string) {
     this.emit('room:leave', { roomId });
   }
 

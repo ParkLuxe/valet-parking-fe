@@ -5,16 +5,26 @@
 
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import Button from '../common/Button';
+import Button, { ButtonVariant } from '../common/Button';
 import paymentService from '../../services/paymentService';
 import { addToast } from '../../redux/slices/notificationSlice';
 import { updateInvoice } from '../../redux/slices/invoiceSlice';
 import { addPayment } from '../../redux/slices/paymentSlice';
 import { RAZORPAY_KEY } from '../../utils/constants';
 
+interface RazorpayButtonProps {
+  invoiceId: string;
+  amount: number;
+  invoiceNumber: string;
+  onSuccess: (response?: any) => void;
+  onFailure?: (error: any) => void;
+  buttonText?: string;
+  buttonVariant?: ButtonVariant;
+  disabled?: boolean;
+  className?: string;
+}
 
-
-const RazorpayButton = ({ 
+const RazorpayButton: React.FC<RazorpayButtonProps> = ({ 
   invoiceId, 
   amount, 
   invoiceNumber,
