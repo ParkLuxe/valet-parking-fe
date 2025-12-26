@@ -5,10 +5,10 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
-import invoiceService from '../services/invoiceService';
-import { addToast } from '../redux/slices/notificationSlice';
+import { invoiceService } from '../services';
+import { addToast } from '../redux';
 import { queryKeys } from '../lib/queryKeys';
-import type { Invoice, InvoiceFilters } from '../types/api';
+import type { Invoice, InvoiceFilters } from '../types';
 
 // Get invoices with filters
 export const useInvoices = (filters: InvoiceFilters = {}) => {

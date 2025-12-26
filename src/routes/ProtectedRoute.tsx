@@ -7,9 +7,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { hasRole } from '../utils/helpers';
-import { canAccessPage } from '../utils/rolePermissions';
-import type { RootState } from '../redux/store';
+import { hasRole, canAccessPage } from '../utils';
+import type { RootState } from '../redux';
 
 export interface ProtectedRouteProps {
   children: React.ReactNode;

@@ -28,10 +28,9 @@ import {
   FileLineChart,
   Bug,
 } from 'lucide-react';
-import { toggleSidebar } from '../../redux/slices/uiSlice';
-import { cn } from '../../utils/cn';
-import usePermissions from '../../hooks/usePermissions';
-import type { RootState } from '../../redux/store';
+import { toggleSidebar, type RootState } from '../../redux';
+import { cn } from '../../utils';
+import { usePermissions } from '../../hooks';
 
 const drawerWidth = 260;
 

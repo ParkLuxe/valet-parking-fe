@@ -5,8 +5,8 @@
 
 import { useQuery, useInfiniteQuery, type UseQueryResult, type UseInfiniteQueryResult } from '@tanstack/react-query';
 import { queryKeys } from '../../lib/queryKeys';
-import invoiceService from '../../services/invoiceService';
-import type { Invoice, InvoiceFilters, PaginatedResponse } from '../../types/api';
+import { invoiceService } from '../../services';
+import type { Invoice, InvoiceFilters, PaginatedResponse } from '../../types';
 
 /**
  * Hook to fetch invoices with filters and pagination

@@ -10,9 +10,9 @@ import {
   hasAllPermissions,
   getRolePermissions,
   canAccessPage,
-} from '../utils/rolePermissions';
-import type { RootState } from '../redux/store';
-import type { UserRole } from '../types/api';
+} from '../utils';
+import type { RootState } from '../redux';
+import type { UserRole } from '../types';
 
 interface UsePermissionsReturn {
   can: (permission: string) => boolean;

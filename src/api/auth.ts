@@ -6,10 +6,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { apiHelper } from '../services/api';
-import { loginSuccess, logout as logoutAction } from '../redux/slices/authSlice';
-import { addToast } from '../redux/slices/notificationSlice';
-import type { LoginRequest, RegisterRequest, AuthResponse, User } from '../types/api';
+import { apiHelper } from '../services';
+import { loginSuccess, logout as logoutAction, addToast } from '../redux';
+import type { LoginRequest, RegisterRequest, AuthResponse, User } from '../types';
 
 // Query keys
 export const authKeys = {

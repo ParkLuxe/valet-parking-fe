@@ -15,9 +15,8 @@ import {
   LogOut,
   Settings,
 } from 'lucide-react';
-import { toggleSidebar } from '../../redux/slices/uiSlice';
-import { logout } from '../../redux/slices/authSlice';
-import { getInitials } from '../../utils/helpers';
+import { toggleSidebar, logout } from '../../redux';
+import { getInitials } from '../../utils';
 import type { RootState } from '../../redux/store';
 
 const Header = () => {

@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { cn } from '../../utils/cn';
+import { cn } from '../../utils';
 
 interface InputProps {
   label?: string;

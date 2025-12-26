@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { apiHelper } from '../services/api';
+import { apiHelper } from '../services';
 
 const useRazorpay = ({ invoiceId, onSuccess, onFailure }) => {
   const [loading, setLoading] = useState(false);
