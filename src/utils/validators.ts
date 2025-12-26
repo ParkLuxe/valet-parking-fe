@@ -3,15 +3,20 @@
  * Contains validators for email, phone, password, vehicle number, etc.
  */
 
-interface ValidationResult {
+export interface ValidationResult {
   isValid: boolean;
   error: string | null;
 }
 
+export interface FormValidationResult {
+  isValid: boolean;
+  errors: Record<string, string>;
+}
+
+type ValidationRule<T = any> = (value: T) => ValidationResult;
+
 /**
  * Validate email address
- * @param email - Email to validate
- * @returns Validation result with isValid and error message
  */
 export const validateEmail = (email: string): ValidationResult => {
   if (!email) {
@@ -28,8 +33,6 @@ export const validateEmail = (email: string): ValidationResult => {
 
 /**
  * Validate phone number (Indian format)
- * @param phone - Phone number to validate
- * @returns Validation result with isValid and error message
  */
 export const validatePhone = (phone: string): ValidationResult => {
   if (!phone) {
@@ -37,8 +40,7 @@ export const validatePhone = (phone: string): ValidationResult => {
   }
   
   // Remove spaces, dashes, and brackets
-  // eslint-disable-next-line no-useless-escape
-  const cleanedPhone = phone.replace(/[\s\-\(\)]/g, '');
+  const cleanedPhone = phone.replace(/[\s\-()]/g, '');
   
   // Check if it's a valid Indian phone number (10 digits)
   const phoneRegex = /^[6-9]\d{9}$/;
@@ -51,8 +53,6 @@ export const validatePhone = (phone: string): ValidationResult => {
 
 /**
  * Validate password strength
- * @param password - Password to validate
- * @returns Validation result with isValid and error message
  */
 export const validatePassword = (password: string): ValidationResult => {
   if (!password) {
@@ -79,7 +79,6 @@ export const validatePassword = (password: string): ValidationResult => {
   }
   
   // Check for at least one special character
-  // eslint-disable-next-line no-useless-escape
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
     return { isValid: false, error: 'Password must contain at least one special character' };
   }
@@ -89,9 +88,6 @@ export const validatePassword = (password: string): ValidationResult => {
 
 /**
  * Validate if passwords match
- * @param password - Password
- * @param confirmPassword - Confirm password
- * @returns Validation result with isValid and error message
  */
 export const validatePasswordMatch = (password: string, confirmPassword: string): ValidationResult => {
   if (!confirmPassword) {
@@ -107,8 +103,6 @@ export const validatePasswordMatch = (password: string, confirmPassword: string)
 
 /**
  * Validate vehicle number (Indian format)
- * @param vehicleNumber - Vehicle number to validate
- * @returns Validation result with isValid and error message
  */
 export const validateVehicleNumber = (vehicleNumber: string): ValidationResult => {
   if (!vehicleNumber) {
@@ -116,8 +110,7 @@ export const validateVehicleNumber = (vehicleNumber: string): ValidationResult =
   }
   
   // Indian vehicle number format: XX00XX0000 or XX-00-XX-0000
-  // eslint-disable-next-line no-useless-escape
-  const cleanedNumber = vehicleNumber.replace(/[\s\-]/g, '').toUpperCase();
+  const cleanedNumber = vehicleNumber.replace(/[\s-]/g, '').toUpperCase();
   const vehicleRegex = /^[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}$/;
   
   if (!vehicleRegex.test(cleanedNumber)) {
@@ -129,9 +122,6 @@ export const validateVehicleNumber = (vehicleNumber: string): ValidationResult =
 
 /**
  * Validate name
- * @param name - Name to validate
- * @param fieldName - Field name for error message
- * @returns Validation result with isValid and error message
  */
 export const validateName = (name: string, fieldName: string = 'Name'): ValidationResult => {
   if (!name) {
@@ -151,9 +141,6 @@ export const validateName = (name: string, fieldName: string = 'Name'): Validati
 
 /**
  * Validate required field
- * @param value - Value to validate
- * @param fieldName - Field name for error message
- * @returns Validation result with isValid and error message
  */
 export const validateRequired = (value: any, fieldName: string = 'This field'): ValidationResult => {
   if (value === null || value === undefined || value === '') {
@@ -169,16 +156,11 @@ export const validateRequired = (value: any, fieldName: string = 'This field'): 
 
 /**
  * Validate number within range
- * @param value - Value to validate
- * @param min - Minimum value
- * @param max - Maximum value
- * @param fieldName - Field name for error message
- * @returns Validation result with isValid and error message
  */
 export const validateNumber = (
-  value: any,
-  min: number | null = null,
-  max: number | null = null,
+  value: any, 
+  min: number | null = null, 
+  max: number | null = null, 
   fieldName: string = 'Value'
 ): ValidationResult => {
   if (isNaN(value)) {
@@ -198,27 +180,17 @@ export const validateNumber = (
   return { isValid: true, error: null };
 };
 
-type ValidatorFn = (value: any) => ValidationResult;
-
-interface FormValidationResult {
-  isValid: boolean;
-  errors: Record<string, string>;
-}
-
 /**
  * Validate form data with multiple fields
- * @param formData - Form data object
- * @param validationRules - Validation rules for each field
- * @returns Validation result with errors object
  */
-export const validateForm = (
-  formData: Record<string, any>,
-  validationRules: Record<string, ValidatorFn[]>
+export const validateForm = <T extends Record<string, any>>(
+  formData: T,
+  validationRules: Record<keyof T, ValidationRule[]>
 ): FormValidationResult => {
   const errors: Record<string, string> = {};
   let isValid = true;
   
-  Object.keys(validationRules).forEach((fieldName) => {
+  (Object.keys(validationRules) as Array<keyof T>).forEach((fieldName) => {
     const value = formData[fieldName];
     const rules = validationRules[fieldName];
     
@@ -226,7 +198,7 @@ export const validateForm = (
     for (const rule of rules) {
       const result = rule(value);
       if (!result.isValid) {
-        errors[fieldName] = result.error || 'Validation failed';
+        errors[fieldName as string] = result.error || 'Validation failed';
         isValid = false;
         break; // Stop at first error for this field
       }
@@ -238,8 +210,6 @@ export const validateForm = (
 
 /**
  * Validate URL
- * @param url - URL to validate
- * @returns Validation result with isValid and error message
  */
 export const validateURL = (url: string): ValidationResult => {
   if (!url) {
@@ -256,11 +226,8 @@ export const validateURL = (url: string): ValidationResult => {
 
 /**
  * Validate file size
- * @param file - File to validate
- * @param maxSizeMB - Maximum size in MB
- * @returns Validation result with isValid and error message
  */
-export const validateFileSize = (file: File, maxSizeMB: number = 5): ValidationResult => {
+export const validateFileSize = (file: File | null, maxSizeMB: number = 5): ValidationResult => {
   if (!file) {
     return { isValid: false, error: 'No file selected' };
   }
@@ -275,12 +242,9 @@ export const validateFileSize = (file: File, maxSizeMB: number = 5): ValidationR
 
 /**
  * Validate file type
- * @param file - File to validate
- * @param allowedTypes - Array of allowed MIME types
- * @returns Validation result with isValid and error message
  */
 export const validateFileType = (
-  file: File,
+  file: File | null, 
   allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/jpg']
 ): ValidationResult => {
   if (!file) {

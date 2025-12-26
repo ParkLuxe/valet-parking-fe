@@ -1,18 +1,16 @@
 /**
- * API Response Types
- * Type definitions for all API responses and entities
+ * API Type Definitions
+ * Defines all API request and response types
  */
 
-// Generic API Response Wrapper
-export interface ApiResponse<T = any> {
+// Common API Response Types
+export interface ApiResponse<T> {
   data: T;
-  success?: boolean;
+  success: boolean;
   message?: string;
-  status?: string;
 }
 
-// Paginated Response
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T> {
   content: T[];
   totalPages: number;
   totalElements: number;
@@ -20,50 +18,49 @@ export interface PaginatedResponse<T = any> {
   size: number;
   first?: boolean;
   last?: boolean;
+  numberOfElements?: number;
   empty?: boolean;
 }
 
-// User Types
-export type UserRole = 'SUPERADMIN' | 'HOSTADMIN' | 'HOSTUSER';
+// User & Authentication Types
+export type UserRole = 'SUPERADMIN' | 'HOSTADMIN' | 'HOSTUSER' | 'VALET';
 
 export interface User {
   id: string;
-  username: string;
+  name: string;
+  username?: string;
   email: string;
-  name?: string;
   role: UserRole;
   hostId?: string;
-  phoneNumber?: string;
+  active?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  isActive?: boolean;
 }
 
-// Authentication Types
-export interface LoginCredentials {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
+export interface AuthResponse {
   accessToken: string;
-  token?: string; // Legacy support
   refreshToken?: string;
+  token?: string;
+  user?: User;
+  id?: string;
+  name?: string;
   username?: string;
   email?: string;
-  name?: string;
   role?: UserRole;
   hostId?: string;
-  id?: string;
 }
 
-export interface RegisterData {
+export interface LoginRequest {
   username: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  name: string;
   email: string;
   password: string;
-  confirmPassword?: string;
-  phoneNumber?: string;
   role?: UserRole;
+  hostId?: string;
 }
 
 // Invoice Types
@@ -72,101 +69,115 @@ export type InvoiceStatus = 'PAID' | 'UNPAID' | 'OVERDUE' | 'PENDING';
 export interface Invoice {
   id: string;
   invoiceNumber: string;
-  hostId: string;
-  hostName?: string;
+  totalAmount: number;
+  paymentStatus: InvoiceStatus;
   invoiceDate: string;
   dueDate: string;
-  billingPeriodStart: string;
-  billingPeriodEnd: string;
-  totalAmount: number;
-  baseAmount?: number;
-  additionalAmount?: number;
-  taxAmount?: number;
-  paymentStatus: InvoiceStatus;
-  paidAt?: string;
-  paymentMethod?: string;
-  scansIncluded?: number;
-  additionalScans?: number;
-  subscriptionPlanName?: string;
-  notes?: string;
+  hostId: string;
+  hostName?: string;
+  pdfUrl?: string;
+  items?: InvoiceItem[];
   createdAt?: string;
   updatedAt?: string;
 }
 
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
 export interface InvoiceFilters {
-  status?: InvoiceStatus;
   hostId?: string;
+  status?: InvoiceStatus | 'ALL';
   startDate?: string;
   endDate?: string;
-  minAmount?: number;
-  maxAmount?: number;
+  page?: number;
+  size?: number;
 }
 
 // Payment Types
-export type PaymentStatus = 'SUCCESS' | 'PENDING' | 'FAILED' | 'REFUNDED';
-export type PaymentMethod = 'CREDIT_CARD' | 'DEBIT_CARD' | 'UPI' | 'NET_BANKING' | 'CASH' | 'OTHER';
+export type PaymentStatus = 'SUCCESS' | 'PENDING' | 'FAILED' | 'COMPLETED';
 
 export interface Payment {
   id: string;
   invoiceId: string;
-  invoiceNumber?: string;
-  hostId: string;
-  hostName?: string;
   amount: number;
-  paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
+  status: PaymentStatus;
   transactionId?: string;
+  paymentMethod?: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   razorpaySignature?: string;
-  paymentDate: string;
-  notes?: string;
-  createdAt?: string;
+  createdAt: string;
   updatedAt?: string;
 }
 
-export interface PaymentFilters {
-  status?: PaymentStatus;
-  hostId?: string;
-  startDate?: string;
-  endDate?: string;
-  method?: PaymentMethod;
-  minAmount?: number;
-  maxAmount?: number;
+export interface PaymentRequest {
+  invoiceId: string;
+  amount: number;
+  paymentMethod?: string;
+}
+
+export interface PaymentStats {
+  totalRevenue: number;
+  totalPayments: number;
+  successfulPayments: number;
+  failedPayments: number;
+  pendingPayments: number;
 }
 
 // Vehicle Types
-export type VehicleStatus = 
-  | 'BEING_ASSIGNED'
-  | 'PARKING_IN_PROGRESS'
-  | 'PARKED'
-  | 'RETRIEVAL_REQUESTED'
-  | 'OUT_FOR_DELIVERY'
-  | 'DELIVERED';
-
-export type VehicleType = 'car' | 'bike' | 'suv' | 'van';
+export type VehicleStatus = 'PARKED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'PENDING';
 
 export interface Vehicle {
   id: string;
-  licensePlate: string;
-  vehicleType: VehicleType;
-  make?: string;
-  model?: string;
-  color?: string;
+  vehicleNumber: string;
+  customerName: string;
+  customerPhone?: string;
   status: VehicleStatus;
-  hostId: string;
-  ownerId?: string;
-  ownerName?: string;
-  ownerPhone?: string;
-  assignedValetId?: string;
-  assignedValetName?: string;
   parkingSlotId?: string;
   parkingSlotNumber?: string;
-  qrCode?: string;
+  hostId: string;
+  valetId?: string;
+  valetName?: string;
   checkInTime?: string;
   checkOutTime?: string;
-  parkingDuration?: number;
-  notes?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface VehicleFilters {
+  hostId?: string;
+  status?: VehicleStatus;
+  valetId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface VehicleRequest {
+  id: string;
+  vehicleId: string;
+  requestType: 'DELIVERY' | 'RETRIEVAL';
+  status: 'PENDING' | 'ACCEPTED' | 'COMPLETED' | 'CANCELLED';
+  valetId?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// Parking Slot Types
+export type ParkingSlotStatus = 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'MAINTENANCE';
+
+export interface ParkingSlot {
+  id: string;
+  slotNumber: string;
+  status: ParkingSlotStatus;
+  hostId: string;
+  vehicleId?: string;
+  floor?: string;
+  section?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -176,130 +187,95 @@ export interface Host {
   id: string;
   name: string;
   email: string;
-  phoneNumber?: string;
+  phone?: string;
   address?: string;
   city?: string;
   state?: string;
   country?: string;
   zipCode?: string;
   subscriptionPlanId?: string;
-  subscriptionPlanName?: string;
-  subscriptionStatus?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED';
-  subscriptionStartDate?: string;
-  subscriptionEndDate?: string;
-  totalScansAllowed?: number;
-  scansUsed?: number;
-  isActive: boolean;
+  subscriptionStatus?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  totalSlots?: number;
+  occupiedSlots?: number;
+  active: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
 
-// Subscription Plan Types
+// Subscription Types
 export interface SubscriptionPlan {
   id: string;
   name: string;
   description?: string;
   price: number;
-  scansIncluded: number;
-  additionalScanPrice?: number;
-  durationDays?: number;
+  billingCycle: 'MONTHLY' | 'YEARLY';
+  maxSlots: number;
+  maxUsers?: number;
   features?: string[];
-  isActive: boolean;
+  active: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
 
-// Parking Slot Types
-export type SlotStatus = 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'MAINTENANCE';
-
-export interface ParkingSlot {
+export interface Subscription {
   id: string;
-  slotNumber: string;
   hostId: string;
-  status: SlotStatus;
-  floor?: string;
-  section?: string;
-  vehicleType?: VehicleType;
-  currentVehicleId?: string;
-  currentVehiclePlate?: string;
-  assignedValetId?: string;
-  assignedValetName?: string;
-  qrCode?: string;
-  notes?: string;
+  planId: string;
+  plan?: SubscriptionPlan;
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'CANCELLED';
+  startDate: string;
+  endDate?: string;
+  autoRenew: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
 
 // Analytics Types
 export interface AnalyticsData {
-  totalVehicles?: number;
-  activeVehicles?: number;
-  totalRevenue?: number;
-  totalScans?: number;
-  averageParkingTime?: number;
-  peakHours?: { hour: number; count: number }[];
-  vehiclesByStatus?: { status: string; count: number }[];
-  revenueByMonth?: { month: string; revenue: number }[];
-  topValets?: { valetId: string; valetName: string; vehiclesHandled: number }[];
+  totalVehicles: number;
+  parkedVehicles: number;
+  deliveredVehicles: number;
+  revenue: number;
+  occupancyRate?: number;
+  averageStayDuration?: number;
+}
+
+export interface RevenueData {
+  date: string;
+  revenue: number;
+}
+
+export interface VehicleStats {
+  date: string;
+  parked: number;
+  delivered: number;
 }
 
 // QR Code Types
 export interface QRCode {
   id: string;
   code: string;
-  type: 'VEHICLE' | 'SLOT' | 'HOST';
-  entityId: string;
-  hostId?: string;
-  isActive: boolean;
-  generatedAt: string;
-  lastScannedAt?: string;
-  scanCount?: number;
-}
-
-// Vehicle Request Types
-export type RequestStatus = 'PENDING' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-export type RequestType = 'PARK' | 'RETRIEVE';
-
-export interface VehicleRequest {
-  id: string;
-  type: RequestType;
-  status: RequestStatus;
-  vehicleId: string;
-  vehiclePlate?: string;
+  valetId?: string;
+  valetName?: string;
   hostId: string;
-  requestedBy?: string;
-  assignedValetId?: string;
-  assignedValetName?: string;
-  requestTime: string;
-  assignedTime?: string;
-  completedTime?: string;
-  estimatedTime?: number;
-  actualTime?: number;
-  notes?: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'ASSIGNED' | 'UNASSIGNED';
+  createdAt: string;
+  updatedAt?: string;
 }
 
-// Host User Types
-export interface HostUser extends User {
-  hostId: string;
-  permissions?: string[];
-  isActive: boolean;
-}
-
-// Schedule Types
-export interface Schedule {
+// Host Schedule Types
+export interface HostSchedule {
   id: string;
   hostId: string;
-  userId: string;
-  userName?: string;
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  isActive: boolean;
+  dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+  openTime: string;
+  closeTime: string;
+  isOpen: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
 
-// Country and State Types
+// Country & State Types
 export interface Country {
   id: string;
   name: string;
@@ -311,13 +287,32 @@ export interface State {
   name: string;
   code: string;
   countryId: string;
-  countryCode?: string;
 }
 
-// Error Response
-export interface ErrorResponse {
+// Valet Types
+export interface Valet {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  hostId: string;
+  qrCodeId?: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ValetPerformance {
+  valetId: string;
+  valetName: string;
+  totalVehiclesHandled: number;
+  averageResponseTime?: number;
+  rating?: number;
+}
+
+// Error Types
+export interface ApiError {
   message: string;
-  status?: number;
-  error?: string;
+  code?: string;
   details?: any;
 }

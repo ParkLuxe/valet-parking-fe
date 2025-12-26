@@ -1,133 +1,105 @@
 /**
- * Component Prop Types
- * Type definitions for component props
+ * Component Props Type Definitions
+ * Defines prop types for common components
  */
 
-import type { ReactNode, CSSProperties } from 'react';
-import type { User, Vehicle, Invoice, Payment, ParkingSlot } from './api';
+import type { ReactNode } from 'react';
 
-// Button Component
+// Button Component Props
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+export type ButtonSize = 'small' | 'medium' | 'large';
+
 export interface ButtonProps {
   children: ReactNode;
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  type?: 'button' | 'submit' | 'reset';
-  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger' | 'success';
-  size?: 'small' | 'medium' | 'large';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  onClick?: () => void;
   disabled?: boolean;
   loading?: boolean;
-  className?: string;
   startIcon?: ReactNode;
   endIcon?: ReactNode;
-  fullWidth?: boolean;
+  className?: string;
+  type?: 'button' | 'submit' | 'reset';
 }
 
-// Input Component
+// Input Component Props
 export interface InputProps {
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time';
-  value: string | number;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  type?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
-  label?: string;
-  error?: string;
   disabled?: boolean;
-  required?: boolean;
   className?: string;
   name?: string;
   id?: string;
-  autoComplete?: string;
-  maxLength?: number;
-  minLength?: number;
-  min?: number;
-  max?: number;
+  error?: string;
+  label?: string;
+  required?: boolean;
 }
 
-// Card Component
+// Card Component Props
 export interface CardProps {
   children: ReactNode;
   title?: string;
-  subtitle?: string;
   className?: string;
   onClick?: () => void;
-  hoverable?: boolean;
-  bordered?: boolean;
 }
 
-// Modal Component
+// Modal Component Props
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: ReactNode;
-  size?: 'small' | 'medium' | 'large' | 'full';
+  size?: 'small' | 'medium' | 'large';
   className?: string;
-  closeOnBackdrop?: boolean;
-  showClose?: boolean;
-  footer?: ReactNode;
 }
 
-// Toast Component
+// Loading Spinner Props
+export interface LoadingSpinnerProps {
+  size?: 'small' | 'medium' | 'large';
+  className?: string;
+}
+
+// Badge Component Props
+export interface BadgeProps {
+  children: ReactNode;
+  variant?: 'success' | 'error' | 'warning' | 'info' | 'default';
+  className?: string;
+}
+
+// Select Component Props
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+export interface SelectProps {
+  options: SelectOption[];
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  label?: string;
+  error?: string;
+}
+
+// Toast Component Props
 export interface ToastProps {
+  type: 'success' | 'error' | 'warning' | 'info';
   message: string;
-  type?: 'success' | 'error' | 'warning' | 'info';
   duration?: number;
   onClose?: () => void;
-  variant?: 'success' | 'error' | 'warning' | 'info';
-  title?: string;
-  description?: string;
 }
 
-// Layout Component
+// Layout Component Props
 export interface LayoutProps {
   children: ReactNode;
 }
 
-// Header Component
-export interface HeaderProps {
-  title?: string;
-  user?: User | null;
-  onLogout?: () => void;
-}
-
-// Sidebar Component
-export interface SidebarProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-  user?: User | null;
-}
-
-// Confirm Dialog Component
-export interface ConfirmDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title?: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: 'danger' | 'warning' | 'info';
-}
-
-// Loading Spinner Component
-export interface LoadingSpinnerProps {
-  size?: 'small' | 'medium' | 'large';
-  className?: string;
-  fullScreen?: boolean;
-}
-
-// Date Range Picker Component
-export interface DateRangePickerProps {
-  startDate: string;
-  endDate: string;
-  onStartDateChange: (date: string) => void;
-  onEndDateChange: (date: string) => void;
-  label?: string;
-  className?: string;
-}
-
-// Export Button Component
-export interface ExportButtonProps {
-  data: any[];
-  filename?: string;
-  format?: 'csv' | 'excel' | 'pdf';
-  className?: string;
+// Protected Route Props
+export interface ProtectedRouteProps {
+  children: ReactNode;
+  allowedRoles?: string[];
 }

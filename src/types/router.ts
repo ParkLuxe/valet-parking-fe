@@ -16,6 +16,10 @@ export interface RouterContext {
 // Route params
 export interface RouteParams {
   id?: string;
+  invoiceId?: string;
+  paymentId?: string;
+  vehicleId?: string;
+  hostId?: string;
   [key: string]: string | undefined;
 }
 

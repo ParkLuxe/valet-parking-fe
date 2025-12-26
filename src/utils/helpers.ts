@@ -7,8 +7,6 @@ import { PERFORMANCE_THRESHOLDS } from './constants';
 
 /**
  * Format date to display format
- * @param date - Date to format
- * @returns Formatted date string
  */
 export const formatDate = (date: string | Date | null | undefined): string => {
   if (!date) return '-';
@@ -25,8 +23,6 @@ export const formatDate = (date: string | Date | null | undefined): string => {
 
 /**
  * Format currency to Indian Rupees
- * @param amount - Amount to format
- * @returns Formatted currency string
  */
 export const formatCurrency = (amount: number | null | undefined): string => {
   if (amount === null || amount === undefined) return '₹0';
@@ -35,12 +31,9 @@ export const formatCurrency = (amount: number | null | undefined): string => {
 
 /**
  * Calculate time difference in minutes
- * @param startTime - Start time
- * @param endTime - End time (defaults to now)
- * @returns Time difference in minutes
  */
 export const getTimeDifferenceInMinutes = (
-  startTime: string | Date,
+  startTime: string | Date, 
   endTime: string | Date = new Date()
 ): number => {
   const start = new Date(startTime);
@@ -51,8 +44,6 @@ export const getTimeDifferenceInMinutes = (
 
 /**
  * Format duration from minutes to human readable format
- * @param minutes - Duration in minutes
- * @returns Formatted duration string
  */
 export const formatDuration = (minutes: number | null | undefined): string => {
   if (!minutes || minutes < 0) return '0 min';
@@ -62,21 +53,13 @@ export const formatDuration = (minutes: number | null | undefined): string => {
   return `${hours}h ${mins}m`;
 };
 
-interface PerformanceRating {
-  color: string;
-  text: string;
-}
-
 /**
  * Get performance rating based on time taken
- * @param minutes - Time taken in minutes
- * @param type - Type of operation ('parking' or 'delivery')
- * @returns Rating object with color and text
  */
 export const getPerformanceRating = (
-  minutes: number,
+  minutes: number, 
   type: 'parking' | 'delivery' = 'parking'
-): PerformanceRating => {
+): { color: string; text: string } => {
   const thresholds = type === 'parking' 
     ? {
         excellent: PERFORMANCE_THRESHOLDS.PARKING_TIME_EXCELLENT,
@@ -102,8 +85,6 @@ export const getPerformanceRating = (
 
 /**
  * Calculate subscription cost based on scan count
- * @param scanCount - Number of scans
- * @returns Total cost
  */
 export const calculateSubscriptionCost = (scanCount: number): number => {
   const BASE_PRICE = 1000;
@@ -120,14 +101,10 @@ export const calculateSubscriptionCost = (scanCount: number): number => {
 
 /**
  * Check if subscription is in grace period
- * @param usedScans - Number of scans used
- * @param totalScans - Total scans allowed
- * @param lastPaymentDate - Date of last payment
- * @returns True if in grace period
  */
 export const isInGracePeriod = (
-  usedScans: number,
-  totalScans: number,
+  usedScans: number, 
+  totalScans: number, 
   lastPaymentDate: string | Date
 ): boolean => {
   if (usedScans <= totalScans) return false;
@@ -141,7 +118,6 @@ export const isInGracePeriod = (
 
 /**
  * Generate a unique ID (simple version)
- * @returns Unique ID
  */
 export const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -149,12 +125,9 @@ export const generateId = (): string => {
 
 /**
  * Debounce function to limit rate of function execution
- * @param func - Function to debounce
- * @param delay - Delay in milliseconds
- * @returns Debounced function
  */
 export const debounce = <T extends (...args: any[]) => any>(
-  func: T,
+  func: T, 
   delay: number
 ): ((...args: Parameters<T>) => void) => {
   let timeoutId: NodeJS.Timeout;
@@ -166,8 +139,6 @@ export const debounce = <T extends (...args: any[]) => any>(
 
 /**
  * Get user initials from name
- * @param name - User's full name
- * @returns Initials
  */
 export const getInitials = (name: string | null | undefined): string => {
   if (!name) return '?';
@@ -178,9 +149,6 @@ export const getInitials = (name: string | null | undefined): string => {
 
 /**
  * Truncate text to specified length
- * @param text - Text to truncate
- * @param maxLength - Maximum length
- * @returns Truncated text
  */
 export const truncateText = (text: string | null | undefined, maxLength: number = 50): string => {
   if (!text || text.length <= maxLength) return text || '';
@@ -189,15 +157,8 @@ export const truncateText = (text: string | null | undefined, maxLength: number 
 
 /**
  * Check if user has required role
- * @param userRole - User's role
- * @param requiredRoles - Required role(s)
- * @returns True if user has required role
  */
-export const hasRole = (
-  userRole: string | null | undefined,
-  requiredRoles: string | string[]
-): boolean => {
-  if (!userRole) return false;
+export const hasRole = (userRole: string, requiredRoles: string | string[]): boolean => {
   if (Array.isArray(requiredRoles)) {
     return requiredRoles.includes(userRole);
   }
@@ -206,14 +167,10 @@ export const hasRole = (
 
 /**
  * Sort array of objects by key
- * @param array - Array to sort
- * @param key - Key to sort by
- * @param order - Sort order ('asc' or 'desc')
- * @returns Sorted array
  */
 export const sortByKey = <T extends Record<string, any>>(
-  array: T[],
-  key: keyof T,
+  array: T[], 
+  key: keyof T, 
   order: 'asc' | 'desc' = 'asc'
 ): T[] => {
   return [...array].sort((a, b) => {
@@ -230,8 +187,6 @@ export const sortByKey = <T extends Record<string, any>>(
 
 /**
  * Download data as JSON file
- * @param data - Data to download
- * @param filename - Name of file
  */
 export const downloadJSON = (data: any, filename: string = 'data.json'): void => {
   const json = JSON.stringify(data, null, 2);
@@ -248,8 +203,6 @@ export const downloadJSON = (data: any, filename: string = 'data.json'): void =>
 
 /**
  * Copy text to clipboard
- * @param text - Text to copy
- * @returns Promise that resolves when text is copied
  */
 export const copyToClipboard = async (text: string): Promise<boolean> => {
   try {
