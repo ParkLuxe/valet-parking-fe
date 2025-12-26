@@ -26,7 +26,7 @@ const SubscriptionPlans = () => {
 
   useEffect(() => {
     fetchPlans();
-    if (user?.hostId && can('canManageSubscription')) {
+    if (user?.hostUserId && can('canManageSubscription')) {
       fetchCurrentSubscription();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,7 +59,7 @@ const SubscriptionPlans = () => {
   };
 
   const handleSelectPlan = async (planId) => {
-    if (!user?.hostId) return;
+    if (!user?.hostUserId) return;
 
     if (!window.confirm('Are you sure you want to change your subscription plan?')) {
       return;

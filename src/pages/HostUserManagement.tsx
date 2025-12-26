@@ -18,15 +18,11 @@ import {
   Circle,
   Filter,
 } from 'lucide-react';
-import { Card } from '../components';
-import { Button } from '../components';
-import { Modal } from '../components';
-import { Input } from '../components';
-import { cn } from '../utils';
-import {  getInitials  } from '../utils';
+import { Card, Button, Modal, Input } from '../components';
+import { cn, getInitials } from '../utils';
 
 const HostUserManagement = () => {
-  const { valetList } = useSelector((state: RootState) => (state as any).valets || {});
+  const { valetList } = useSelector((state: RootState) => (state as any)?.valetList || []);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -36,7 +32,7 @@ const HostUserManagement = () => {
 
   // Filter and search users
   const filteredUsers = useMemo(() => {
-    return valetList.filter((user) => {
+    return (valetList || [])?.filter((user) => {
       const matchesSearch = 
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,10 +91,10 @@ const HostUserManagement = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         {[
-          { label: 'Total Users', value: valetList.length, color: 'from-blue-500 to-cyan-500' },
-          { label: 'Active', value: valetList.filter(u => u.isActive).length, color: 'from-green-500 to-emerald-500' },
-          { label: 'Valets', value: valetList.filter(u => u.role === 'valet').length, color: 'from-purple-500 to-pink-500' },
-          { label: 'Managers', value: valetList.filter(u => u.role === 'valet_head').length, color: 'from-orange-500 to-red-500' },
+          { label: 'Total Users', value: valetList?.length, color: 'from-blue-500 to-cyan-500' },
+          { label: 'Active', value: valetList?.filter(u => u.isActive).length, color: 'from-green-500 to-emerald-500' },
+          { label: 'Valets', value: valetList?.filter(u => u.role === 'valet').length, color: 'from-purple-500 to-pink-500' },
+          { label: 'Managers', value: valetList?.filter(u => u.role === 'valet_head').length, color: 'from-orange-500 to-red-500' },
         ].map((stat, index) => (
           <motion.div
             key={stat.label}

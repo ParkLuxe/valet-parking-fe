@@ -36,7 +36,7 @@ const HostSchedules = () => {
   });
 
   useEffect(() => {
-    if (user?.hostId) {
+    if (user?.hostUserId) {
       fetchSchedules();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,7 +45,7 @@ const HostSchedules = () => {
   const fetchSchedules = async () => {
     setLoading(true);
     try {
-      const response = await hostSchedulesService.getSchedulesByHost(user.hostId);
+      const response = await hostSchedulesService.getSchedulesByHost(user.hostUserId);
       setSchedules(response || []);
     } catch (err) {
       dispatch(addToast({

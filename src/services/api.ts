@@ -116,7 +116,7 @@ export const apiHelper = {
   get: async (url, config = {}) => {
     try {
       const response = await api.get(url, config);
-      return response.data;
+      return response?.data?.data || {};
     } catch (error) {
       throw error;
     }
@@ -132,7 +132,7 @@ export const apiHelper = {
   post: async (url, data = {}, config = {}) => {
     try {
       const response = await api.post(url, data, config);
-      return response.data;
+      return response?.data?.data || {};
     } catch (error) {
       throw error;
     }
@@ -148,7 +148,7 @@ export const apiHelper = {
   put: async (url, data = {}, config = {}) => {
     try {
       const response = await api.put(url, data, config);
-      return response.data;
+      return response?.data?.data || {};
     } catch (error) {
       throw error;
     }
@@ -164,7 +164,7 @@ export const apiHelper = {
   patch: async (url, data = {}, config = {}) => {
     try {
       const response = await api.patch(url, data, config);
-      return response.data;
+      return response?.data?.data || {};
     } catch (error) {
       throw error;
     }
@@ -179,7 +179,7 @@ export const apiHelper = {
   delete: async (url, config = {}) => {
     try {
       const response = await api.delete(url, config);
-      return response.data;
+      return response?.data?.data || {};
     } catch (error) {
       throw error;
     }

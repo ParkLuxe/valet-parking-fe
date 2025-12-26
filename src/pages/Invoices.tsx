@@ -29,7 +29,7 @@ const Invoices = () => {
   const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
-    if (user?.hostId) {
+    if (user?.hostUserId) {
       fetchInvoices();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -40,7 +40,7 @@ const Invoices = () => {
     try {
       // Use filter API to fetch invoices
       const filters: any = {
-        hostId: user.hostId,
+        hostId: user.hostUserId,
       };
       
       // Add status filter if not ALL
@@ -51,7 +51,7 @@ const Invoices = () => {
       const response = await invoiceService.filterInvoices(
         filters,
         currentPage,
-        pagination.pageSize
+        pagination?.pageSize || 10
       );
       dispatch(setInvoicesWithPagination(response));
     } catch (err) {
@@ -141,7 +141,7 @@ const Invoices = () => {
 
       {/* Invoice List */}
       <div className="space-y-4">
-        {invoices.map((invoice) => (
+        {invoices?.map((invoice) => (
           <Card key={invoice.id} className="hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -205,7 +205,7 @@ const Invoices = () => {
           </Card>
         ))}
 
-        {invoices.length === 0 && (
+        {invoices?.length === 0 && (
           <Card>
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">No invoices found</p>
@@ -220,7 +220,7 @@ const Invoices = () => {
       </div>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
+      {pagination?.totalPages > 1 && (
         <div className="flex justify-center gap-2">
           <Button
             variant="outline"

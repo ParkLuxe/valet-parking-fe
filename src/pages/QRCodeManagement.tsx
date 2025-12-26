@@ -30,7 +30,7 @@ const QRCodeManagement = () => {
   const [slotId, setSlotId] = useState('');
 
   useEffect(() => {
-    if (user?.hostId && can('canManageQR')) {
+    if (user?.hostUserId && can('canManageQR')) {
       fetchActiveQRCodes();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

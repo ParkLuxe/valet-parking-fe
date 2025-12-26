@@ -86,6 +86,16 @@ const Login = () => {
       // Step 2: Fetch user data from /me API
       try {
         const userData = await authService.getProfile();
+        // If role is an object with a name property, extract it safely
+        if (userData.role && typeof userData.role === 'object' && 'name' in userData.role) {
+          // @ts-ignore - normalize role to string when backend returns an object
+          userData.role = (userData.role as any).name;
+        }
+        // Build a full name from available parts without producing "undefined" or extra spaces
+        userData.name = [userData.firstName, userData.middleName, userData.lastName]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
         // Dispatch user data
         dispatch(setUserData(userData));
       } catch (profileError) {

@@ -7,20 +7,14 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type {  RootState  } from '../redux';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
-import { Card } from '../components';
-import { Input } from '../components';
-import { Button } from '../components';
-import {  addVehicle  } from '../redux';
-import {  addToast  } from '../redux';
-import {  incrementScanCount  } from '../redux';
+import { Card, Input, Button } from '../components';
+import { addToast, addVehicle, incrementScanCount } from "../redux";
 import { vehicleService } from '../services';
-import {  VEHICLE_TYPES  } from '../utils';
-import { 
+import {
   validateVehicleNumber,
   validatePhone,
-  validateRequired,
+  validateRequired, VEHICLE_TYPES, cn
  } from '../utils';
-import { cn } from '../utils';
 
 const QRScanPage = () => {
   const dispatch = useDispatch();

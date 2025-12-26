@@ -92,7 +92,7 @@ const Subscription = () => {
     initiatePayment();
   };
 
-  const usagePercentage = (usage.usedScans / usage.totalScans) * 100;
+  const usagePercentage = (usage?.usedScans / usage?.totalScans) * 100;
 
   // Available plans
   const plans = [
@@ -391,9 +391,9 @@ const Subscription = () => {
       {/* Payment History */}
       <Card title="Payment History">
         <div className="p-6">
-          {paymentHistory.length > 0 ? (
+          {paymentHistory?.length > 0 ? (
             <div className="space-y-3">
-              {paymentHistory.map((payment, index) => (
+              {paymentHistory?.map((payment, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}

@@ -33,7 +33,7 @@ const Payments = () => {
   });
 
   useEffect(() => {
-    if (user?.hostId) {
+    if (user?.hostUserId) {
       fetchPayments();
       fetchPaymentStats();
     }
