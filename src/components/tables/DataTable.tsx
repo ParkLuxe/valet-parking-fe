@@ -98,10 +98,15 @@ export function DataTable<TData>({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
           <Input
             type="text"
+            name="search"
+            label=""
             placeholder={searchPlaceholder}
             value={globalFilter}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
+            onBlur={() => {}}
             className="pl-10"
+            icon={undefined}
+            children={undefined}
           />
         </div>
       )}
@@ -200,6 +205,8 @@ export function DataTable<TData>({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
               startIcon={<ChevronLeft className="w-4 h-4" />}
+              endIcon={undefined}
+              className=""
             >
               Previous
             </Button>
@@ -225,6 +232,9 @@ export function DataTable<TData>({
                     variant={currentPage === pageNum ? 'primary' : 'ghost'}
                     size="small"
                     onClick={() => table.setPageIndex(pageNum - 1)}
+                    startIcon={undefined}
+                    endIcon={undefined}
+                    className=""
                   >
                     {pageNum}
                   </Button>
@@ -237,6 +247,8 @@ export function DataTable<TData>({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
               endIcon={<ChevronRight className="w-4 h-4" />}
+              startIcon={undefined}
+              className=""
             >
               Next
             </Button>

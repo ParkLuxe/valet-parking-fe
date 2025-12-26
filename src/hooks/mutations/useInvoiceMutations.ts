@@ -19,12 +19,12 @@ export const useGenerateInvoice = (
   return useMutation({
     ...options,
     mutationFn: (hostId: string) => invoiceService.generateInvoice(hostId),
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data, variables, mutationContext, functionContext) => {
       // Invalidate invoice queries to refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       // Call the original onSuccess if provided
       if (options?.onSuccess) {
-        options.onSuccess(data, variables, context);
+        options.onSuccess(data, variables, mutationContext, functionContext);
       }
     },
   });
@@ -39,7 +39,7 @@ export const useDownloadInvoicePDF = (
   return useMutation({
     ...options,
     mutationFn: (invoiceId: string) => invoiceService.downloadPDF(invoiceId),
-    onSuccess: (blob, invoiceId, context) => {
+    onSuccess: (blob, invoiceId, mutationContext, functionContext) => {
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -52,7 +52,7 @@ export const useDownloadInvoicePDF = (
       
       // Call the original onSuccess if provided
       if (options?.onSuccess) {
-        options.onSuccess(blob, invoiceId, context);
+        options.onSuccess(blob, invoiceId, mutationContext, functionContext);
       }
     },
   });
@@ -69,11 +69,11 @@ export const useGenerateInvoicePDF = (
   return useMutation({
     ...options,
     mutationFn: (invoiceId: string) => invoiceService.generatePDF(invoiceId),
-    onSuccess: (data, invoiceId, context) => {
+    onSuccess: (data, invoiceId, mutationContext, functionContext) => {
       // Invalidate specific invoice to refetch updated data
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(invoiceId) });
       if (options?.onSuccess) {
-        options.onSuccess(data, invoiceId, context);
+        options.onSuccess(data, invoiceId, mutationContext, functionContext);
       }
     },
   });
@@ -90,11 +90,11 @@ export const useRegenerateInvoicePDF = (
   return useMutation({
     ...options,
     mutationFn: (invoiceId: string) => invoiceService.regeneratePDF(invoiceId),
-    onSuccess: (data, invoiceId, context) => {
+    onSuccess: (data, invoiceId, mutationContext, functionContext) => {
       // Invalidate specific invoice to refetch updated data
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(invoiceId) });
       if (options?.onSuccess) {
-        options.onSuccess(data, invoiceId, context);
+        options.onSuccess(data, invoiceId, mutationContext, functionContext);
       }
     },
   });
