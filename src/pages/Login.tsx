@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as Tabs from '@radix-ui/react-tabs';
 import { Car, Users, Building, Shield, User, Lock, AlertCircle } from 'lucide-react';
 import { Input, Button } from '../components';
-import { loginSuccess, setLoading, addToast } from '../redux';
+import { loginSuccess, setAuthLoading, addToast } from '../redux';
 import { authService } from '../services';
 import { validateRequired, cn } from '../utils';
 
@@ -71,7 +71,7 @@ const Login = () => {
     }
     
     setLoadingState(true);
-    dispatch(setLoading(true));
+    dispatch(setAuthLoading(true));
     
     try {
       const response = await authService.login({
@@ -95,7 +95,7 @@ const Login = () => {
       }));
     } finally {
       setLoadingState(false);
-      dispatch(setLoading(false));
+      dispatch(setAuthLoading(false));
     }
   };
 
