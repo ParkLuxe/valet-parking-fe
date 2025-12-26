@@ -34,7 +34,7 @@ const Register = () => {
     password: '',
     confirmPassword: '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoadingState] = useState(false);
   const [error, setError] = useState('');
 
@@ -54,7 +54,7 @@ const Register = () => {
   };
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: any = {};
     
     const nameValidation = validateName(formData.name, 'Full Name');
     if (!nameValidation.isValid) {

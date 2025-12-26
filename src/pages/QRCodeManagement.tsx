@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import { QRCodeSVG } from 'qrcode.react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -18,7 +19,7 @@ import usePermissions from '../hooks/usePermissions';
 const QRCodeManagement = () => {
   const dispatch = useDispatch();
   const { can } = usePermissions();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const [qrCodes, setQrCodes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -305,7 +306,7 @@ const QRCodeManagement = () => {
       {/* Batch Generate Modal */}
       {showBatchModal && (
         <Modal
-          isOpen={showBatchModal}
+          open={showBatchModal}
           onClose={() => setShowBatchModal(false)}
           title="Generate Batch QR Codes"
         >
@@ -333,7 +334,7 @@ const QRCodeManagement = () => {
       {/* Link to Slot Modal */}
       {showLinkModal && selectedQR && (
         <Modal
-          isOpen={showLinkModal}
+          open={showLinkModal}
           onClose={() => {
             setShowLinkModal(false);
             setSelectedQR(null);

@@ -9,7 +9,7 @@ import Modal from './Modal';
 import Button, { ButtonVariant } from './Button';
 
 interface ConfirmDialogProps {
-  isOpen?: boolean;
+  open?: boolean;
   onClose?: () => void;
   onConfirm?: () => void;
   title?: string;
@@ -21,7 +21,7 @@ interface ConfirmDialogProps {
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  isOpen = false,
+  open = false,
   onClose = () => {},
   onConfirm = () => {},
   title = 'Confirm Action',
@@ -32,7 +32,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   loading = false,
 }) => {
   return (
-    <Modal open={isOpen} onClose={onClose} title={title} className="">
+    <Modal open={open} onClose={onClose} title={title} className="">
       <div className="space-y-6">
         {/* Warning Icon */}
         <div className="flex items-center justify-center">

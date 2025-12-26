@@ -41,7 +41,7 @@ const SubscriptionPlansCRUD = () => {
     features: '',
     isActive: true,
   });
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -67,7 +67,7 @@ const SubscriptionPlansCRUD = () => {
   };
 
   const validateForm = () => {
-    const errors = {};
+    const errors: any = {};
 
     if (!formData.name.trim()) {
       errors.name = 'Plan name is required';
@@ -391,7 +391,7 @@ const SubscriptionPlansCRUD = () => {
 
       {/* Create/Edit Modal */}
       <Modal
-        isOpen={showModal}
+        open={showModal}
         onClose={() => setShowModal(false)}
         title={editingPlan ? 'Edit Subscription Plan' : 'Create Subscription Plan'}
       >
@@ -402,7 +402,7 @@ const SubscriptionPlansCRUD = () => {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              error={formErrors.name}
+              error={!!formErrors.name} helperText={formErrors.name}
               placeholder="e.g., Basic, Premium, Enterprise"
               required
             />
@@ -416,7 +416,7 @@ const SubscriptionPlansCRUD = () => {
               step="0.01"
               value={formData.basePrice}
               onChange={handleInputChange}
-              error={formErrors.basePrice}
+              error={!!formErrors.basePrice} helperText={formErrors.basePrice}
               placeholder="1000"
               required
             />
@@ -426,7 +426,7 @@ const SubscriptionPlansCRUD = () => {
               type="number"
               value={formData.baseScans}
               onChange={handleInputChange}
-              error={formErrors.baseScans}
+              error={!!formErrors.baseScans} helperText={formErrors.baseScans}
               placeholder="100"
               required
             />
@@ -440,7 +440,7 @@ const SubscriptionPlansCRUD = () => {
               step="0.01"
               value={formData.additionalScanPrice}
               onChange={handleInputChange}
-              error={formErrors.additionalScanPrice}
+              error={!!formErrors.additionalScanPrice} helperText={formErrors.additionalScanPrice}
               placeholder="10"
               required
             />
@@ -502,7 +502,7 @@ const SubscriptionPlansCRUD = () => {
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
-        isOpen={deleteConfirm.isOpen}
+        open={deleteConfirm.isOpen}
         onClose={() => setDeleteConfirm({ isOpen: false, plan: null })}
         onConfirm={handleDeleteConfirm}
         title="Deactivate Subscription Plan"

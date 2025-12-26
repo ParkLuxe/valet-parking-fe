@@ -31,6 +31,7 @@ import {
 import { toggleSidebar } from '../../redux/slices/uiSlice';
 import { cn } from '../../utils/cn';
 import usePermissions from '../../hooks/usePermissions';
+import type { RootState } from '../../redux/store';
 
 const drawerWidth = 260;
 
@@ -76,8 +77,8 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const { can } = usePermissions();
   
-  const { user } = useSelector((state) => state.auth);
-  const { sidebarOpen } = useSelector((state) => state.ui);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { sidebarOpen } = useSelector((state: RootState) => state.ui);
 
   // Filter menu items based on permissions
   const menuItems = getAllMenuItems().filter(item => 

@@ -126,7 +126,7 @@ const Analytics = () => {
   label?: any;
 }
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-[#1a1a2e] border border-white/10 rounded-lg p-3 shadow-lg">

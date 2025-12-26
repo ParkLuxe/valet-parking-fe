@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import { useLocation } from 'react-router-dom';
 import {
   RefreshCw,
@@ -28,16 +29,16 @@ const DebugDashboard = () => {
   const location = useLocation();
   
   // Redux state
-  const auth = useSelector((state) => state.auth);
-  const vehicles = useSelector((state) => state.vehicles);
-  const valets = useSelector((state) => state.valets);
-  const parkingSlots = useSelector((state) => state.parkingSlots);
-  const subscriptions = useSelector((state) => state.subscriptions);
-  const invoices = useSelector((state) => state.invoices);
-  const payments = useSelector((state) => state.payments);
-  const analytics = useSelector((state) => state.analytics);
-  const notifications = useSelector((state) => state.notifications);
-  const ui = useSelector((state) => state.ui);
+  const auth = useSelector((state: RootState) => state.auth);
+  const vehicles = useSelector((state: RootState) => (state as any).vehicles || {});
+  const valets = useSelector((state: RootState) => (state as any).valets || {});
+  const parkingSlots = useSelector((state: RootState) => (state as any).parkingSlots || {});
+  const subscriptions = useSelector((state: RootState) => (state as any).subscriptions || {});
+  const invoices = useSelector((state: RootState) => (state as any).invoices || {});
+  const payments = useSelector((state: RootState) => (state as any).payments || {});
+  const analytics = useSelector((state: RootState) => (state as any).analytics || {});
+  const notifications = useSelector((state: RootState) => state.notifications);
+  const ui = useSelector((state: RootState) => state.ui);
   
   // Local state
   const [localStorageData, setLocalStorageData] = useState({});
@@ -333,7 +334,7 @@ const DebugDashboard = () => {
                 {key.replace(/([A-Z])/g, ' $1').trim()}
               </span>
               <span className="text-white font-mono text-sm">
-                {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
+                {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
               </span>
             </div>
           ))}
@@ -374,7 +375,7 @@ const DebugDashboard = () => {
                           return value;
                         }
                       }
-                      return value;
+                      return String(value);
                     })()}
                   </pre>
                 </div>

@@ -5,6 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import { motion } from 'framer-motion';
 import {
   Plus,
@@ -25,7 +26,7 @@ import { cn } from '../utils/cn';
 import { getInitials } from '../utils/helpers';
 
 const HostUserManagement = () => {
-  const { valetList } = useSelector((state) => state.valets);
+  const { valetList } = useSelector((state: RootState) => (state as any).valets || {});
   
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');

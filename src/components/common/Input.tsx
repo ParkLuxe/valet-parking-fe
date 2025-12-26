@@ -6,16 +6,26 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
 
-interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
+interface InputProps {
   label?: string;
+  name?: string;
+  value?: string | number;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   error?: boolean;
   helperText?: string;
-  icon?: React.ReactNode;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
   fullWidth?: boolean;
-  select?: boolean;
-  children?: React.ReactNode;
   multiline?: boolean;
   rows?: number;
+  select?: boolean;
+  children?: React.ReactNode;
+  icon?: React.ReactNode;
+  className?: string;
+  [key: string]: any;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -45,7 +55,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const handleFocus = () => setIsFocused(true);
     const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       setIsFocused(false);
-      if (onBlur) onBlur(e as any);
+      if (onBlur) onBlur(e);
     };
 
     const hasValue = value && String(value).length > 0;

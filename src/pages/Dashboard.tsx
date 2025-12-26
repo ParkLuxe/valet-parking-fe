@@ -6,6 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../redux/store';
 import { motion } from 'framer-motion';
 import {
   Car,
@@ -117,9 +118,9 @@ const getStatusStyle = (status) => {
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { metrics, loading } = useSelector((state) => state.analytics);
-  const { activeVehicles } = useSelector((state) => state.vehicles);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { metrics = {}, loading = false } = useSelector((state: RootState) => (state as any).analytics || {});
+  const { activeVehicles = [] } = useSelector((state: RootState) => (state as any).vehicles || {});
 
   // Check if user is SuperAdmin
   const isSuperAdmin = user?.role === USER_ROLES.SUPERADMIN;

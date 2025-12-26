@@ -36,7 +36,7 @@ const VehicleManagement = () => {
       // This would normally call vehicleService with filters
       // For now, using mock data structure
       const response = await vehicleService.getVehicleStatus('mock-id');
-      setVehicles([response] || []);
+      setVehicles(response ? [response] : []);
     } catch (err) {
       dispatch(
         addToast({

@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -17,7 +18,7 @@ import usePermissions from '../hooks/usePermissions';
 const SubscriptionPlans = () => {
   const dispatch = useDispatch();
   const { can, isRole } = usePermissions();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);

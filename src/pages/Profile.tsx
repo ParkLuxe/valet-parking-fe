@@ -30,10 +30,11 @@ import {
   validatePasswordMatch,
 } from '../utils/validators';
 import { getInitials } from '../utils/helpers';
+import type { RootState } from '../redux/store';
 
 const Profile = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -45,8 +46,8 @@ const Profile = () => {
     newPassword: '',
     confirmPassword: '',
   });
-  const [errors, setErrors] = useState({});
-  const [passwordErrors, setPasswordErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
 
@@ -79,7 +80,7 @@ const Profile = () => {
   };
 
   const validateProfile = () => {
-    const newErrors = {};
+    const newErrors: any = {};
     
     const nameValidation = validateName(formData.name, 'Full Name');
     if (!nameValidation.isValid) {
@@ -101,7 +102,7 @@ const Profile = () => {
   };
 
   const validatePasswordForm = () => {
-    const newErrors = {};
+    const newErrors: any = {};
     
     if (!passwordData.oldPassword) {
       newErrors.oldPassword = 'Current password is required';

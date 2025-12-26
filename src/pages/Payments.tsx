@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -22,9 +23,9 @@ import usePermissions from '../hooks/usePermissions';
 const Payments = () => {
   const dispatch = useDispatch();
   const { can } = usePermissions();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const { payments, paymentStats, loading, error, pagination } = useSelector(
-    (state) => state.payments
+    (state) => (state as any).payments || {}
   );
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -252,7 +253,7 @@ const Payments = () => {
 
               {payments.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
                     No payment records found
                   </td>
                 </tr>

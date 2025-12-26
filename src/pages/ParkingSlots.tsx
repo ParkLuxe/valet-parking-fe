@@ -5,6 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -17,7 +18,7 @@ import Modal from '../components/common/Modal';
 import { cn } from '../utils/cn';
 
 const ParkingSlots = () => {
-  const { slots = [] } = useSelector((state) => state.parkingSlots) || {};
+  const { slots = [] } = useSelector((state: RootState) => (state as any).parkingSlots || {}) || {};
   
   const [selectedFloor, setSelectedFloor] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +28,7 @@ const ParkingSlots = () => {
   // Get unique floors from slots
   const floors = useMemo(() => {
     const floorSet = new Set(slots.map(slot => slot.floor || 1));
-    return Array.from(floorSet).sort((a, b) => a - b);
+    return Array.from(floorSet).sort((a, b) => (a as number) - (b as number));
   }, [slots]);
 
   // Filter slots by floor and search query
@@ -118,8 +119,8 @@ const ParkingSlots = () => {
             <div className="flex gap-2">
               {floors.map((floor) => (
                 <button
-                  key={floor}
-                  onClick={() => setSelectedFloor(floor)}
+                  key={String(floor)}
+                  onClick={() => setSelectedFloor(floor as number)}
                   className={cn(
                     'px-4 py-2 rounded-button font-medium transition-all',
                     selectedFloor === floor
@@ -127,7 +128,7 @@ const ParkingSlots = () => {
                       : 'bg-white/5 text-white/70 hover:bg-white/10'
                   )}
                 >
-                  {floor}
+                  {String(floor)}
                 </button>
               ))}
             </div>

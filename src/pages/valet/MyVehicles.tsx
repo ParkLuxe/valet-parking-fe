@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../../redux/store';
 import { Car, CheckCircle } from 'lucide-react';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
@@ -17,7 +18,7 @@ import { VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY } from '../../utils/constants';
 
 const MyVehicles = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +34,7 @@ const MyVehicles = () => {
     try {
       // This would normally filter vehicles by valet ID
       const response = await vehicleService.getVehicleStatus('mock-id');
-      setVehicles([response] || []);
+      setVehicles(response ? [response] : []);
     } catch (err) {
       dispatch(
         addToast({

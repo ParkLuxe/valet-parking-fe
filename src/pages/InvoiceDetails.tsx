@@ -6,6 +6,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -21,7 +22,7 @@ const InvoiceDetails = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { can } = usePermissions();
-  const { currentInvoice, loading, error } = useSelector((state) => state.invoices);
+  const { currentInvoice, loading, error } = useSelector((state: RootState) => (state as any).invoices || {});
 
   useEffect(() => {
     if (id) {
@@ -216,7 +217,7 @@ const InvoiceDetails = () => {
                 </tr>
               )) || (
                 <tr>
-                  <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                     No line items available
                   </td>
                 </tr>
@@ -224,14 +225,14 @@ const InvoiceDetails = () => {
             </tbody>
             <tfoot className="bg-gray-50">
               <tr>
-                <td colSpan="3" className="px-4 py-3 text-right text-sm font-semibold">Subtotal:</td>
+                <td colSpan={3} className="px-4 py-3 text-right text-sm font-semibold">Subtotal:</td>
                 <td className="px-4 py-3 text-right text-sm font-semibold">
                   {formatCurrency(currentInvoice.subtotal || currentInvoice.totalAmount)}
                 </td>
               </tr>
               {currentInvoice.tax > 0 && (
                 <tr>
-                  <td colSpan="3" className="px-4 py-3 text-right text-sm">Tax:</td>
+                  <td colSpan={3} className="px-4 py-3 text-right text-sm">Tax:</td>
                   <td className="px-4 py-3 text-right text-sm">
                     {formatCurrency(currentInvoice.tax)}
                   </td>
@@ -239,14 +240,14 @@ const InvoiceDetails = () => {
               )}
               {currentInvoice.discount > 0 && (
                 <tr>
-                  <td colSpan="3" className="px-4 py-3 text-right text-sm text-green-600">Discount:</td>
+                  <td colSpan={3} className="px-4 py-3 text-right text-sm text-green-600">Discount:</td>
                   <td className="px-4 py-3 text-right text-sm text-green-600">
                     -{formatCurrency(currentInvoice.discount)}
                   </td>
                 </tr>
               )}
               <tr>
-                <td colSpan="3" className="px-4 py-4 text-right text-lg font-bold">Total:</td>
+                <td colSpan={3} className="px-4 py-4 text-right text-lg font-bold">Total:</td>
                 <td className="px-4 py-4 text-right text-lg font-bold text-blue-600">
                   {formatCurrency(currentInvoice.totalAmount)}
                 </td>

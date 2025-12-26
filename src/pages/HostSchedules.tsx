@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -21,7 +22,7 @@ const DAYS_OF_WEEK = [
 const HostSchedules = () => {
   const dispatch = useDispatch();
   const { can } = usePermissions();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -248,7 +249,7 @@ const HostSchedules = () => {
 
               {schedules.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
                     No schedules found. Add a schedule to get started.
                   </td>
                 </tr>
@@ -261,7 +262,7 @@ const HostSchedules = () => {
       {/* Create/Edit Modal */}
       {showModal && (
         <Modal
-          isOpen={showModal}
+          open={showModal}
           onClose={() => {
             setShowModal(false);
             setEditingSchedule(null);
