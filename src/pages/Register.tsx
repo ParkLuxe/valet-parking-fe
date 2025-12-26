@@ -8,7 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Car } from 'lucide-react';
 import { Card, Input, Button } from '../components';
-import { loginSuccess, setLoading, addToast } from '../redux';
+import { loginSuccess, setAuthLoading, addToast } from '../redux';
 import { authService } from '../services';
 import {
   validateEmail,
@@ -99,7 +99,7 @@ const Register = () => {
     }
     
     setLoadingState(true);
-    dispatch(setLoading(true));
+    dispatch(setAuthLoading(true));
     
     try {
       const response = await authService.register(formData);
@@ -120,7 +120,7 @@ const Register = () => {
       }));
     } finally {
       setLoadingState(false);
-      dispatch(setLoading(false));
+      dispatch(setAuthLoading(false));
     }
   };
 
