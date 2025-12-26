@@ -4,8 +4,6 @@
  * TODO: Replace mock data with actual API endpoints
  */
 
-// import { apiHelper } from './api';
-
 const valetService = {
   /**
    * Get all valets

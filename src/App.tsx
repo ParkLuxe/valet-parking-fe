@@ -46,8 +46,7 @@ import MyPerformance from './pages/valet/MyPerformance';
 
 // Redux
 import { removeToast } from './redux';
-import { USER_ROLES } from './utils';
-import { initializeStore } from './utils/initializeStore';
+import { USER_ROLES, initializeStore } from './utils';
 import type { RootState } from './redux';
 
 const App: React.FC = () => {

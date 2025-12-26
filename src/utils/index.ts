@@ -8,3 +8,4 @@ export * from './helpers';
 export * from './validators';
 export * from './rolePermissions';
 export { cn } from './cn';
+export { initializeStore } from './initializeStore';
