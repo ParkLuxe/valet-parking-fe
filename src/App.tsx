@@ -6,12 +6,10 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ToastProvider, ToastViewport, ToastWithIcon } from './components/common/Toast';
+import { ToastProvider, ToastViewport, ToastWithIcon, Layout } from './components';
 
 // Route Components
-import ProtectedRoute from './routes/ProtectedRoute';
-import PublicRoute from './routes/PublicRoute';
-import Layout from './components/common/Layout';
+import { ProtectedRoute, PublicRoute } from './routes';
 
 // Pages
 import Login from './pages/Login';
@@ -46,11 +44,9 @@ import Reports from './pages/host/Reports';
 import MyVehicles from './pages/valet/MyVehicles';
 import MyPerformance from './pages/valet/MyPerformance';
 
-// Redux
-import { removeToast } from './redux/slices/notificationSlice';
-import { USER_ROLES } from './utils/constants';
-import { initializeStore } from './utils/initializeStore';
-import type { RootState } from './redux/store';
+// Redux and Utils
+import { removeToast, type RootState } from './redux';
+import { USER_ROLES, initializeStore } from './utils';
 
 const App: React.FC = () => {
   const dispatch = useDispatch();

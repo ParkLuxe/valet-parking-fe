@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type { RootState } from '../types';
 import { motion } from 'framer-motion';
 import {
   Car,
@@ -18,12 +18,9 @@ import {
   DollarSign,
   ParkingSquare,
 } from 'lucide-react';
-import Card from '../components/common/Card';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import { setMetrics } from '../redux/slices/analyticsSlice';
-import { formatDuration } from '../utils/helpers';
-import { cn } from '../utils/cn';
-import { USER_ROLES } from '../utils/constants';
+import { Card, LoadingSpinner } from '../components';
+import { setMetrics } from '../redux';
+import { formatDuration, cn, USER_ROLES } from '../utils';
 
 // Animated Counter Component
 export interface AnimatedCounterProps {

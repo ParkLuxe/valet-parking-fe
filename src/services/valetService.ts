@@ -4,7 +4,7 @@
  * TODO: Replace mock data with actual API endpoints
  */
 
-import { apiHelper } from './api';
+// import { apiHelper } from './api';
 
 const valetService = {
   /**
@@ -38,14 +38,10 @@ const valetService = {
    * @returns {Promise} List of active valets
    */
   getActiveValets: async () => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get('/valets/active');
-      
-      return [];
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.get('/valets/active');
+    
+    return [];
   },
 
   /**
@@ -92,14 +88,10 @@ const valetService = {
    * @returns {Promise}
    */
   deleteValet: async (valetId) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.delete(`/valets/${valetId}`);
-      
-      return { success: true };
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.delete(`/valets/${valetId}`);
+    
+    return { success: true };
   },
 
   /**
@@ -131,14 +123,10 @@ const valetService = {
    * @returns {Promise} List of performance data
    */
   getAllValetsPerformance: async (filters = {}) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.get('/valets/performance', { params: filters });
-      
-      return [];
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.get('/valets/performance', { params: filters });
+    
+    return [];
   },
 
   /**
@@ -148,14 +136,10 @@ const valetService = {
    * @returns {Promise}
    */
   updateValetStatus: async (valetId, isActive) => {
-    try {
-      // TODO: Replace with actual API endpoint
-      // const response = await apiHelper.patch(`/valets/${valetId}/status`, { isActive });
-      
-      return { success: true, isActive };
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Replace with actual API endpoint
+    // const response = await apiHelper.patch(`/valets/${valetId}/status`, { isActive });
+    
+    return { success: true, isActive };
   },
 };
 

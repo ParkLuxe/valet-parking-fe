@@ -16,21 +16,17 @@ import {
   Lock,
   User,
 } from 'lucide-react';
-import Card from '../components/common/Card';
-import Input from '../components/common/Input';
-import Button from '../components/common/Button';
-import { updateProfile } from '../redux/slices/authSlice';
-import { addToast } from '../redux/slices/notificationSlice';
-import authService from '../services/authService';
+import { Card, Input, Button } from '../components';
+import { updateProfile, addToast, type RootState } from '../redux';
+import { authService } from '../services';
 import {
   validateEmail,
   validatePhone,
   validateName,
   validatePassword,
   validatePasswordMatch,
-} from '../utils/validators';
-import { getInitials } from '../utils/helpers';
-import type { RootState } from '../redux/store';
+  getInitials,
+} from '../utils';
 
 const Profile = () => {
   const dispatch = useDispatch();
