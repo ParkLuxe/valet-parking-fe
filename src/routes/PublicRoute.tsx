@@ -12,7 +12,7 @@ interface PublicRouteProps {
   children: React.ReactNode;
 }
 
-const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
+const PublicRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   if (isAuthenticated) {

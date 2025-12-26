@@ -4,15 +4,16 @@
  */
 
 import { apiHelper } from './api';
-import type { Invoice, PaginatedResponse, InvoiceFilters } from '../types/api';
 
 const invoiceService = {
   /**
    * Generate monthly invoice
+   * @param {string} hostId - Host ID
+   * @returns {Promise} Generated invoice
    */
-  generateInvoice: async (hostId: string): Promise<Invoice> => {
+  generateInvoice: async (hostId) => {
     try {
-      const response = await apiHelper.post<Invoice>(`/v1/invoices/generate/${hostId}`);
+      const response = await apiHelper.post(`/v1/invoices/generate/${hostId}`);
       return response;
     } catch (error) {
       throw error;
@@ -21,10 +22,12 @@ const invoiceService = {
 
   /**
    * Get invoice by ID
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise} Invoice details
    */
-  getInvoiceById: async (invoiceId: string): Promise<Invoice> => {
+  getInvoiceById: async (invoiceId) => {
     try {
-      const response = await apiHelper.get<Invoice>(`/v1/invoices/${invoiceId}`);
+      const response = await apiHelper.get(`/v1/invoices/${invoiceId}`);
       return response;
     } catch (error) {
       throw error;
@@ -33,10 +36,12 @@ const invoiceService = {
 
   /**
    * Get invoice by invoice number
+   * @param {string} invoiceNumber - Invoice number
+   * @returns {Promise} Invoice details
    */
-  getInvoiceByNumber: async (invoiceNumber: string): Promise<Invoice> => {
+  getInvoiceByNumber: async (invoiceNumber) => {
     try {
-      const response = await apiHelper.get<Invoice>(`/v1/invoices/number/${invoiceNumber}`);
+      const response = await apiHelper.get(`/v1/invoices/number/${invoiceNumber}`);
       return response;
     } catch (error) {
       throw error;
@@ -45,18 +50,18 @@ const invoiceService = {
 
   /**
    * Filter invoices
+   * @param {object} filters - Filter criteria (status, hostId, dateRange, etc.)
+   * @param {number} page - Page number
+   * @param {number} size - Page size
+   * @returns {Promise} List of filtered invoices
    */
-  filterInvoices: async (
-    filters: InvoiceFilters = {}, 
-    page: number = 0, 
-    size: number = 10
-  ): Promise<PaginatedResponse<Invoice>> => {
+  filterInvoices: async (filters = {}, page = 0, size = 10) => {
     try {
       const params = new URLSearchParams();
       
       // Add pagination
-      params.append('page', page.toString());
-      params.append('size', size.toString());
+      params.append('page', page);
+      params.append('size', size);
       
       // Add filters
       if (filters.status) {
@@ -72,9 +77,7 @@ const invoiceService = {
         params.append('endDate', filters.endDate);
       }
       
-      const response = await apiHelper.get<PaginatedResponse<Invoice>>(
-        `/v1/invoices/filter?${params.toString()}`
-      );
+      const response = await apiHelper.get(`/v1/invoices/filter?${params.toString()}`);
       return response;
     } catch (error) {
       throw error;
@@ -83,16 +86,14 @@ const invoiceService = {
 
   /**
    * Get host invoices
+   * @param {string} hostId - Host ID
+   * @param {number} page - Page number
+   * @param {number} size - Page size
+   * @returns {Promise} List of invoices
    */
-  getHostInvoices: async (
-    hostId: string, 
-    page: number = 0, 
-    size: number = 10
-  ): Promise<PaginatedResponse<Invoice>> => {
+  getHostInvoices: async (hostId, page = 0, size = 10) => {
     try {
-      const response = await apiHelper.get<PaginatedResponse<Invoice>>(
-        `/v1/invoices/host/${hostId}?page=${page}&size=${size}`
-      );
+      const response = await apiHelper.get(`/v1/invoices/host/${hostId}?page=${page}&size=${size}`);
       return response;
     } catch (error) {
       throw error;
@@ -101,10 +102,12 @@ const invoiceService = {
 
   /**
    * Download invoice PDF
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise} PDF file
    */
-  downloadPDF: async (invoiceId: string): Promise<Blob> => {
+  downloadPDF: async (invoiceId) => {
     try {
-      const response = await apiHelper.get<Blob>(`/v1/invoices/${invoiceId}/pdf`, {
+      const response = await apiHelper.get(`/v1/invoices/${invoiceId}/pdf`, {
         responseType: 'blob',
       });
       return response;
@@ -115,10 +118,12 @@ const invoiceService = {
 
   /**
    * Generate PDF
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise}
    */
-  generatePDF: async (invoiceId: string): Promise<void> => {
+  generatePDF: async (invoiceId) => {
     try {
-      const response = await apiHelper.post<void>(`/v1/invoices/${invoiceId}/generate-pdf`);
+      const response = await apiHelper.post(`/v1/invoices/${invoiceId}/generate-pdf`);
       return response;
     } catch (error) {
       throw error;
@@ -127,10 +132,12 @@ const invoiceService = {
 
   /**
    * Regenerate PDF
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise}
    */
-  regeneratePDF: async (invoiceId: string): Promise<void> => {
+  regeneratePDF: async (invoiceId) => {
     try {
-      const response = await apiHelper.post<void>(`/v1/invoices/${invoiceId}/regenerate-pdf`);
+      const response = await apiHelper.post(`/v1/invoices/${invoiceId}/regenerate-pdf`);
       return response;
     } catch (error) {
       throw error;
@@ -139,10 +146,12 @@ const invoiceService = {
 
   /**
    * Send invoice via email
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise}
    */
-  sendEmail: async (invoiceId: string): Promise<void> => {
+  sendEmail: async (invoiceId) => {
     try {
-      const response = await apiHelper.post<void>(`/v1/invoices/${invoiceId}/send-email`);
+      const response = await apiHelper.post(`/v1/invoices/${invoiceId}/send-email`);
       return response;
     } catch (error) {
       throw error;
@@ -151,10 +160,12 @@ const invoiceService = {
 
   /**
    * Get unpaid invoices for host
+   * @param {string} hostId - Host ID
+   * @returns {Promise} List of unpaid invoices
    */
-  getUnpaidInvoices: async (hostId: string): Promise<Invoice[]> => {
+  getUnpaidInvoices: async (hostId) => {
     try {
-      const response = await apiHelper.get<Invoice[]>(`/v1/invoices/unpaid/${hostId}`);
+      const response = await apiHelper.get(`/v1/invoices/unpaid/${hostId}`);
       return response;
     } catch (error) {
       throw error;
@@ -163,10 +174,11 @@ const invoiceService = {
 
   /**
    * Get overdue invoices (SUPERADMIN only)
+   * @returns {Promise} List of overdue invoices
    */
-  getOverdueInvoices: async (): Promise<Invoice[]> => {
+  getOverdueInvoices: async () => {
     try {
-      const response = await apiHelper.get<Invoice[]>('/v1/invoices/overdue');
+      const response = await apiHelper.get('/v1/invoices/overdue');
       return response;
     } catch (error) {
       throw error;
@@ -175,10 +187,11 @@ const invoiceService = {
 
   /**
    * Get total revenue (SUPERADMIN only)
+   * @returns {Promise} Total revenue
    */
-  getTotalRevenue: async (): Promise<number> => {
+  getTotalRevenue: async () => {
     try {
-      const response = await apiHelper.get<number>('/v1/invoices/revenue/total');
+      const response = await apiHelper.get('/v1/invoices/revenue/total');
       return response;
     } catch (error) {
       throw error;
@@ -187,10 +200,12 @@ const invoiceService = {
 
   /**
    * Get host revenue
+   * @param {string} hostId - Host ID
+   * @returns {Promise} Host revenue
    */
-  getHostRevenue: async (hostId: string): Promise<number> => {
+  getHostRevenue: async (hostId) => {
     try {
-      const response = await apiHelper.get<number>(`/v1/invoices/revenue/${hostId}`);
+      const response = await apiHelper.get(`/v1/invoices/revenue/${hostId}`);
       return response;
     } catch (error) {
       throw error;

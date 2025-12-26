@@ -17,7 +17,7 @@ interface ProtectedRouteProps {
   page?: string | null;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+const ProtectedRoute = ({ 
   children, 
   requiredRoles = null, 
   page = null 
