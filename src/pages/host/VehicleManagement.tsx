@@ -3,8 +3,9 @@
  * Manage all vehicles - Active, Parked, Delivered
  */
 
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../redux';
 import { Car, Filter } from 'lucide-react';
 import { Card } from '../../components';
 import { Button } from '../../components';
@@ -12,42 +13,19 @@ import { LoadingSpinner } from '../../components';
 import { DataTable } from '../../components';
 import { ExportButton } from '../../components';
 import { DateRangePicker } from '../../components';
-import { vehicleService } from '../../services';
-import {  addToast  } from '../../redux';
+import { useParkedVehicles } from '../../api/vehicles';
 import {  VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY  } from '../../utils';
 
 const VehicleManagement = () => {
-  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
 
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
-  useEffect(() => {
-    fetchVehicles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, dateRange]);
-
-  const fetchVehicles = async () => {
-    setLoading(true);
-    try {
-      // This would normally call vehicleService with filters
-      // For now, using mock data structure
-      const response = await vehicleService.getVehicleStatus('mock-id');
-      setVehicles(response ? [response] : []);
-    } catch (err) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: 'Failed to load vehicles',
-        })
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use TanStack Query hook
+  const { data: vehicles = [], isLoading: loading } = useParkedVehicles(user?.hostId || '');
 
   const getFilteredVehicles = () => {
     let filtered = vehicles;

@@ -7,13 +7,8 @@
 // New code should use TanStack Query hooks from ../api/* instead
 export { default as authService } from './authService';
 export { default as invoiceService } from './invoiceService';
-export { default as paymentService } from './paymentService';
-export { default as subscriptionService } from './subscriptionService';
 export { default as subscriptionPlanService } from './subscriptionPlanService';
 export { default as hostService } from './hostService';
-export { default as hostSchedulesService } from './hostSchedulesService';
-export { default as qrCodeService } from './qrCodeService';
-export { default as vehicleService } from './vehicleService';
 
 // Core services (kept)
 export { default as websocketService } from './websocketService';

@@ -3,7 +3,7 @@
  * Generate, manage, and export QR codes
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type {  RootState  } from '../redux';
 import { QRCodeSVG } from 'qrcode.react';
@@ -12,7 +12,13 @@ import { Button } from '../components';
 import { LoadingSpinner } from '../components';
 import { Modal } from '../components';
 import { Input } from '../components';
-import { qrCodeService } from '../services';
+import { 
+  useActiveQRCodes, 
+  useGenerateQRCode, 
+  useGenerateBatchQRCodes, 
+  useDeactivateQRCode, 
+  useLinkQRCodeToSlot 
+} from '../api/qrCodes';
 import {  addToast  } from '../redux';
 import { usePermissions } from '../hooks';
 
@@ -21,95 +27,57 @@ const QRCodeManagement = () => {
   const { can } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const [qrCodes, setQrCodes] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [batchCount, setBatchCount] = useState(10);
   const [selectedQR, setSelectedQR] = useState(null);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [slotId, setSlotId] = useState('');
 
-  useEffect(() => {
-    if (user?.hostUserId && can('canManageQR')) {
-      fetchActiveQRCodes();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const fetchActiveQRCodes = async () => {
-    setLoading(true);
-    try {
-      const response = await qrCodeService.getActiveQRCodes(user.hostId);
-      setQrCodes(response || []);
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to load QR codes',
-      }));
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use TanStack Query hooks
+  const { data: qrCodes = [], isLoading: loading, refetch } = useActiveQRCodes(user?.hostId || '');
+  const generateQRMutation = useGenerateQRCode();
+  const generateBatchMutation = useGenerateBatchQRCodes();
+  const deactivateMutation = useDeactivateQRCode();
+  const linkToSlotMutation = useLinkQRCodeToSlot();
 
   const handleGenerateSingle = async () => {
     try {
-      setLoading(true);
-      await qrCodeService.generate({
+      await generateQRMutation.mutateAsync({
         hostId: user.hostId,
       });
-      dispatch(addToast({
-        type: 'success',
-        message: 'QR code generated successfully',
-      }));
-      fetchActiveQRCodes();
+      refetch();
     } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to generate QR code',
-      }));
-    } finally {
-      setLoading(false);
+      // Error already handled by mutation
+      console.error('Failed to generate QR code:', err);
     }
   };
 
   const handleGenerateBatch = async () => {
     try {
-      setLoading(true);
-      await qrCodeService.generateBatch(user.hostId, batchCount);
-      dispatch(addToast({
-        type: 'success',
-        message: `${batchCount} QR codes generated successfully`,
-      }));
+      await generateBatchMutation.mutateAsync({ 
+        hostId: user.hostId, 
+        count: batchCount 
+      });
       setShowBatchModal(false);
       setBatchCount(10);
-      fetchActiveQRCodes();
+      refetch();
     } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to generate batch QR codes',
-      }));
-    } finally {
-      setLoading(false);
+      // Error already handled by mutation
+      console.error('Failed to generate batch QR codes:', err);
     }
   };
 
-  const handleDeactivate = async (qrCode) => {
+  const handleDeactivate = async (qrCode: string) => {
     if (!window.confirm('Are you sure you want to deactivate this QR code?')) {
       return;
     }
 
     try {
-      await qrCodeService.deactivate(qrCode);
-      dispatch(addToast({
-        type: 'success',
-        message: 'QR code deactivated successfully',
-      }));
-      fetchActiveQRCodes();
+      await deactivateMutation.mutateAsync(qrCode);
+      refetch();
     } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to deactivate QR code',
-      }));
+      // Error already handled by mutation
+      console.error('Failed to deactivate QR code:', err);
     }
   };
 
@@ -123,27 +91,24 @@ const QRCodeManagement = () => {
     }
 
     try {
-      await qrCodeService.linkToSlot(selectedQR.qrCode, slotId);
-      dispatch(addToast({
-        type: 'success',
-        message: 'QR code linked to slot successfully',
-      }));
+      await linkToSlotMutation.mutateAsync({ 
+        qrCode: (selectedQR as any).qrCode, 
+        slotId 
+      });
       setShowLinkModal(false);
       setSelectedQR(null);
       setSlotId('');
-      fetchActiveQRCodes();
+      refetch();
     } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to link QR code to slot',
-      }));
+      // Error already handled by mutation
+      console.error('Failed to link QR code to slot:', err);
     }
   };
 
   const handleExport = async () => {
     try {
-      setLoading(true);
-      const response = await qrCodeService.exportQRCodes(user.hostId);
+      // For now, export the current QR codes list
+      const response = qrCodes;
       
       // Create download link
       const blob = new Blob([JSON.stringify(response, null, 2)], { type: 'application/json' });
@@ -164,8 +129,6 @@ const QRCodeManagement = () => {
         type: 'error',
         message: 'Failed to export QR codes',
       }));
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -9,7 +9,7 @@ import type {  RootState  } from '../redux';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import { Card, Input, Button } from '../components';
 import { addToast, addVehicle, incrementScanCount } from "../redux";
-import { vehicleService } from '../services';
+import { useParkVehicle } from '../api/vehicles';
 import {
   validateVehicleNumber,
   validatePhone,
@@ -21,6 +21,9 @@ const QRScanPage = () => {
   const { slots } = useSelector((state: RootState) => (state as any).parkingSlots || {});
   const { valetList } = useSelector((state: RootState) => (state as any).valets || {});
   const { status: subscriptionStatus, usage } = useSelector((state: RootState) => (state as any).subscription || {});
+  const { user } = useSelector((state: RootState) => state.auth);
+  
+  const parkVehicleMutation = useParkVehicle();
   
   const [qrValue, setQrValue] = useState('');
   const [formData, setFormData] = useState({
@@ -33,7 +36,7 @@ const QRScanPage = () => {
     valetId: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const loading = parkVehicleMutation.isPending;
 
   const generateQRCode = React.useCallback(() => {
     const newQRValue = `PARK-LUXE-${Date.now()}`;
@@ -121,21 +124,18 @@ const QRScanPage = () => {
       return;
     }
     
-    setLoading(true);
-    
     try {
       const vehicleData = {
-        ...formData,
+        customerId: user?.userId || 'temp-customer-id', // Use actual customer ID from context
+        vehicleNumber: formData.vehicleNumber,
+        vehicleModel: formData.vehicleType,
+        parkingSlotId: formData.parkingSlotId,
         qrCode: qrValue,
       };
       
-      const newVehicle = await vehicleService.addVehicle(vehicleData);
+      const newVehicle = await parkVehicleMutation.mutateAsync(vehicleData);
       dispatch(addVehicle(newVehicle));
       dispatch(incrementScanCount());
-      dispatch(addToast({
-        type: 'success',
-        message: 'Vehicle added successfully!',
-      }));
       
       // Reset form and generate new QR
       setFormData({
@@ -148,13 +148,9 @@ const QRScanPage = () => {
         valetId: '',
       });
       generateQRCode();
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: err.message || 'Failed to add vehicle',
-      }));
-    } finally {
-      setLoading(false);
+    } catch (err: any) {
+      // Error already handled by mutation
+      console.error('Failed to park vehicle:', err);
     }
   };
 
