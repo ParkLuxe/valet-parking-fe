@@ -18,7 +18,19 @@ import {  VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY  } from '../../utils';
 const MyVehicles = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  interface VehicleItem {
+    id: string;
+    vehicleNumber: string;
+    vehicleType?: string;
+    status: string;
+    customerName?: string;
+    customerPhone?: string;
+    parkingSlot?: string;
+    parkedAt?: string;
+    // Add other vehicle properties as needed
+  }
+
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleItem | null>(null);
 
   // Use TanStack Query hooks
   const { data: vehicles = [], isLoading: loading } = useValetVehicles(user?.userId || '');

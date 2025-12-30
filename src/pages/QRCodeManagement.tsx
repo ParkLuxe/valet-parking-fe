@@ -115,7 +115,8 @@ const QRCodeManagement = () => {
 
   const handleExport = async () => {
     try {
-      // For now, export the current QR codes list
+      // Export functionality using current QR codes list
+      // TODO: Implement proper backend export endpoint if needed
       const response = qrCodes;
       
       // Create download link
