@@ -145,21 +145,25 @@ const Profile = () => {
   const validateProfile = () => {
     const newErrors: any = {};
     
-    // Only validate firstName if a value is provided, since it is optional in the User type
-    if (formData.firstName && formData.firstName.trim() !== '') {
-      const firstNameValidation = validateName(formData.firstName, 'First Name');
+    // Only validate firstName if a value is provided (it's optional in the User type)
+    const firstName = formData.firstName?.trim();
+    if (firstName) {
+      const firstNameValidation = validateName(firstName, 'First Name');
       if (!firstNameValidation.isValid) {
         newErrors.firstName = firstNameValidation.error;
       }
     }
     
-    if (formData.middleName && formData.middleName.trim()) {
-      const middleNameValidation = validateName(formData.middleName, 'Middle Name');
+    // Only validate middleName if a value is provided (it's optional in the User type)
+    const middleName = formData.middleName?.trim();
+    if (middleName) {
+      const middleNameValidation = validateName(middleName, 'Middle Name');
       if (!middleNameValidation.isValid) {
         newErrors.middleName = middleNameValidation.error;
       }
     }
     
+    // Only validate lastName if a value is provided (it's optional in the User type)
     const lastName = formData.lastName?.trim();
     if (lastName) {
       const lastNameValidation = validateName(lastName, 'Last Name');

@@ -33,11 +33,16 @@ const HostManagement = () => {
   const updateHostMutation = useUpdateHost();
 
   // Extract hosts from response with explicit shape checks
-  const hosts = Array.isArray((hostsResponse as any)?.content)
-    ? (hostsResponse as any).content
-    : Array.isArray(hostsResponse)
-      ? hostsResponse
-      : [];
+  const hosts = (() => {
+    const response = hostsResponse as any;
+    if (Array.isArray(response?.content)) {
+      return response.content;
+    }
+    if (Array.isArray(response)) {
+      return response;
+    }
+    return [];
+  })();
 
   const [showModal, setShowModal] = useState(false);
   const [editingHost, setEditingHost] = useState(null);
