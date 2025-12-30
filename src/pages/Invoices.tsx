@@ -3,91 +3,65 @@
  * Display and manage invoices with payment functionality
  */
 
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import type { RootState } from '../redux';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, Button, LoadingSpinner, RazorpayButton } from '../components';
-import { invoiceService } from '../services';
-import { 
-  setInvoicesWithPagination,
-  setLoading,
-  setError,
-} from '../redux/slices/invoiceSlice';
-import { addToast } from '../redux';
+import { useInvoices, useDownloadInvoicePDF } from '../api/invoices';
+import { queryKeys } from '../lib/queryKeys';
 import { formatCurrency, formatDate } from '../utils';
 import { usePermissions } from '../hooks';
 
 const Invoices = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { can } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { invoices, loading, error, pagination } = useSelector((state: RootState) => (state as any).invoices || {});
+  const queryClient = useQueryClient();
   
   const [statusFilter, setStatusFilter] = useState('UNPAID'); // Default to UNPAID (active invoices)
   const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 10;
 
-  useEffect(() => {
-    if (user?.hostUserId) {
-      fetchInvoices();
+  // ✅ Use TanStack Query hooks
+  const filters = useMemo(() => {
+    const baseFilters: any = {
+      hostId: user?.hostUserId,
+      page: currentPage,
+      size: pageSize,
+    };
+    
+    // Add status filter if not ALL
+    if (statusFilter !== 'ALL') {
+      baseFilters.status = statusFilter;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, currentPage, statusFilter]);
+    
+    return baseFilters;
+  }, [user?.hostUserId, currentPage, statusFilter]);
 
-  const fetchInvoices = async () => {
-    dispatch(setLoading(true));
-    try {
-      // Use filter API to fetch invoices
-      const filters: any = {
-        hostId: user.hostUserId,
-      };
-      
-      // Add status filter if not ALL
-      if (statusFilter !== 'ALL') {
-        filters.status = statusFilter;
-      }
-      
-      const response = await invoiceService.filterInvoices(
-        filters,
-        currentPage,
-        pagination?.pageSize || 10
-      );
-      dispatch(setInvoicesWithPagination(response));
-    } catch (err) {
-      dispatch(setError(err.message || 'Failed to fetch invoices'));
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to load invoices',
-      }));
-    }
+  const { data: invoiceData, isLoading: loading } = useInvoices(filters);
+  const downloadPDFMutation = useDownloadInvoicePDF();
+
+  // Extract invoices and pagination from response
+  const invoices = Array.isArray(invoiceData) ? invoiceData : (invoiceData?.content || []);
+  const pagination = invoiceData?.totalPages ? {
+    totalPages: invoiceData.totalPages,
+    totalElements: invoiceData.totalElements,
+    pageSize: invoiceData.size || pageSize,
+  } : null;
+
+  const handleDownloadPDF = (invoiceId: string) => {
+    downloadPDFMutation.mutate(invoiceId);
   };
 
-  const handleDownloadPDF = async (invoiceId) => {
-    try {
-      const pdfBlob = await invoiceService.downloadPDF(invoiceId);
-      const url = window.URL.createObjectURL(new Blob([pdfBlob]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `invoice-${invoiceId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-      dispatch(addToast({
-        type: 'success',
-        message: 'Invoice downloaded successfully',
-      }));
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to download invoice',
-      }));
-    }
+  const handlePaymentSuccess = () => {
+    // Invalidate invoices queries to refetch updated data
+    queryClient.invalidateQueries({ queryKey: queryKeys.invoices.lists() });
   };
 
-  const getStatusBadgeClass = (status) => {
-    const statusMap = {
+  const getStatusBadgeClass = (status: string) => {
+    const statusMap: Record<string, string> = {
       PAID: 'bg-green-100 text-green-800',
       UNPAID: 'bg-yellow-100 text-yellow-800',
       OVERDUE: 'bg-red-100 text-red-800',
@@ -131,13 +105,6 @@ const Invoices = () => {
           ))}
         </div>
       </Card>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
 
       {/* Invoice List */}
       <div className="space-y-4">
@@ -195,7 +162,7 @@ const Invoices = () => {
                     invoiceId={invoice.id}
                     amount={invoice.totalAmount}
                     invoiceNumber={invoice.invoiceNumber}
-                    onSuccess={() => fetchInvoices()}
+                    onSuccess={handlePaymentSuccess}
                     buttonText="Pay Now"
                     buttonVariant="primary"
                   />

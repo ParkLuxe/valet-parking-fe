@@ -51,10 +51,11 @@ export const queryKeys = {
     all: ['users'] as const,
     profile: () => [...queryKeys.users.all, 'profile'] as const,
     lists: () => [...queryKeys.users.all, 'list'] as const,
-    list: (hostId?: string) => 
-      [...queryKeys.users.lists(), { hostId }] as const,
+    list: (hostId: string, role?: string) => 
+      [...queryKeys.users.lists(), hostId, role] as const,
     details: () => [...queryKeys.users.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.users.details(), id] as const,
+    widget: (hostId: string) => [...queryKeys.users.all, 'widget', hostId] as const,
   },
 
   // Host query keys
@@ -120,6 +121,13 @@ export const queryKeys = {
   hostSchedules: {
     all: ['hostSchedules'] as const,
     list: (hostId: string) => [...queryKeys.hostSchedules.all, hostId] as const,
+  },
+
+  // Schedules query keys (for new endpoints)
+  schedules: {
+    all: ['schedules'] as const,
+    detail: (id: string) => [...queryKeys.schedules.all, id] as const,
+    host: (hostId: string) => [...queryKeys.schedules.all, 'host', hostId] as const,
   },
 
   // Country/State query keys

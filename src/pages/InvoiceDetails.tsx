@@ -3,85 +3,46 @@
  * Displays detailed invoice information with payment option
  */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../redux';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, Button, LoadingSpinner, RazorpayButton } from '../components';
-import { invoiceService } from '../services';
-import { setCurrentInvoice, setLoading, setError } from '../redux/slices/invoiceSlice';
-import { addToast } from '../redux';
+import { useInvoice, useDownloadInvoicePDF, useSendInvoiceEmail } from '../api/invoices';
+import { queryKeys } from '../lib/queryKeys';
 import { formatCurrency, formatDate } from '../utils';
 import { usePermissions } from '../hooks';
 
 const InvoiceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { can } = usePermissions();
-  const { currentInvoice, loading, error } = useSelector((state: RootState) => (state as any).invoices || {});
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
+  // ✅ Use TanStack Query hooks
+  const { data: currentInvoice, isLoading: loading, error } = useInvoice(id || '');
+  const downloadPDFMutation = useDownloadInvoicePDF();
+  const sendEmailMutation = useSendInvoiceEmail();
+
+  const handleDownloadPDF = () => {
     if (id) {
-      fetchInvoiceDetails();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  const fetchInvoiceDetails = async () => {
-    dispatch(setLoading(true));
-    try {
-      const response = await invoiceService.getInvoiceById(id);
-      dispatch(setCurrentInvoice(response));
-    } catch (err) {
-      dispatch(setError(err.message || 'Failed to fetch invoice details'));
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to load invoice details',
-      }));
+      downloadPDFMutation.mutate(id);
     }
   };
 
-  const handleDownloadPDF = async () => {
-    try {
-      const pdfBlob = await invoiceService.downloadPDF(id);
-      const url = window.URL.createObjectURL(new Blob([pdfBlob]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `invoice-${currentInvoice.invoiceNumber}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-      dispatch(addToast({
-        type: 'success',
-        message: 'Invoice downloaded successfully',
-      }));
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to download invoice PDF',
-      }));
+  const handleSendEmail = () => {
+    if (id) {
+      sendEmailMutation.mutate(id);
     }
   };
 
-  const handleSendEmail = async () => {
-    try {
-      await invoiceService.sendEmail(id);
-      dispatch(addToast({
-        type: 'success',
-        message: 'Invoice sent to email successfully',
-      }));
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to send invoice email',
-      }));
+  const handlePaymentSuccess = () => {
+    if (id) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(id) });
     }
   };
 
-  const getStatusBadgeClass = (status) => {
-    const statusMap = {
+  const getStatusBadgeClass = (status: string) => {
+    const statusMap: Record<string, string> = {
       PAID: 'bg-green-100 text-green-800',
       UNPAID: 'bg-yellow-100 text-yellow-800',
       OVERDUE: 'bg-red-100 text-red-800',
@@ -89,7 +50,7 @@ const InvoiceDetails = () => {
     return statusMap[status] || 'bg-gray-100 text-gray-800';
   };
 
-  if (loading && !currentInvoice) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />
@@ -97,11 +58,12 @@ const InvoiceDetails = () => {
     );
   }
 
-  if (error && !currentInvoice) {
+  if (error || !currentInvoice) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to load invoice details';
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+          {error ? errorMessage : 'Invoice not found'}
         </div>
         <Button onClick={() => navigate('/invoices')} className="mt-4">
           Back to Invoices
@@ -156,7 +118,7 @@ const InvoiceDetails = () => {
               invoiceId={currentInvoice.id}
               amount={currentInvoice.totalAmount}
               invoiceNumber={currentInvoice.invoiceNumber}
-              onSuccess={() => fetchInvoiceDetails()}
+              onSuccess={handlePaymentSuccess}
               buttonText="Pay Now"
               buttonVariant="primary"
             />

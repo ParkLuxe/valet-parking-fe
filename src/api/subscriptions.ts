@@ -72,10 +72,19 @@ export const useSubscription = (hostId: string) => {
 };
 
 // Get usage statistics
-export const useSubscriptionUsage = (hostId: string) => {
+export const useSubscriptionUsage = (hostId: string, month?: number, year?: number) => {
   return useQuery({
-    queryKey: [...queryKeys.subscriptions.all, 'usage', hostId] as const,
-    queryFn: () => apiHelper.get(`/v1/subscriptions/${hostId}/usage`),
+    queryKey: [...queryKeys.subscriptions.all, 'usage', hostId, month, year] as const,
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (month !== undefined) params.append('month', month.toString());
+      if (year !== undefined) params.append('year', year.toString());
+      const queryString = params.toString();
+      const url = queryString 
+        ? `/v1/subscriptions/${hostId}/usage?${queryString}`
+        : `/v1/subscriptions/${hostId}/usage`;
+      return apiHelper.get(url);
+    },
     enabled: !!hostId,
     staleTime: 3 * 60 * 1000,
   });
@@ -113,8 +122,8 @@ export const useChangeSubscriptionPlan = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ hostId, planId }: { hostId: string; planId: string }) => {
-      const response = await apiHelper.put(`/v1/subscriptions/${hostId}/plan`, { planId });
+    mutationFn: async ({ hostId, newPlanId }: { hostId: string; newPlanId: string }) => {
+      const response = await apiHelper.put(`/v1/subscriptions/${hostId}/plan?newPlanId=${newPlanId}`);
       return response;
     },
     onSuccess: (_, { hostId }) => {
@@ -166,6 +175,16 @@ export const useDeactivateSubscription = () => {
         message: error?.message || 'Failed to deactivate subscription',
       }));
     },
+  });
+};
+
+// Get subscription status
+export const useSubscriptionStatus = (hostId: string) => {
+  return useQuery({
+    queryKey: [...queryKeys.subscriptions.all, 'status', hostId] as const,
+    queryFn: () => apiHelper.get(`/v1/subscriptions/${hostId}/status`),
+    enabled: !!hostId,
+    staleTime: 3 * 60 * 1000,
   });
 };
 

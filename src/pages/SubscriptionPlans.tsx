@@ -4,28 +4,28 @@
  */
 
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import type {  RootState  } from '../redux';
 import { Card } from '../components';
 import { Button } from '../components';
 import { LoadingSpinner } from '../components';
 import { useAllSubscriptionPlans, useActiveSubscriptionPlans } from '../api/subscriptionPlans';
-import { subscriptionService } from '../services';
-import {  addToast  } from '../redux';
+import { useSubscription, useInitializeSubscription, useChangeSubscriptionPlan } from '../api/subscriptions';
 import {  formatCurrency  } from '../utils';
 import { usePermissions } from '../hooks';
 
 const SubscriptionPlans = () => {
-  const dispatch = useDispatch();
   const { can, isRole } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const [currentSubscription, setCurrentSubscription] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Use TanStack Query hooks
+  // ✅ Use TanStack Query hooks
   const { data: allPlansData, isLoading: allPlansLoading } = useAllSubscriptionPlans(0, 20);
   const { data: activePlansData, isLoading: activePlansLoading } = useActiveSubscriptionPlans();
+  const { data: currentSubscription } = useSubscription(user?.hostId || '');
+  const initializeSubscriptionMutation = useInitializeSubscription();
+  const changePlanMutation = useChangeSubscriptionPlan();
 
   // Determine which data to use based on role
   // Note: getAllPlans returns paginated response with 'content' field, getActivePlans returns array directly
@@ -34,54 +34,26 @@ const SubscriptionPlans = () => {
     : (activePlansData || []);
   const loading = isRole('SUPERADMIN') ? allPlansLoading : activePlansLoading;
 
-  // Fetch current subscription
-  React.useEffect(() => {
-    if (user?.hostUserId && can('canManageSubscription')) {
-      fetchCurrentSubscription();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const fetchCurrentSubscription = async () => {
-    try {
-      const response = await subscriptionService.getSubscription(user.hostId);
-      setCurrentSubscription(response);
-    } catch (err) {
-      console.error('Failed to fetch current subscription:', err);
-    }
-  };
-
-  const handleSelectPlan = async (planId) => {
+  const handleSelectPlan = async (planId: string) => {
     if (!user?.hostUserId) return;
 
     if (!window.confirm('Are you sure you want to change your subscription plan?')) {
       return;
     }
 
+    setActionLoading(true);
     try {
-      setActionLoading(true);
       if (currentSubscription) {
-        await subscriptionService.updatePlan(user.hostId, planId);
-        dispatch(addToast({
-          type: 'success',
-          message: 'Subscription plan updated successfully',
-        }));
+        await changePlanMutation.mutateAsync({
+          hostId: user.hostId,
+          newPlanId: planId,
+        });
       } else {
-        await subscriptionService.initialize({
+        await initializeSubscriptionMutation.mutateAsync({
           hostId: user.hostId,
           planId: planId,
         });
-        dispatch(addToast({
-          type: 'success',
-          message: 'Subscription initialized successfully',
-        }));
       }
-      fetchCurrentSubscription();
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to update subscription plan',
-      }));
     } finally {
       setActionLoading(false);
     }
@@ -148,11 +120,11 @@ const SubscriptionPlans = () => {
       {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {plans.map((plan) => {
-          const isCurrentPlan = currentSubscription?.planId === plan.id;
+          const isCurrentPlan = currentSubscription?.plan?.planId === (plan.planId || plan.id);
           
           return (
             <Card
-              key={plan.id}
+              key={plan.planId || plan.id}
               className={`relative ${isCurrentPlan ? 'ring-2 ring-blue-500' : ''}`}
             >
               {isCurrentPlan && (
@@ -235,7 +207,7 @@ const SubscriptionPlans = () => {
 
               {can('canChangeSubscriptionPlan') && !isCurrentPlan && (
                 <Button
-                  onClick={() => handleSelectPlan(plan.id)}
+                  onClick={() => handleSelectPlan(plan.planId || plan.id)}
                   className="w-full"
                   disabled={actionLoading}
                 >

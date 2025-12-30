@@ -3,16 +3,15 @@
  * Manage operating schedules for the host
  */
 
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import type {  RootState  } from '../redux';
 import { Card } from '../components';
 import { Button } from '../components';
 import { LoadingSpinner } from '../components';
 import { Modal } from '../components';
 import { Input } from '../components';
-import { hostSchedulesService } from '../services';
-import {  addToast  } from '../redux';
+import { useHostSchedules, useCreateSchedule, useUpdateSchedule, useDeleteSchedule } from '../api/hostSchedules';
 import { usePermissions } from '../hooks';
 
 const DAYS_OF_WEEK = [
@@ -20,14 +19,11 @@ const DAYS_OF_WEEK = [
 ];
 
 const HostSchedules = () => {
-  const dispatch = useDispatch();
   const { can } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const [schedules, setSchedules] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState(null);
+  const [editingSchedule, setEditingSchedule] = useState<any>(null);
   const [formData, setFormData] = useState({
     dayOfWeek: 'MONDAY',
     openTime: '09:00',
@@ -35,66 +31,50 @@ const HostSchedules = () => {
     isOpen: true,
   });
 
-  useEffect(() => {
-    if (user?.hostUserId) {
-      fetchSchedules();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  // ✅ Use TanStack Query hooks
+  const { data: schedules = [], isLoading } = useHostSchedules(user?.hostId || '');
+  const createMutation = useCreateSchedule();
+  const updateMutation = useUpdateSchedule();
+  const deleteMutation = useDeleteSchedule();
 
-  const fetchSchedules = async () => {
-    setLoading(true);
-    try {
-      const response = await hostSchedulesService.getSchedulesByHost(user.hostUserId);
-      setSchedules(response || []);
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to load schedules',
-      }));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      setLoading(true);
-      if (editingSchedule) {
-        await hostSchedulesService.updateSchedule(editingSchedule.id, formData);
-        dispatch(addToast({
-          type: 'success',
-          message: 'Schedule updated successfully',
-        }));
-      } else {
-        await hostSchedulesService.createSchedule(user.hostId, formData);
-        dispatch(addToast({
-          type: 'success',
-          message: 'Schedule created successfully',
-        }));
-      }
-      setShowModal(false);
-      setEditingSchedule(null);
-      setFormData({
-        dayOfWeek: 'MONDAY',
-        openTime: '09:00',
-        closeTime: '18:00',
-        isOpen: true,
+    if (editingSchedule) {
+      updateMutation.mutate({
+        scheduleId: editingSchedule.scheduleId,
+        ...formData,
+      }, {
+        onSuccess: () => {
+          setShowModal(false);
+          setEditingSchedule(null);
+          setFormData({
+            dayOfWeek: 'MONDAY',
+            openTime: '09:00',
+            closeTime: '18:00',
+            isOpen: true,
+          });
+        },
       });
-      fetchSchedules();
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: `Failed to ${editingSchedule ? 'update' : 'create'} schedule`,
-      }));
-    } finally {
-      setLoading(false);
+    } else {
+      createMutation.mutate({
+        hostId: user?.hostId || '',
+        ...formData,
+      }, {
+        onSuccess: () => {
+          setShowModal(false);
+          setFormData({
+            dayOfWeek: 'MONDAY',
+            openTime: '09:00',
+            closeTime: '18:00',
+            isOpen: true,
+          });
+        },
+      });
     }
   };
 
-  const handleEdit = (schedule) => {
+  const handleEdit = (schedule: any) => {
     setEditingSchedule(schedule);
     setFormData({
       dayOfWeek: schedule.dayOfWeek,
@@ -105,31 +85,17 @@ const HostSchedules = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (scheduleId) => {
+  const handleDelete = async (scheduleId: string) => {
     if (!window.confirm('Are you sure you want to delete this schedule?')) {
       return;
     }
 
-    try {
-      setLoading(true);
-      await hostSchedulesService.deleteSchedule(scheduleId);
-      dispatch(addToast({
-        type: 'success',
-        message: 'Schedule deleted successfully',
-      }));
-      fetchSchedules();
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to delete schedule',
-      }));
-    } finally {
-      setLoading(false);
-    }
+    deleteMutation.mutate(scheduleId);
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
@@ -146,13 +112,15 @@ const HostSchedules = () => {
     );
   }
 
-  if (loading && schedules.length === 0) {
+  if (isLoading && schedules.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />
       </div>
     );
   }
+
+  const loading = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   return (
     <div className="p-6 space-y-6">
@@ -204,8 +172,8 @@ const HostSchedules = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {schedules.map((schedule) => (
-                <tr key={schedule.id} className="hover:bg-gray-50">
+              {schedules.map((schedule: any) => (
+                <tr key={schedule.scheduleId || schedule.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm font-medium">
                     {schedule.dayOfWeek}
                   </td>
@@ -236,7 +204,7 @@ const HostSchedules = () => {
                         </Button>
                         <Button
                           variant="outline"
-                          onClick={() => handleDelete(schedule.id)}
+                          onClick={() => handleDelete(schedule.scheduleId || schedule.id)}
                           className="text-sm text-red-600 hover:bg-red-50"
                         >
                           Delete
