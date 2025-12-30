@@ -47,7 +47,7 @@ export const useAcceptRequest = () => {
     },
     onSuccess: (_, { requestId }) => {
       queryClient.invalidateQueries({ queryKey: [...queryKeys.vehicles.all, 'request', requestId] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicles.requests });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.vehicles.all, 'requests'] });
       dispatch(addToast({
         type: 'success',
         message: 'Request accepted successfully',
@@ -74,7 +74,7 @@ export const useCompleteDelivery = () => {
     },
     onSuccess: (_, requestId) => {
       queryClient.invalidateQueries({ queryKey: [...queryKeys.vehicles.all, 'request', requestId] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicles.requests });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.vehicles.all, 'requests'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.vehicles.lists() });
       dispatch(addToast({
         type: 'success',
@@ -102,7 +102,7 @@ export const useCancelRequest = () => {
     },
     onSuccess: (_, requestId) => {
       queryClient.invalidateQueries({ queryKey: [...queryKeys.vehicles.all, 'request', requestId] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicles.requests });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.vehicles.all, 'requests'] });
       dispatch(addToast({
         type: 'success',
         message: 'Request cancelled successfully',
@@ -161,7 +161,7 @@ export const useAssignRequest = () => {
     },
     onSuccess: (_, { requestId }) => {
       queryClient.invalidateQueries({ queryKey: [...queryKeys.vehicles.all, 'request', requestId] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicles.requests });
+      queryClient.invalidateQueries({ queryKey: [...queryKeys.vehicles.all, 'requests'] });
       dispatch(addToast({
         type: 'success',
         message: 'Request assigned successfully',

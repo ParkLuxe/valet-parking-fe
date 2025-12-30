@@ -1,37 +1,40 @@
 /**
- * Host Service
- * Handles host-related API operations
+ * Host Service - Lightweight wrapper around apiHelper
+ * For new code, prefer using TanStack Query hooks from ../api/hosts
  */
 
 import { apiHelper } from './api';
 
 const hostService = {
-  /**
-   * Register new host
-   * @param {object} hostData - Host registration data
-   * @returns {Promise} Created host data
-   */
-  register: async (hostData) => {
-    try {
-      const response = await apiHelper.post('/v1/admin/host/register', hostData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  registerHost: async (hostData: any) => {
+    const response = await apiHelper.post('/v1/admin/host/register', hostData);
+    return response;
   },
 
-  /**
-   * Get host details
-   * @param {string} hostId - Host ID
-   * @returns {Promise} Host details
-   */
-  getHostDetails: async (hostId) => {
-    try {
-      const response = await apiHelper.get(`/v1/admin/host/${hostId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  // Alias for backward compatibility
+  register: async (hostData: any) => {
+    const response = await apiHelper.post('/v1/admin/host/register', hostData);
+    return response;
+  },
+
+  updateHost: async (hostId: string, hostData: any) => {
+    const response = await apiHelper.put(`/v1/admin/host/update/${hostId}`, hostData);
+    return response;
+  },
+
+  getHostById: async (hostId: string) => {
+    const response = await apiHelper.get(`/v1/admin/host/${hostId}`);
+    return response;
+  },
+
+  getAllHosts: async (page: number = 0, size: number = 10) => {
+    const response = await apiHelper.get(`/v1/admin/host?page=${page}&size=${size}`);
+    return response;
+  },
+
+  filterHosts: async (filters: any) => {
+    const response = await apiHelper.post('/v1/admin/host/filter', filters);
+    return response;
   },
 };
 

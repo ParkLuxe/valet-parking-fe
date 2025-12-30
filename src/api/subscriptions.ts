@@ -107,8 +107,8 @@ export const useRenewSubscription = () => {
   });
 };
 
-// Update subscription plan mutation
-export const useUpdateSubscriptionPlan = () => {
+// Change subscription plan for a host
+export const useChangeSubscriptionPlan = () => {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   

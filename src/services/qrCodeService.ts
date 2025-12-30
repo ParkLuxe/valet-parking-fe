@@ -1,137 +1,62 @@
 /**
- * QR Code Service
- * Handles QR code generation, scanning, and management
+ * QR Code Service - Lightweight wrapper around apiHelper
+ * For new code, prefer using TanStack Query hooks from ../api/qrCodes
  */
 
 import { apiHelper } from './api';
 
 const qrCodeService = {
-  /**
-   * Generate single QR code
-   * @param {object} qrData - QR code data
-   * @returns {Promise} Generated QR code
-   */
-  generate: async (qrData) => {
-    try {
-      const response = await apiHelper.post('/v1/qr/generate', qrData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  generateQRCode: async (data: any) => {
+    const response = await apiHelper.post('/v1/qr/generate', data);
+    return response;
   },
 
-  /**
-   * Generate batch QR codes
-   * @param {string} hostId - Host ID
-   * @param {number} count - Number of QR codes to generate
-   * @returns {Promise} Generated QR codes
-   */
-  generateBatch: async (hostId, count) => {
-    try {
-      const response = await apiHelper.post(`/v1/qr/batch?hostId=${hostId}&count=${count}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  // Alias for backward compatibility
+  generate: async (data: any) => {
+    const response = await apiHelper.post('/v1/qr/generate', data);
+    return response;
   },
 
-  /**
-   * Scan QR code (public, no auth)
-   * @param {object} scanData - Scan data
-   * @returns {Promise} Scan result
-   */
-  scan: async (scanData) => {
-    try {
-      const response = await apiHelper.post('/v1/qr/scan', scanData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  generateBatch: async (hostId: string, count: number) => {
+    const response = await apiHelper.post(`/v1/qr/batch?hostId=${hostId}&count=${count}`);
+    return response;
   },
 
-  /**
-   * Get QR code details
-   * @param {string} qrCode - QR code
-   * @returns {Promise} QR code details
-   */
-  getDetails: async (qrCode) => {
-    try {
-      const response = await apiHelper.get(`/v1/qr/${qrCode}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  scanQRCode: async (data: any) => {
+    const response = await apiHelper.post('/v1/qr/scan', data);
+    return response;
   },
 
-  /**
-   * Validate QR code
-   * @param {string} qrCode - QR code
-   * @returns {Promise} Validation result
-   */
-  validate: async (qrCode) => {
-    try {
-      const response = await apiHelper.get(`/v1/qr/validate/${qrCode}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getQRCode: async (qrCode: string) => {
+    const response = await apiHelper.get(`/v1/qr/${qrCode}`);
+    return response;
   },
 
-  /**
-   * Get active QR codes for host
-   * @param {string} hostId - Host ID
-   * @returns {Promise} List of active QR codes
-   */
-  getActiveQRCodes: async (hostId) => {
-    try {
-      const response = await apiHelper.get(`/v1/qr/host/${hostId}/active`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getActiveQRCodes: async (hostId: string) => {
+    const response = await apiHelper.get(`/v1/qr/host/${hostId}/active`);
+    return response;
   },
 
-  /**
-   * Deactivate QR code
-   * @param {string} qrCode - QR code
-   * @returns {Promise}
-   */
-  deactivate: async (qrCode) => {
-    try {
-      const response = await apiHelper.post(`/v1/qr/${qrCode}/deactivate`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  deactivateQRCode: async (qrCode: string) => {
+    const response = await apiHelper.post(`/v1/qr/${qrCode}/deactivate`);
+    return response;
   },
 
-  /**
-   * Link QR code to parking slot
-   * @param {string} qrCode - QR code
-   * @param {string} slotId - Parking slot ID
-   * @returns {Promise}
-   */
-  linkToSlot: async (qrCode, slotId) => {
-    try {
-      const response = await apiHelper.post(`/v1/qr/${qrCode}/link-slot?slotId=${slotId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  // Alias for backward compatibility
+  deactivate: async (qrCode: string) => {
+    const response = await apiHelper.post(`/v1/qr/${qrCode}/deactivate`);
+    return response;
   },
 
-  /**
-   * Export QR codes for host
-   * @param {string} hostId - Host ID
-   * @returns {Promise} Export data
-   */
-  exportQRCodes: async (hostId) => {
-    try {
-      const response = await apiHelper.get(`/v1/qr/host/${hostId}/export`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  linkToSlot: async (qrCode: string, slotId: string) => {
+    const response = await apiHelper.post(`/v1/qr/${qrCode}/link-slot?slotId=${slotId}`);
+    return response;
+  },
+
+  exportQRCodes: async (hostId: string) => {
+    // Use getActiveQRCodes for export functionality
+    const response = await apiHelper.get(`/v1/qr/host/${hostId}/active`);
+    return response;
   },
 };
 

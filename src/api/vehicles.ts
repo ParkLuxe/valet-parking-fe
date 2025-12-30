@@ -3,7 +3,7 @@
  * Handles vehicle status and parking management operations
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tantml:react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { apiHelper } from '../services/api';
 import { addToast } from '../redux';

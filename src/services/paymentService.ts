@@ -1,114 +1,47 @@
 /**
- * Payment Service
- * Handles payment operations and Razorpay integration
+ * Payment Service - Lightweight wrapper around apiHelper
+ * For new code, prefer using TanStack Query hooks from ../api/payments
  */
 
 import { apiHelper } from './api';
 
 const paymentService = {
-  /**
-   * Create Razorpay order
-   * @param {string} invoiceId - Invoice ID
-   * @returns {Promise} Razorpay order details
-   */
-  createOrder: async (invoiceId) => {
-    try {
-      const response = await apiHelper.post(`/v1/payments/create-order?invoiceId=${invoiceId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  createOrder: async (invoiceId: string) => {
+    const response = await apiHelper.post(`/v1/payments/create-order?invoiceId=${invoiceId}`);
+    return response;
   },
 
-  /**
-   * Verify payment
-   * @param {object} paymentData - Payment verification data
-   * @returns {Promise} Verification result
-   */
-  verifyPayment: async (paymentData) => {
-    try {
-      const response = await apiHelper.post('/v1/payments/verify', paymentData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  verifyPayment: async (paymentData: {
+    razorpay_payment_id?: string;
+    razorpay_order_id?: string;
+    razorpay_signature?: string;
+    razorpayPaymentId?: string;
+    razorpayOrderId?: string;
+    razorpaySignature?: string;
+  }) => {
+    // Handle both snake_case (from Razorpay) and camelCase formats
+    const normalizedData = {
+      razorpayPaymentId: paymentData.razorpayPaymentId || paymentData.razorpay_payment_id,
+      razorpayOrderId: paymentData.razorpayOrderId || paymentData.razorpay_order_id,
+      razorpaySignature: paymentData.razorpaySignature || paymentData.razorpay_signature,
+    };
+    const response = await apiHelper.post('/v1/payments/verify', normalizedData);
+    return response;
   },
 
-  /**
-   * Handle webhook
-   * @param {object} webhookData - Webhook data
-   * @returns {Promise}
-   */
-  handleWebhook: async (webhookData) => {
-    try {
-      const response = await apiHelper.post('/v1/payments/webhook', webhookData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getPaymentHistory: async (hostId: string, page: number = 0, size: number = 10) => {
+    const response = await apiHelper.get(`/v1/payments/host/${hostId}?page=${page}&size=${size}`);
+    return response;
   },
 
-  /**
-   * Get payment details
-   * @param {string} paymentId - Payment ID
-   * @returns {Promise} Payment details
-   */
-  getPaymentDetails: async (paymentId) => {
-    try {
-      const response = await apiHelper.get(`/v1/payments/${paymentId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Get payment history
-   * @param {string} hostId - Host ID
-   * @param {number} page - Page number
-   * @param {number} size - Page size
-   * @returns {Promise} Payment history
-   */
-  getPaymentHistory: async (hostId, page = 0, size = 10) => {
-    try {
-      const response = await apiHelper.get(`/v1/payments/host/${hostId}?page=${page}&size=${size}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Get payment stats
-   * @param {string} hostId - Host ID
-   * @param {string} startDate - Start date (ISO format)
-   * @param {string} endDate - End date (ISO format)
-   * @returns {Promise} Payment statistics
-   */
-  getPaymentStats: async (hostId, startDate, endDate) => {
-    try {
-      const response = await apiHelper.get(
-        `/v1/payments/stats/${hostId}?startDate=${startDate}&endDate=${endDate}`
-      );
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Initiate refund
-   * @param {string} paymentId - Payment ID
-   * @param {number} amount - Refund amount
-   * @returns {Promise}
-   */
-  initiateRefund: async (paymentId, amount) => {
-    try {
-      const response = await apiHelper.post(`/v1/payments/${paymentId}/refund?amount=${amount}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getPaymentStats: async (hostId: string, startDate?: string, endDate?: string) => {
+    let url = `/v1/payments/stats/${hostId}`;
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    const queryString = params.toString();
+    const response = await apiHelper.get(queryString ? `${url}?${queryString}` : url);
+    return response;
   },
 };
 
