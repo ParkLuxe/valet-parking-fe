@@ -1,215 +1,71 @@
 /**
- * Invoice Service
- * Handles invoice management operations
+ * Invoice Service - Lightweight wrapper around apiHelper
+ * For new code, prefer using TanStack Query hooks from ../api/invoices
  */
 
 import { apiHelper } from './api';
 
 const invoiceService = {
-  /**
-   * Generate monthly invoice
-   * @param {string} hostId - Host ID
-   * @returns {Promise} Generated invoice
-   */
-  generateInvoice: async (hostId) => {
-    try {
-      const response = await apiHelper.post(`/v1/invoices/generate/${hostId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  generateInvoice: async (hostId: string) => {
+    const response = await apiHelper.post(`/v1/invoices/generate/${hostId}`);
+    return response;
   },
 
-  /**
-   * Get invoice by ID
-   * @param {string} invoiceId - Invoice ID
-   * @returns {Promise} Invoice details
-   */
-  getInvoiceById: async (invoiceId) => {
-    try {
-      const response = await apiHelper.get(`/v1/invoices/${invoiceId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getInvoiceById: async (invoiceId: string) => {
+    const response = await apiHelper.get(`/v1/invoices/${invoiceId}`);
+    return response;
   },
 
-  /**
-   * Get invoice by invoice number
-   * @param {string} invoiceNumber - Invoice number
-   * @returns {Promise} Invoice details
-   */
-  getInvoiceByNumber: async (invoiceNumber) => {
-    try {
-      const response = await apiHelper.get(`/v1/invoices/number/${invoiceNumber}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getInvoiceByNumber: async (invoiceNumber: string) => {
+    const response = await apiHelper.get(`/v1/invoices/number/${invoiceNumber}`);
+    return response;
   },
 
-  /**
-   * Filter invoices
-   * @param {object} filters - Filter criteria (status, hostId, dateRange, etc.)
-   * @param {number} page - Page number
-   * @param {number} size - Page size
-   * @returns {Promise} List of filtered invoices
-   */
-  filterInvoices: async (filters: any = {}, page = 0, size = 10) => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Add pagination
-      params.append('page', page.toString());
-      params.append('size', size.toString());
-      
-      // Add filters
-      if (filters.status) {
-        params.append('status', filters.status);
-      }
-      if (filters.hostId) {
-        params.append('hostId', filters.hostId);
-      }
-      if (filters.startDate) {
-        params.append('startDate', filters.startDate);
-      }
-      if (filters.endDate) {
-        params.append('endDate', filters.endDate);
-      }
-      
-      const response = await apiHelper.get(`/v1/invoices/filter?${params.toString()}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  filterInvoices: async (filters: any = {}, page: number = 0, size: number = 10) => {
+    const response = await apiHelper.post('/v1/invoices/filter-spec', { ...filters, page, size });
+    return response;
   },
 
-  /**
-   * Get host invoices
-   * @param {string} hostId - Host ID
-   * @param {number} page - Page number
-   * @param {number} size - Page size
-   * @returns {Promise} List of invoices
-   */
-  getHostInvoices: async (hostId, page = 0, size = 10) => {
-    try {
-      const response = await apiHelper.get(`/v1/invoices/host/${hostId}?page=${page}&size=${size}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getHostInvoices: async (hostId: string, page: number = 0, size: number = 10) => {
+    const response = await apiHelper.get(`/v1/invoices/host/${hostId}?page=${page}&size=${size}`);
+    return response;
   },
 
-  /**
-   * Download invoice PDF
-   * @param {string} invoiceId - Invoice ID
-   * @returns {Promise} PDF file
-   */
-  downloadPDF: async (invoiceId) => {
-    try {
-      const response = await apiHelper.get(`/v1/invoices/${invoiceId}/pdf`, {
-        responseType: 'blob',
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  downloadPDF: async (invoiceId: string) => {
+    const response = await apiHelper.get(`/v1/invoices/${invoiceId}/pdf`, {
+      responseType: 'blob',
+    });
+    return response;
   },
 
-  /**
-   * Generate PDF
-   * @param {string} invoiceId - Invoice ID
-   * @returns {Promise}
-   */
-  generatePDF: async (invoiceId) => {
-    try {
-      const response = await apiHelper.post(`/v1/invoices/${invoiceId}/generate-pdf`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  generatePDF: async (invoiceId: string) => {
+    const response = await apiHelper.post(`/v1/invoices/${invoiceId}/generate-pdf`);
+    return response;
   },
 
-  /**
-   * Regenerate PDF
-   * @param {string} invoiceId - Invoice ID
-   * @returns {Promise}
-   */
-  regeneratePDF: async (invoiceId) => {
-    try {
-      const response = await apiHelper.post(`/v1/invoices/${invoiceId}/regenerate-pdf`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getUnpaidInvoices: async (hostId: string) => {
+    const response = await apiHelper.get(`/v1/invoices/unpaid/${hostId}`);
+    return response;
   },
 
-  /**
-   * Send invoice via email
-   * @param {string} invoiceId - Invoice ID
-   * @returns {Promise}
-   */
-  sendEmail: async (invoiceId) => {
-    try {
-      const response = await apiHelper.post(`/v1/invoices/${invoiceId}/send-email`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Get unpaid invoices for host
-   * @param {string} hostId - Host ID
-   * @returns {Promise} List of unpaid invoices
-   */
-  getUnpaidInvoices: async (hostId) => {
-    try {
-      const response = await apiHelper.get(`/v1/invoices/unpaid/${hostId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Get overdue invoices (SUPERADMIN only)
-   * @returns {Promise} List of overdue invoices
-   */
   getOverdueInvoices: async () => {
-    try {
-      const response = await apiHelper.get('/v1/invoices/overdue');
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiHelper.get('/v1/invoices/overdue');
+    return response;
   },
 
-  /**
-   * Get total revenue (SUPERADMIN only)
-   * @returns {Promise} Total revenue
-   */
   getTotalRevenue: async () => {
-    try {
-      const response = await apiHelper.get('/v1/invoices/revenue/total');
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await apiHelper.get('/v1/invoices/revenue/total');
+    return response;
   },
 
-  /**
-   * Get host revenue
-   * @param {string} hostId - Host ID
-   * @returns {Promise} Host revenue
-   */
-  getHostRevenue: async (hostId) => {
-    try {
-      const response = await apiHelper.get(`/v1/invoices/revenue/${hostId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getHostRevenue: async (hostId: string) => {
+    const response = await apiHelper.get(`/v1/invoices/revenue/${hostId}`);
+    return response;
+  },
+
+  sendEmail: async (invoiceId: string) => {
+    // Backend doesn't have this endpoint in the spec yet
+    throw new Error('Send email endpoint not yet implemented in backend');
   },
 };
 

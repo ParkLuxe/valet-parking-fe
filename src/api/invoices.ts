@@ -5,19 +5,19 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
-import { invoiceService } from '../services';
+import { apiHelper } from '../services/api';
 import {  addToast  } from '../redux';
 import { queryKeys } from '../lib/queryKeys';
-import type { Invoice, InvoiceFilters } from '../types/api';
+import type { InvoiceFilters } from '../types/api';
 
-// Get invoices with filters
+// Filter invoices using POST /v1/invoices/filter-spec
 export const useInvoices = (filters: InvoiceFilters = {}) => {
   const page = filters.page ?? 0;
   const size = filters.size ?? 10;
   
   return useQuery({
     queryKey: queryKeys.invoices.list(filters),
-    queryFn: () => invoiceService.filterInvoices(filters, page, size),
+    queryFn: () => apiHelper.post('/v1/invoices/filter-spec', { ...filters, page, size }),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
@@ -26,7 +26,7 @@ export const useInvoices = (filters: InvoiceFilters = {}) => {
 export const useInvoice = (invoiceId: string) => {
   return useQuery({
     queryKey: queryKeys.invoices.detail(invoiceId),
-    queryFn: () => invoiceService.getInvoiceById(invoiceId),
+    queryFn: () => apiHelper.get(`/v1/invoices/${invoiceId}`),
     enabled: !!invoiceId,
     staleTime: 5 * 60 * 1000,
   });
@@ -36,7 +36,7 @@ export const useInvoice = (invoiceId: string) => {
 export const useInvoiceByNumber = (invoiceNumber: string) => {
   return useQuery({
     queryKey: [...queryKeys.invoices.all, 'number', invoiceNumber] as const,
-    queryFn: () => invoiceService.getInvoiceByNumber(invoiceNumber),
+    queryFn: () => apiHelper.get(`/v1/invoices/number/${invoiceNumber}`),
     enabled: !!invoiceNumber,
     staleTime: 5 * 60 * 1000,
   });
@@ -46,7 +46,7 @@ export const useInvoiceByNumber = (invoiceNumber: string) => {
 export const useHostInvoices = (hostId: string, page: number = 0, size: number = 10) => {
   return useQuery({
     queryKey: [...queryKeys.invoices.all, 'host', hostId, page, size] as const,
-    queryFn: () => invoiceService.getHostInvoices(hostId, page, size),
+    queryFn: () => apiHelper.get(`/v1/invoices/host/${hostId}?page=${page}&size=${size}`),
     enabled: !!hostId,
     staleTime: 5 * 60 * 1000,
   });
@@ -56,7 +56,7 @@ export const useHostInvoices = (hostId: string, page: number = 0, size: number =
 export const useUnpaidInvoices = (hostId: string) => {
   return useQuery({
     queryKey: queryKeys.invoices.unpaid(hostId),
-    queryFn: () => invoiceService.getUnpaidInvoices(hostId),
+    queryFn: () => apiHelper.get(`/v1/invoices/unpaid/${hostId}`),
     enabled: !!hostId,
     staleTime: 3 * 60 * 1000, // 3 minutes
   });
@@ -66,7 +66,7 @@ export const useUnpaidInvoices = (hostId: string) => {
 export const useOverdueInvoices = () => {
   return useQuery({
     queryKey: queryKeys.invoices.overdue(),
-    queryFn: () => invoiceService.getOverdueInvoices(),
+    queryFn: () => apiHelper.get('/v1/invoices/overdue'),
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -75,7 +75,7 @@ export const useOverdueInvoices = () => {
 export const useTotalRevenue = () => {
   return useQuery({
     queryKey: queryKeys.invoices.revenue.total(),
-    queryFn: () => invoiceService.getTotalRevenue(),
+    queryFn: () => apiHelper.get('/v1/invoices/revenue/total'),
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 };
@@ -84,7 +84,7 @@ export const useTotalRevenue = () => {
 export const useHostRevenue = (hostId: string) => {
   return useQuery({
     queryKey: queryKeys.invoices.revenue.host(hostId),
-    queryFn: () => invoiceService.getHostRevenue(hostId),
+    queryFn: () => apiHelper.get(`/v1/invoices/revenue/${hostId}`),
     enabled: !!hostId,
     staleTime: 10 * 60 * 1000,
   });
@@ -96,10 +96,12 @@ export const useGenerateInvoice = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (hostId: string) => invoiceService.generateInvoice(hostId),
-    onSuccess: (data) => {
+    mutationFn: (hostId: string) => apiHelper.post(`/v1/invoices/generate/${hostId}`),
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.revenue.host(data.hostId) });
+      if (data?.hostId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.invoices.revenue.host(data.hostId) });
+      }
       dispatch(addToast({
         type: 'success',
         message: 'Invoice generated successfully',
@@ -108,7 +110,7 @@ export const useGenerateInvoice = () => {
     onError: (error: any) => {
       dispatch(addToast({
         type: 'error',
-        message: error?.response?.data?.message || 'Failed to generate invoice',
+        message: error?.message || 'Failed to generate invoice',
       }));
     },
   });
@@ -120,9 +122,11 @@ export const useDownloadInvoicePDF = () => {
   
   return useMutation({
     mutationFn: async (invoiceId: string) => {
-      const blob = await invoiceService.downloadPDF(invoiceId);
+      const blob = await apiHelper.get(`/v1/invoices/${invoiceId}/pdf`, {
+        responseType: 'blob',
+      });
       // Create download link
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(blob as Blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `invoice-${invoiceId}.pdf`;
@@ -141,7 +145,7 @@ export const useDownloadInvoicePDF = () => {
     onError: (error: any) => {
       dispatch(addToast({
         type: 'error',
-        message: error?.response?.data?.message || 'Failed to download invoice',
+        message: error?.message || 'Failed to download invoice',
       }));
     },
   });
@@ -153,7 +157,7 @@ export const useGenerateInvoicePDF = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (invoiceId: string) => invoiceService.generatePDF(invoiceId),
+    mutationFn: (invoiceId: string) => apiHelper.post(`/v1/invoices/${invoiceId}/generate-pdf`),
     onSuccess: (_, invoiceId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(invoiceId) });
       dispatch(addToast({
@@ -164,28 +168,7 @@ export const useGenerateInvoicePDF = () => {
     onError: (error: any) => {
       dispatch(addToast({
         type: 'error',
-        message: error?.response?.data?.message || 'Failed to generate PDF',
-      }));
-    },
-  });
-};
-
-// Send invoice email mutation
-export const useSendInvoiceEmail = () => {
-  const dispatch = useDispatch();
-  
-  return useMutation({
-    mutationFn: (invoiceId: string) => invoiceService.sendEmail(invoiceId),
-    onSuccess: () => {
-      dispatch(addToast({
-        type: 'success',
-        message: 'Invoice email sent successfully',
-      }));
-    },
-    onError: (error: any) => {
-      dispatch(addToast({
-        type: 'error',
-        message: error?.response?.data?.message || 'Failed to send invoice email',
+        message: error?.message || 'Failed to generate PDF',
       }));
     },
   });

@@ -1,200 +1,76 @@
 /**
- * Vehicle Service
- * Handles vehicle-related API operations
+ * Vehicle Service - Lightweight wrapper around apiHelper
+ * For new code, prefer using TanStack Query hooks from ../api/vehicles
  */
 
 import { apiHelper } from './api';
 
 const vehicleService = {
-  /**
-   * Update vehicle status
-   * @param {string} customerId - Customer ID
-   * @param {object} statusData - Status update data
-   * @returns {Promise} Updated vehicle status
-   */
-  updateVehicleStatus: async (customerId, statusData) => {
-    try {
-      const response = await apiHelper.put(`/v1/vehicles/${customerId}/status`, statusData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  parkVehicle: async (data: any) => {
+    const response = await apiHelper.post('/v1/vehicle-status/park', data);
+    return response;
   },
 
-  /**
-   * Get vehicle status
-   * @param {string} customerId - Customer ID
-   * @returns {Promise} Vehicle status
-   */
-  getVehicleStatus: async (customerId) => {
-    try {
-      const response = await apiHelper.get(`/v1/vehicles/${customerId}/status`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  // Alias for backward compatibility
+  addVehicle: async (data: any) => {
+    const response = await apiHelper.post('/v1/vehicle-status/park', data);
+    return response;
   },
 
-  /**
-   * Get vehicle status history
-   * @param {string} customerId - Customer ID
-   * @returns {Promise} Status history
-   */
-  getStatusHistory: async (customerId) => {
-    try {
-      const response = await apiHelper.get(`/v1/vehicles/${customerId}/history`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  updateParkingSlot: async (statusId: string, slotId: string) => {
+    const response = await apiHelper.post(`/v1/vehicle-status/${statusId}/update-slot`, { slotId });
+    return response;
   },
 
-  /**
-   * Assign valet to vehicle
-   * @param {string} customerId - Customer ID
-   * @param {string} valetId - Valet ID
-   * @returns {Promise}
-   */
-  assignValet: async (customerId, valetId) => {
-    try {
-      const response = await apiHelper.post(`/v1/vehicles/${customerId}/assign-valet?valetId=${valetId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  assignValet: async (statusId: string, valetId: string) => {
+    const response = await apiHelper.post(`/v1/vehicle-status/${statusId}/assign-valet`, { valetId });
+    return response;
   },
 
-  /**
-   * Get vehicles by status
-   * @param {string} hostId - Host ID
-   * @param {string} status - Vehicle status
-   * @returns {Promise} List of vehicles
-   */
-  getVehiclesByStatus: async (hostId, status) => {
-    try {
-      const response = await apiHelper.get(`/v1/vehicles/host/${hostId}/status/${status}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  markOutForDelivery: async (statusId: string) => {
+    const response = await apiHelper.post(`/v1/vehicle-status/${statusId}/mark-out-for-delivery`);
+    return response;
   },
 
-  /**
-   * Get vehicle status counts
-   * @param {string} hostId - Host ID
-   * @returns {Promise} Status counts
-   */
-  getStatusCounts: async (hostId) => {
-    try {
-      const response = await apiHelper.get(`/v1/vehicles/host/${hostId}/counts`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  deliverVehicle: async (statusId: string) => {
+    const response = await apiHelper.post(`/v1/vehicle-status/${statusId}/deliver`);
+    return response;
   },
 
-  /**
-   * Request vehicle retrieval
-   * @param {string} customerId - Customer ID
-   * @returns {Promise}
-   */
-  requestRetrieval: async (customerId) => {
-    try {
-      const response = await apiHelper.post(`/v1/vehicles/${customerId}/retrieval-request`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getVehicleStatus: async (statusId: string) => {
+    const response = await apiHelper.get(`/v1/vehicle-status/${statusId}`);
+    return response;
   },
 
-  /**
-   * Mark vehicle as out for delivery
-   * @param {string} customerId - Customer ID
-   * @param {string} valetId - Valet ID
-   * @returns {Promise}
-   */
-  markOutForDelivery: async (customerId, valetId) => {
-    try {
-      const response = await apiHelper.post(`/v1/vehicles/${customerId}/out-for-delivery?valetId=${valetId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getCustomerVehicle: async (customerId: string) => {
+    const response = await apiHelper.get(`/v1/vehicle-status/customer/${customerId}`);
+    return response;
   },
 
-  /**
-   * Mark vehicle as delivered
-   * @param {string} customerId - Customer ID
-   * @returns {Promise}
-   */
-  markDelivered: async (customerId) => {
-    try {
-      const response = await apiHelper.post(`/v1/vehicles/${customerId}/delivered`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getParkedVehicles: async (hostId: string) => {
+    const response = await apiHelper.get(`/v1/vehicle-status/host/${hostId}/parked`);
+    return response;
   },
 
-  /**
-   * Get parking duration
-   * @param {string} customerId - Customer ID
-   * @returns {Promise} Duration data
-   */
-  getParkingDuration: async (customerId) => {
-    try {
-      const response = await apiHelper.get(`/v1/vehicles/${customerId}/duration`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getValetVehicles: async (valetId: string) => {
+    const response = await apiHelper.get(`/v1/vehicle-status/valet/${valetId}`);
+    return response;
   },
 
-  /**
-   * Get all active vehicles (legacy method for backward compatibility)
-   * @param {string} hostId - Host ID
-   * @returns {Promise} List of active vehicles
-   */
-  getActiveVehicles: async (hostId) => {
-    try {
-      if (!hostId) {
-        console.warn('No hostId provided for getActiveVehicles');
-        return [];
-      }
-      const response = await apiHelper.get(`/v1/vehicles/host/${hostId}/status/PARKED`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getHostVehicles: async (hostId: string, page: number = 0, size: number = 10) => {
+    const response = await apiHelper.get(`/v1/vehicle-status/host/${hostId}/all?page=${page}&size=${size}`);
+    return response;
   },
 
-  /**
-   * Get vehicle history (legacy method)
-   * @param {object} filters - Filters (date range, status, etc.)
-   * @returns {Promise} List of historical vehicles
-   */
-  getVehicleHistory: async (filters = {}) => {
-    try {
-      // This might need adjustment based on backend implementation
-      const response = await apiHelper.get('/v1/vehicles/history', { params: filters });
-      return response;
-    } catch (error) {
-      throw error;
+  updateVehicleStatus: async (statusId: string, data: any) => {
+    // This is a generic update - map to specific endpoint based on status
+    if (data.status === 'OUT_FOR_DELIVERY') {
+      return await apiHelper.post(`/v1/vehicle-status/${statusId}/mark-out-for-delivery`);
+    } else if (data.status === 'DELIVERED') {
+      return await apiHelper.post(`/v1/vehicle-status/${statusId}/deliver`);
     }
-  },
-
-  /**
-   * Add a new vehicle
-   * @param {object} vehicleData - Vehicle data
-   * @returns {Promise} Created vehicle
-   */
-  addVehicle: async (vehicleData: any) => {
-    try {
-      const response = await apiHelper.post('/v1/vehicles', vehicleData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    // For other updates, may need specific endpoint
+    throw new Error('Update vehicle status: endpoint not determined for this status');
   },
 };
 

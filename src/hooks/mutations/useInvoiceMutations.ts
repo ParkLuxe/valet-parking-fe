@@ -100,13 +100,14 @@ export function useGenerateInvoicePDF(): UseMutationResult<void, Error, string> 
 
 /**
  * Hook to regenerate PDF for an invoice
+ * Note: Uses the same endpoint as generatePDF
  */
 export function useRegenerateInvoicePDF(): UseMutationResult<void, Error, string> {
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
 
   return useMutation({
-    mutationFn: (invoiceId: string) => invoiceService.regeneratePDF(invoiceId),
+    mutationFn: (invoiceId: string) => invoiceService.generatePDF(invoiceId),
     onSuccess: (_, invoiceId) => {
       queryClient.invalidateQueries({ 
         queryKey: queryKeys.invoices.detail(invoiceId) 
@@ -128,12 +129,16 @@ export function useRegenerateInvoicePDF(): UseMutationResult<void, Error, string
 
 /**
  * Hook to send invoice via email
+ * Note: Backend doesn't have a send-email endpoint in the spec, so this is commented out
  */
 export function useSendInvoiceEmail(): UseMutationResult<void, Error, string> {
   const dispatch = useDispatch();
 
   return useMutation({
-    mutationFn: (invoiceId: string) => invoiceService.sendEmail(invoiceId),
+    mutationFn: async (invoiceId: string) => {
+      // TODO: Backend doesn't have /send-email endpoint yet
+      throw new Error('Send email endpoint not yet implemented');
+    },
     onSuccess: () => {
       dispatch(addToast({
         type: 'success',
@@ -143,7 +148,7 @@ export function useSendInvoiceEmail(): UseMutationResult<void, Error, string> {
     onError: (error: Error) => {
       dispatch(addToast({
         type: 'error',
-        message: 'Failed to send invoice email',
+        message: error.message || 'Failed to send invoice email',
       }));
     },
   });

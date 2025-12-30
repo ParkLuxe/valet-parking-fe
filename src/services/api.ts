@@ -56,16 +56,21 @@ api.interceptors.response.use(
             refreshToken,
           });
           
-          const { token, refreshToken: newRefreshToken } = response.data;
+          // Backend returns: { data: { accessToken, refreshToken, ... } }
+          const responseData = response.data?.data || response.data;
+          const { accessToken, token, refreshToken: newRefreshToken } = responseData;
+          const newToken = accessToken || token;
           
           // Store new tokens
-          localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+          if (newToken) {
+            localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, newToken);
+          }
           if (newRefreshToken) {
             localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
           }
           
           // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${token}`;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return api(originalRequest);
         } else {
           // No refresh token, logout user
@@ -116,7 +121,14 @@ export const apiHelper = {
   get: async (url, config = {}) => {
     try {
       const response = await api.get(url, config);
-      return response?.data?.data || {};
+      // Handle backend response format: { message, data, infoType, dateTimeStamp }
+      // For paginated responses, return the whole data object
+      const data = response?.data?.data;
+      if (data && typeof data === 'object' && 'content' in data) {
+        // Paginated response
+        return data;
+      }
+      return data !== undefined ? data : response?.data || {};
     } catch (error) {
       throw error;
     }
@@ -132,7 +144,14 @@ export const apiHelper = {
   post: async (url, data = {}, config = {}) => {
     try {
       const response = await api.post(url, data, config);
-      return response?.data?.data || {};
+      // Handle backend response format: { message, data, infoType, dateTimeStamp }
+      // For paginated responses, return the whole data object
+      const responseData = response?.data?.data;
+      if (responseData && typeof responseData === 'object' && 'content' in responseData) {
+        // Paginated response
+        return responseData;
+      }
+      return responseData !== undefined ? responseData : response?.data || {};
     } catch (error) {
       throw error;
     }
@@ -148,7 +167,13 @@ export const apiHelper = {
   put: async (url, data = {}, config = {}) => {
     try {
       const response = await api.put(url, data, config);
-      return response?.data?.data || {};
+      // Handle backend response format: { message, data, infoType, dateTimeStamp }
+      const responseData = response?.data?.data;
+      if (responseData && typeof responseData === 'object' && 'content' in responseData) {
+        // Paginated response
+        return responseData;
+      }
+      return responseData !== undefined ? responseData : response?.data || {};
     } catch (error) {
       throw error;
     }
@@ -164,7 +189,13 @@ export const apiHelper = {
   patch: async (url, data = {}, config = {}) => {
     try {
       const response = await api.patch(url, data, config);
-      return response?.data?.data || {};
+      // Handle backend response format: { message, data, infoType, dateTimeStamp }
+      const responseData = response?.data?.data;
+      if (responseData && typeof responseData === 'object' && 'content' in responseData) {
+        // Paginated response
+        return responseData;
+      }
+      return responseData !== undefined ? responseData : response?.data || {};
     } catch (error) {
       throw error;
     }
@@ -179,7 +210,13 @@ export const apiHelper = {
   delete: async (url, config = {}) => {
     try {
       const response = await api.delete(url, config);
-      return response?.data?.data || {};
+      // Handle backend response format: { message, data, infoType, dateTimeStamp }
+      const responseData = response?.data?.data;
+      if (responseData && typeof responseData === 'object' && 'content' in responseData) {
+        // Paginated response
+        return responseData;
+      }
+      return responseData !== undefined ? responseData : response?.data || {};
     } catch (error) {
       throw error;
     }

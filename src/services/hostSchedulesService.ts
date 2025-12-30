@@ -1,81 +1,42 @@
 /**
- * Host Schedules Service
- * Handles host operating schedule management
+ * Host Schedules Service - Lightweight wrapper around apiHelper
+ * For new code, prefer using TanStack Query hooks from ../api/hostSchedules
  */
 
 import { apiHelper } from './api';
 
 const hostSchedulesService = {
-  /**
-   * Create host schedule
-   * @param {string} hostId - Host ID
-   * @param {object} scheduleData - Schedule data
-   * @returns {Promise} Created schedule
-   */
-  createSchedule: async (hostId, scheduleData) => {
-    try {
-      const response = await apiHelper.post(`/v1/host-schedules/create/host/${hostId}`, scheduleData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  createSchedule: async (hostIdOrData: any, scheduleData?: any) => {
+    // Handle both createSchedule(data) and createSchedule(hostId, data)
+    const data = scheduleData ? { ...scheduleData, hostId: hostIdOrData } : hostIdOrData;
+    const response = await apiHelper.post('/v1/host-schedule', data);
+    return response;
   },
 
-  /**
-   * Get schedule by ID
-   * @param {string} scheduleId - Schedule ID
-   * @returns {Promise} Schedule details
-   */
-  getSchedule: async (scheduleId) => {
-    try {
-      const response = await apiHelper.get(`/v1/host-schedules/${scheduleId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getScheduleById: async (scheduleId: string) => {
+    const response = await apiHelper.get(`/v1/host-schedule/${scheduleId}`);
+    return response;
   },
 
-  /**
-   * List schedules by host
-   * @param {string} hostId - Host ID
-   * @returns {Promise} List of schedules
-   */
-  getSchedulesByHost: async (hostId) => {
-    try {
-      const response = await apiHelper.get(`/v1/host-schedules/host/${hostId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  getHostSchedules: async (hostId: string) => {
+    const response = await apiHelper.get(`/v1/host-schedule/host/${hostId}`);
+    return response;
   },
 
-  /**
-   * Update schedule
-   * @param {string} scheduleId - Schedule ID
-   * @param {object} scheduleData - Updated schedule data
-   * @returns {Promise} Updated schedule
-   */
-  updateSchedule: async (scheduleId, scheduleData) => {
-    try {
-      const response = await apiHelper.put(`/v1/host-schedules/${scheduleId}`, scheduleData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  // Alias for backward compatibility
+  getSchedulesByHost: async (hostId: string) => {
+    const response = await apiHelper.get(`/v1/host-schedule/host/${hostId}`);
+    return response;
   },
 
-  /**
-   * Delete schedule
-   * @param {string} scheduleId - Schedule ID
-   * @returns {Promise}
-   */
-  deleteSchedule: async (scheduleId) => {
-    try {
-      const response = await apiHelper.delete(`/v1/host-schedules/${scheduleId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  updateSchedule: async (scheduleId: string, scheduleData: any) => {
+    const response = await apiHelper.put(`/v1/host-schedule/${scheduleId}`, scheduleData);
+    return response;
+  },
+
+  deleteSchedule: async (scheduleId: string) => {
+    const response = await apiHelper.delete(`/v1/host-schedule/${scheduleId}`);
+    return response;
   },
 };
 
