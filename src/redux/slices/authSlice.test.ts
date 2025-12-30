@@ -140,6 +140,59 @@ describe('authSlice', () => {
       // Check localStorage
       expect(localStorage.getItem(STORAGE_KEYS.USER_DATA)).toBe(JSON.stringify(userData));
     });
+
+    it('should normalize role object to string when setting user data', () => {
+      const initialState = {
+        user: null,
+        token: 'test-token',
+        refreshToken: 'test-refresh',
+        isAuthenticated: true,
+        loading: false,
+        error: null,
+      };
+
+      const userData = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: { name: 'HOSTADMIN' } as any,
+      };
+
+      const newState = authReducer(initialState, setUserData(userData));
+
+      // Check that role was normalized to a string
+      expect(newState.user?.role).toBe('HOSTADMIN');
+      expect(typeof newState.user?.role).toBe('string');
+
+      // Check localStorage has normalized role
+      const storedUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_DATA) || '{}');
+      expect(storedUser.role).toBe('HOSTADMIN');
+      expect(typeof storedUser.role).toBe('string');
+    });
+
+    it('should keep role as string when it is already a string', () => {
+      const initialState = {
+        user: null,
+        token: 'test-token',
+        refreshToken: 'test-refresh',
+        isAuthenticated: true,
+        loading: false,
+        error: null,
+      };
+
+      const userData = {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'HOSTADMIN' as const,
+      };
+
+      const newState = authReducer(initialState, setUserData(userData));
+
+      // Check that role remains a string
+      expect(newState.user?.role).toBe('HOSTADMIN');
+      expect(typeof newState.user?.role).toBe('string');
+    });
   });
 
   describe('logout', () => {
