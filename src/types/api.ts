@@ -28,6 +28,9 @@ export type UserRole = 'SUPERADMIN' | 'HOSTADMIN' | 'HOSTUSER' | 'VALET';
 export interface User {
   id: string;
   name: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
   username?: string;
   email: string;
   phone?: string;

@@ -33,7 +33,7 @@ const Modal: React.FC<ModalProps> = ({
         <Dialog.Content
           className={cn(
             'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50',
-            'w-full max-w-lg max-h-[85vh] overflow-y-auto',
+            'w-full max-w-4xl max-h-[90vh] overflow-y-auto',
             'bg-gradient-to-br from-[#1a1a2e] to-[#16162a]',
             'border border-white/10 rounded-2xl shadow-2xl',
             'p-6 animate-in zoom-in-95 fade-in duration-200',

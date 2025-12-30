@@ -3,7 +3,7 @@
  * View all invoices across all hosts (with optional status filtering)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DollarSign, Filter, Download } from 'lucide-react';
 import { Card } from '../../components';
 import { Button } from '../../components';
@@ -49,8 +49,18 @@ const AllPayments = () => {
 
   const downloadPDFMutation = useDownloadInvoicePDF();
 
-  // Extract data from response
-  const invoices = invoicesResponse?.content || invoicesResponse || [];
+  // Extract data from response - ensure it's always an array
+  const invoices = useMemo(() => {
+    if (!invoicesResponse) return [];
+    // If response is already an array, use it
+    if (Array.isArray(invoicesResponse)) return invoicesResponse;
+    // If response has content property that's an array, use it
+    if (invoicesResponse.content && Array.isArray(invoicesResponse.content)) {
+      return invoicesResponse.content;
+    }
+    // Default to empty array
+    return [];
+  }, [invoicesResponse]);
   const pagination = invoicesResponse?.content
     ? {
         currentPage: invoicesResponse.number || 0,
