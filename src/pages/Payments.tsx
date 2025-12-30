@@ -3,84 +3,39 @@
  * Display payment history and statistics
  */
 
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import type { RootState } from '../redux';
 import { Card, Button, LoadingSpinner } from '../components';
-import { paymentService } from '../services';
-import { 
-  setPaymentsWithPagination,
-  setPaymentStats,
-  setLoading,
-  setError,
-} from '../redux/slices/paymentSlice';
-import { addToast } from '../redux';
+import { useHostPayments, usePaymentStats } from '../api/payments';
 import { formatCurrency, formatDate } from '../utils';
 import { usePermissions } from '../hooks';
 
 const Payments = () => {
-  const dispatch = useDispatch();
   const { can } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { payments, paymentStats, loading, error, pagination } = useSelector(
-    (state) => (state as any).payments || {}
-  );
 
   const [currentPage, setCurrentPage] = useState(0);
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
-  });
+  const pageSize = 10;
 
-  useEffect(() => {
-    if (user?.hostUserId) {
-      fetchPayments();
-      fetchPaymentStats();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, currentPage]);
+  // Use TanStack Query hooks
+  const { data: paymentsData, isLoading: paymentsLoading, error: paymentsError } = useHostPayments(
+    user?.hostId || '',
+    currentPage,
+    pageSize
+  );
+  const { data: statsData } = usePaymentStats(user?.hostId || '');
 
-  const fetchPayments = async () => {
-    dispatch(setLoading(true));
-    try {
-      const response = await paymentService.getPaymentHistory(
-        user.hostId,
-        currentPage,
-        pagination.pageSize
-      );
-      dispatch(setPaymentsWithPagination(response));
-    } catch (err) {
-      dispatch(setError(err.message || 'Failed to fetch payments'));
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to load payment history',
-      }));
-    }
+  // Extract data from response
+  const payments = paymentsData?.content || [];
+  const pagination = {
+    totalPages: paymentsData?.totalPages || 0,
+    totalElements: paymentsData?.totalElements || 0,
+    pageSize,
   };
-
-  const fetchPaymentStats = async () => {
-    try {
-      const response = await paymentService.getPaymentStats(
-        user.hostId,
-        dateRange.startDate,
-        dateRange.endDate
-      );
-      dispatch(setPaymentStats(response));
-    } catch (err) {
-      console.error('Failed to fetch payment stats:', err);
-    }
-  };
-
-  const handleDateRangeChange = (e) => {
-    setDateRange({
-      ...dateRange,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleApplyFilter = () => {
-    fetchPaymentStats();
-  };
+  const paymentStats = statsData || null;
+  const loading = paymentsLoading;
+  const error = paymentsError ? (paymentsError as any).message : null;
 
   const getStatusBadgeClass = (status) => {
     const statusMap = {
@@ -155,39 +110,6 @@ const Payments = () => {
           </Card>
         </div>
       )}
-
-      {/* Date Range Filter */}
-      <Card>
-        <div className="flex flex-wrap items-end gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Start Date
-            </label>
-            <input
-              type="date"
-              name="startDate"
-              value={dateRange.startDate}
-              onChange={handleDateRangeChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              End Date
-            </label>
-            <input
-              type="date"
-              name="endDate"
-              value={dateRange.endDate}
-              onChange={handleDateRangeChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <Button onClick={handleApplyFilter}>
-            Apply Filter
-          </Button>
-        </div>
-      </Card>
 
       {/* Error Message */}
       {error && (

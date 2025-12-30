@@ -64,8 +64,15 @@ const authSlice = createSlice({
     },
     
     setUserData: (state, action: PayloadAction<User>) => {
-      state.user = action.payload;
-      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(action.payload));
+      const userData = action.payload;
+      
+      // Normalize role if it's an object with a 'name' property
+      if (userData.role && typeof userData.role === 'object' && 'name' in userData.role) {
+        userData.role = (userData.role as any).name;
+      }
+      
+      state.user = userData;
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
     },
     
     loginFailure: (state, action: PayloadAction<string>) => {

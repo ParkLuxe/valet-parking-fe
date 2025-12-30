@@ -103,24 +103,24 @@ export const PERMISSIONS = {
     canAssignValet: true,
     canRequestRetrieval: true,
     
-    // QR Code management (REMOVED - not needed for Host/HostAdmin)
-    canManageQR: false,
-    canGenerateQR: false,
-    canExportQR: false,
-    canLinkQRToSlot: false,
-    canDeactivateQR: false,
+    // QR Code management
+    canManageQR: true,
+    canGenerateQR: true,
+    canExportQR: true,
+    canLinkQRToSlot: true,
+    canDeactivateQR: true,
     
-    // Analytics (REMOVED for now)
-    canViewAnalytics: false,
-    canViewDetailedAnalytics: false,
-    canComparePerformance: false,
-    canViewValetPerformance: false,
+    // Analytics
+    canViewAnalytics: true,
+    canViewDetailedAnalytics: true,
+    canComparePerformance: true,
+    canViewValetPerformance: true,
     
     // Subscription & Billing
     canManageSubscription: true,
     canViewInvoices: true,
     canMakePayments: true,
-    canViewPaymentHistory: false, // Payments page removed
+    canViewPaymentHistory: true,
     canChangeSubscriptionPlan: true,
     
     // Schedules
@@ -132,10 +132,11 @@ export const PERMISSIONS = {
     // Parking slots
     canManageParkingSlots: true,
     canCreateParkingSlots: true,
+    canViewParkingSlots: true,
     
-    // Reports (REMOVED for now)
-    canViewReports: false,
-    canExportReports: false,
+    // Reports
+    canViewReports: true,
+    canExportReports: true,
   },
   
   [USER_ROLES.HOSTUSER]: {
