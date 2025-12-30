@@ -133,7 +133,7 @@ const Header = () => {
                     {user?.name || 'User'}
                   </p>
                   <p className="text-white/50 text-xs">
-                    {user?.role || 'Role'}
+                    {(user as any)?.roleName || 'Role'}
                   </p>
                 </div>
               </button>

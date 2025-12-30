@@ -18,7 +18,7 @@ import {
   useGenerateBatchQRCodes, 
   useDeactivateQRCode, 
   useLinkQRCodeToSlot 
-} from '../api/qrCodes';
+} from '../hooks/queries/useQRCodes';
 import {  addToast  } from '../redux';
 import { usePermissions } from '../hooks';
 

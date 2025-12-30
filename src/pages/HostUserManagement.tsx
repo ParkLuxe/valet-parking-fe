@@ -20,9 +20,12 @@ import {
 } from 'lucide-react';
 import { Card, Button, Modal, Input } from '../components';
 import { cn, getInitials } from '../utils';
+import { useHostUsers } from '../hooks/queries/useHostUsers';
 
 const HostUserManagement = () => {
-  const { valetList } = useSelector((state: RootState) => (state as any)?.valetList || []);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const hostId = (user as any)?.hostId || '';
+  const { data: valetList = [] } = useHostUsers(hostId);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -38,7 +41,7 @@ const HostUserManagement = () => {
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.phone.includes(searchQuery);
       
-      const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+      const matchesRole = roleFilter === 'all' || user.roleName === roleFilter;
       
       return matchesSearch && matchesRole;
     });
@@ -154,7 +157,7 @@ const HostUserManagement = () => {
           {paginatedUsers.length > 0 ? (
             <div className="space-y-4">
               {paginatedUsers.map((user, index) => {
-                const roleBadge = getRoleBadge(user.role);
+                const roleBadge = getRoleBadge(user.roleName);
                 const performanceScore = getPerformanceScore(index);
                 const isOnline = getOnlineStatus(index);
 

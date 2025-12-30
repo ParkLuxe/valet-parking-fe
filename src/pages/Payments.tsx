@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux';
 import { Card, Button, LoadingSpinner } from '../components';
-import { useHostPayments, usePaymentStats } from '../api/payments';
+import { useHostPayments, usePaymentStats } from '../hooks/queries/usePayments';
 import { formatCurrency, formatDate } from '../utils';
 import { usePermissions } from '../hooks';
 
@@ -24,7 +24,18 @@ const Payments = () => {
     currentPage,
     pageSize
   );
-  const { data: statsData } = usePaymentStats(user?.hostId || '');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDateStr = today.toISOString().slice(0, 19);
+  const startDateObj = new Date(startDateStr);
+  const endDateObj = new Date(startDateObj);
+  endDateObj.setDate(endDateObj.getDate() + 1);
+  const toDateTimeString = (d: Date) => d.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:mm:ss"
+  const { data: statsData } = usePaymentStats({
+    hostId: user?.hostId || '',
+    startDate: toDateTimeString(startDateObj),
+    endDate: toDateTimeString(endDateObj),
+  });
 
   // Extract data from response
   const payments = paymentsData?.content || [];

@@ -31,7 +31,10 @@ export interface User {
   username?: string;
   email: string;
   phone?: string;
-  role: UserRole;
+  // legacy `role` kept optional for backward compatibility
+  role?: UserRole;
+  // new normalized role property used across the app
+  roleName?: UserRole;
   hostId?: string;
   active?: boolean;
   profilePicture?: string;

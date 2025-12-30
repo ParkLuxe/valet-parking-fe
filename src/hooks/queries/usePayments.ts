@@ -5,9 +5,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
-import { apiHelper } from '../services/api';
-import { addToast } from '../redux';
-import { queryKeys } from '../lib/queryKeys';
+import { apiHelper } from '../../services/api';
+import { addToast } from '../../redux';
+import { queryKeys } from '../../lib/queryKeys';
 
 // Create Razorpay order mutation
 export const useCreatePaymentOrder = () => {
@@ -85,7 +85,7 @@ export const useHostPayments = (hostId: string, page: number = 0, size: number =
 };
 
 // Get payment statistics
-export const usePaymentStats = (hostId: string, startDate?: string, endDate?: string) => {
+export const usePaymentStats = ({hostId, startDate, endDate}: {hostId: string, startDate?: string, endDate?: string}) => {
   return useQuery({
     queryKey: [...queryKeys.payments.all, 'stats', hostId, startDate, endDate] as const,
     queryFn: () => {

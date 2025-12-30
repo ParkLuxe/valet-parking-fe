@@ -13,7 +13,7 @@ import { LoadingSpinner } from '../../components';
 import { DataTable } from '../../components';
 import { ExportButton } from '../../components';
 import { DateRangePicker } from '../../components';
-import { useParkedVehicles } from '../../api/vehicles';
+import { useParkedVehicles } from '../../hooks/queries/useVehicles';
 import {  VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY  } from '../../utils';
 
 const VehicleManagement = () => {

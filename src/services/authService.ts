@@ -3,52 +3,19 @@
  * For new code, prefer using TanStack Query hooks from ../api/auth
  */
 
-import { apiHelper } from './api';
+// Deprecated compatibility shim for `authService`.
+// Project migrated to TanStack Query hooks in `src/hooks/queries/useAuth.ts`.
+// Import the hooks (`useLogin`, `useRegister`, `useProfile`, etc.) instead of calling
+// these functions directly. This file remains to provide clearer error messages if
+// any old code still imports it.
 
-const authService = {
-  login: async (credentials: { username: string; password: string; role?: string }) => {
-    const response = await apiHelper.post('/v1/auth/login', {
-      userName: credentials.username,
-      password: credentials.password,
-      role: credentials.role,
-    });
-    return response;
-  },
-
-  getProfile: async () => {
-    const response = await apiHelper.get('/v1/host-users/me');
-    return response;
-  },
-
-  logout: async () => {
-    const refreshToken = localStorage.getItem('park_luxe_refresh_token');
-    const response = await apiHelper.post('/v1/auth/logout', { refreshToken });
-    return response;
-  },
-
-  validateToken: async () => {
-    const response = await apiHelper.get('/v1/auth/validate-token');
-    return response;
-  },
-
-  updateProfile: async (userData: any) => {
-    const response = await apiHelper.put('/v1/host-users/me', userData);
-    return response;
-  },
-
-  changePassword: async (data: { oldPassword?: string; currentPassword?: string; newPassword: string; confirmPassword?: string }) => {
-    const requestData = {
-      currentPassword: data.currentPassword || data.oldPassword,
-      newPassword: data.newPassword,
+const deprecated = new Proxy({}, {
+  get() {
+    return () => {
+      throw new Error('authService is deprecated. Use hooks from src/hooks/queries/useAuth.ts instead.');
     };
-    const response = await apiHelper.post('/v1/users/change-password', requestData);
-    return response;
-  },
+  }
+});
 
-  register: async (userData: any) => {
-    const response = await apiHelper.post('/v1/admin/host/register', userData);
-    return response;
-  },
-};
-
+const authService = deprecated as any;
 export default authService;

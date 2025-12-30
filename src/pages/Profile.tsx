@@ -18,8 +18,8 @@ import {
 } from 'lucide-react';
 import { Card, Input, Button } from '../components';
 import { updateProfile, addToast } from '../redux';
-import { authService } from '../services';
-import { useCurrentUserProfile } from '../api/hostUsers';
+import { useUpdateProfile, useChangePassword } from '../hooks/queries/useAuth';
+import { useCurrentUserProfile } from '../hooks/queries/useHostUsers';
 import {
   validateEmail,
   validatePhone,
@@ -161,6 +161,8 @@ const Profile = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const updateProfileMutation = useUpdateProfile();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -171,12 +173,9 @@ const Profile = () => {
     setLoading(true);
     
     try {
-      const updatedUser = await authService.updateProfile(formData);
+      const updatedUser = await updateProfileMutation.mutateAsync(formData);
+      // Update redux state
       dispatch(updateProfile(updatedUser));
-      dispatch(addToast({
-        type: 'success',
-        message: 'Profile updated successfully!',
-      }));
     } catch (err) {
       dispatch(addToast({
         type: 'error',
@@ -186,6 +185,8 @@ const Profile = () => {
       setLoading(false);
     }
   };
+
+  const changePasswordMutation = useChangePassword();
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -197,11 +198,12 @@ const Profile = () => {
     setPasswordLoading(true);
     
     try {
-      await authService.changePassword(passwordData);
-      dispatch(addToast({
-        type: 'success',
-        message: 'Password changed successfully!',
-      }));
+      await changePasswordMutation.mutateAsync({
+        currentPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      });
+      // toast handled by mutation onSuccess but keep redux toast as fallback
+      dispatch(addToast({ type: 'success', message: 'Password changed successfully!' }));
       setPasswordData({
         oldPassword: '',
         newPassword: '',
@@ -237,7 +239,7 @@ const Profile = () => {
     const hasName = !!user?.name;
     const hasEmail = !!user?.email;
     const hasPhone = !!user?.phone;
-    const hasRole = !!(user?.role && (typeof user.role === 'string' || (typeof user.role === 'object' && user.role.name)));
+    const hasRole = !!(user?.roleName && (typeof user.roleName === 'string' || (typeof user.roleName === 'object' && user.roleName.name)));
     
     const fields = [hasName, hasEmail, hasPhone, hasRole];
     const completed = fields.filter(Boolean).length;
@@ -284,8 +286,8 @@ const Profile = () => {
                 {user?.name || 'User'}
               </h3>
               <div className="mb-3">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user?.role)}`}>
-                  {formatRole(user?.role)}
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user?.roleName)}`}>
+                  {formatRole(user?.roleName)}
                 </span>
               </div>
 
@@ -317,8 +319,8 @@ const Profile = () => {
                     <Shield className="w-4 h-4" />
                     <span className="text-xs">Role</span>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user?.role)}`}>
-                    {formatRole(user?.role)}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user?.roleName)}`}>
+                    {formatRole(user?.roleName)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-white/70">

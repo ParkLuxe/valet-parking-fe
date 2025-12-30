@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Button, { ButtonVariant } from '../common/Button';
-import { useCreatePaymentOrder, useVerifyPayment } from '../../api/payments';
+import { useCreatePaymentOrder, useVerifyPayment } from '../../hooks/queries/usePayments';
 import {  addToast  } from '../../redux';
 import {  updateInvoice  } from '../../redux';
 import {  addPayment  } from '../../redux';

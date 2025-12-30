@@ -12,7 +12,7 @@ import { Button } from '../../components';
 import { LoadingSpinner } from '../../components';
 import { DataTable } from '../../components';
 import { Modal } from '../../components';
-import { useValetVehicles, useMarkOutForDelivery, useDeliverVehicle } from '../../api/vehicles';
+import { useValetVehicles, useMarkOutForDelivery, useDeliverVehicle } from '../../hooks/queries/useVehicles';
 import {  VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY  } from '../../utils';
 
 const MyVehicles = () => {

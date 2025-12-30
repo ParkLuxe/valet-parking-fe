@@ -3,105 +3,78 @@
  * View all invoices across all hosts (with optional status filtering)
  */
 
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState } from 'react';
 import { DollarSign, Filter, Download } from 'lucide-react';
 import { Card } from '../../components';
 import { Button } from '../../components';
 import { DataTable } from '../../components';
 import { LoadingSpinner } from '../../components';
-import { invoiceService } from '../../services';
-import {  addToast  } from '../../redux';
-import {  formatCurrency, formatDate  } from '../../utils';
+import { useInvoices, useDownloadInvoicePDF } from '../../hooks/queries/useInvoices';
+import { formatCurrency, formatDate } from '../../utils';
+import type { InvoiceStatus } from '../../types/api';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../redux';
 
 const AllPayments = () => {
-  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
   const [showFilters, setShowFilters] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [invoices, setInvoices] = useState([]);
-  const [statusFilter, setStatusFilter] = useState(''); // Empty means all active invoices
-  const [pagination, setPagination] = useState({
-    currentPage: 0,
-    totalPages: 0,
-    totalElements: 0,
-    pageSize: 10,
-  });
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'ALL' | ''>(''); // Empty means all active invoices
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 10;
 
-  useEffect(() => {
-    fetchAllInvoices();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.currentPage, statusFilter]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDateStr = today.toISOString().slice(0, 19);
+  const startDateObj = new Date(startDateStr);
+  const endDateObj = new Date(startDateObj);
+  endDateObj.setDate(endDateObj.getDate() + 1);
+  const toDateTimeString = (d: Date) => d.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:mm:ss"
 
-  const fetchAllInvoices = async () => {
-    setLoading(true);
-    try {
-      const filters: any = {};
-      
-      // Add status filter if selected
-      if (statusFilter) {
-        filters.status = statusFilter;
-      }
-      
-      const response = await invoiceService.filterInvoices(
-        filters,
-        pagination.currentPage,
-        pagination.pageSize
-      );
-      
-      // Handle different response structures
-      if (response.content) {
-        setInvoices(response.content);
-        setPagination({
-          currentPage: response.number || 0,
-          totalPages: response.totalPages || 0,
-          totalElements: response.totalElements || 0,
-          pageSize: response.size || 10,
-        });
-      } else if (Array.isArray(response)) {
-        setInvoices(response);
-      } else {
-        setInvoices([]);
-      }
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: err.message || 'Failed to fetch invoices',
-      }));
-      setInvoices([]);
-    } finally {
-      setLoading(false);
-    }
+  // Use TanStack Query hooks
+  // For SuperAdmin, don't filter by hostId (show all hosts)
+  const filters: any = {
+    status: statusFilter === '' ? undefined : (statusFilter === 'ALL' ? 'ALL' : statusFilter),
+    page: currentPage,
+    size: pageSize,
+    dueDateFrom: toDateTimeString(startDateObj),
+    dueDateTo: toDateTimeString(endDateObj),
   };
+  
+  // Only include hostId if user is not SuperAdmin
+  if (user?.host?.hostId && user?.roleName !== 'SUPERADMIN') {
+    filters.hostId = user.host.hostId;
+  }
+  
+  const { data: invoicesResponse, isLoading } = useInvoices(filters);
 
-  const handleDownloadPDF = async (invoiceId) => {
-    try {
-      const pdfBlob = await invoiceService.downloadPDF(invoiceId);
-      const url = window.URL.createObjectURL(new Blob([pdfBlob]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `invoice-${invoiceId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
-      dispatch(addToast({
-        type: 'success',
-        message: 'Invoice downloaded successfully',
-      }));
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to download invoice',
-      }));
-    }
+  const downloadPDFMutation = useDownloadInvoicePDF();
+
+  // Extract data from response
+  const invoices = invoicesResponse?.content || invoicesResponse || [];
+  const pagination = invoicesResponse?.content
+    ? {
+        currentPage: invoicesResponse.number || 0,
+        totalPages: invoicesResponse.totalPages || 0,
+        totalElements: invoicesResponse.totalElements || 0,
+        pageSize: invoicesResponse.size || 10,
+      }
+    : {
+        currentPage: 0,
+        totalPages: 0,
+        totalElements: invoices.length,
+        pageSize: pageSize,
+      };
+
+  const handleDownloadPDF = async (invoiceId: string) => {
+    downloadPDFMutation.mutate(invoiceId);
   };
 
   const handlePreviousPage = () => {
-    setPagination(prev => ({ ...prev, currentPage: Math.max(0, prev.currentPage - 1) }));
+    setCurrentPage(prev => Math.max(0, prev - 1));
   };
 
   const handleNextPage = () => {
-    setPagination(prev => ({ ...prev, currentPage: Math.min(pagination.totalPages - 1, prev.currentPage + 1) }));
+    setCurrentPage(prev => Math.min(pagination.totalPages - 1, prev + 1));
   };
 
   const columns = [
@@ -173,7 +146,7 @@ const AllPayments = () => {
     .filter(inv => inv.paymentStatus === 'UNPAID')
     .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
 
-  if (loading && !invoices.length) {
+  if (isLoading && !invoices.length) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />
@@ -204,13 +177,13 @@ const AllPayments = () => {
       {showFilters && (
         <Card title="Filters">
           <div className="flex gap-2">
-            {['', 'PAID', 'UNPAID', 'OVERDUE'].map((status) => (
+            {(['', 'PAID', 'UNPAID', 'OVERDUE'] as const).map((status) => (
               <Button
                 key={status || 'all'}
                 variant={statusFilter === status ? 'primary' : 'outline'}
                 onClick={() => {
-                  setStatusFilter(status);
-                  setPagination(prev => ({ ...prev, currentPage: 0 }));
+                  setStatusFilter(status as InvoiceStatus | 'ALL' | '');
+                  setCurrentPage(0);
                 }}
                 className="text-sm"
               >

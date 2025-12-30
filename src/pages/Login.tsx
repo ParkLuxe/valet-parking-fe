@@ -11,7 +11,8 @@ import * as Tabs from '@radix-ui/react-tabs';
 import { Car, Users, Building, Shield, User, Lock, AlertCircle } from 'lucide-react';
 import { Input, Button } from '../components';
 import { loginSuccess, setAuthLoading, addToast, setUserData, logout } from '../redux';
-import { authService } from '../services';
+import { useLogin } from '../hooks/queries/useAuth';
+import { apiHelper } from '../services/api';
 import { validateRequired, cn } from '../utils';
 
 const Login = () => {
@@ -62,6 +63,8 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const loginMutation = useLogin();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -74,42 +77,38 @@ const Login = () => {
     dispatch(setAuthLoading(true));
     
     try {
-      // Step 1: Login to get tokens
-      const loginResponse = await authService.login({
-        ...formData,
-        role: roles[selectedTab],
-      });
-      
-      // Dispatch tokens
-      dispatch(loginSuccess(loginResponse));
-      
-      // Step 2: Fetch user data from /me API
-      try {
-        const userData = await authService.getProfile();
-        // If role is an object with a name property, extract it safely
-        if (userData.role && typeof userData.role === 'object' && 'name' in userData.role) {
-          // @ts-ignore - normalize role to string when backend returns an object
-          userData.role = (userData.role as any).name;
+      // Use mutation but override onSuccess for this call so we control navigation
+      await loginMutation.mutateAsync(
+        { ...formData, role: roles[selectedTab] },
+        {
+          onSuccess: (data) => {
+            dispatch(loginSuccess(data));
+            dispatch(addToast({ type: 'success', message: 'Login successful!' }));
+          },
         }
-        // Build a full name from available parts without producing "undefined" or extra spaces
+      );
+
+      // Fetch profile after login
+      try {
+        const userData = await apiHelper.get('/v1/host-users/me');
+        // Normalize role -> roleName
+        if (userData.role && typeof userData.role === 'object' && 'name' in userData.role) {
+          userData.roleName = (userData.role as any).name;
+        } else if (userData.role && typeof userData.role === 'string') {
+          userData.roleName = userData.role;
+        }
+        if (userData.role) delete userData.role;
         userData.name = [userData.firstName, userData.middleName, userData.lastName]
           .filter(Boolean)
           .join(' ')
           .trim();
-        // Dispatch user data
         dispatch(setUserData(userData));
       } catch (profileError) {
-        // If profile fetch fails, log out to maintain consistent state
         console.error('Failed to fetch user profile:', profileError);
         dispatch(logout());
         throw new Error('Failed to load user profile. Please try again.');
       }
-      
-      dispatch(addToast({
-        type: 'success',
-        message: 'Login successful!',
-      }));
-      
+
       navigate('/dashboard');
     } catch (err) {
       const errorMessage = err.message || 'Login failed. Please try again.';

@@ -3,11 +3,13 @@
  * Displays detailed invoice information with payment option
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../redux';
 import { Card, Button, LoadingSpinner, RazorpayButton } from '../components';
-import { useInvoice, useDownloadInvoicePDF, useSendInvoiceEmail } from '../api/invoices';
+import { useInvoices, useDownloadInvoicePDF, useSendInvoiceEmail } from '../hooks/queries/useInvoices';
 import { queryKeys } from '../lib/queryKeys';
 import { formatCurrency, formatDate } from '../utils';
 import { usePermissions } from '../hooks';
@@ -16,35 +18,72 @@ const InvoiceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { can } = usePermissions();
+  const { user } = useSelector((state: RootState) => state.auth);
   const queryClient = useQueryClient();
 
-  // ✅ Use TanStack Query hooks
-  const { data: currentInvoice, isLoading: loading, error } = useInvoice(id || '');
+  // ✅ Use filter API to fetch invoices
+  const filters = useMemo(() => {
+    const baseFilters: any = {
+      page: 0,
+      size: 1000, // Large size to ensure we get the invoice
+    };
+    
+    // Always include hostId if available
+    if (user?.host?.hostId) {
+      baseFilters.hostId = user.host.hostId;
+    }
+    
+    return baseFilters;
+  }, [user?.host?.hostId]);
+
+  const { data: invoiceData, isLoading: loading, error } = useInvoices(filters);
+  
+  // Extract invoices from response and find the matching invoice
+  const invoices = useMemo(() => {
+    return Array.isArray(invoiceData) ? invoiceData : (invoiceData?.content || []);
+  }, [invoiceData]);
+  
+  const currentInvoice = useMemo(() => {
+    if (!id) return null;
+    // Try to match by invoiceId first, then by id field
+    return invoices.find((inv: any) => 
+      String(inv.invoiceId) === String(id) || 
+      String(inv.id) === String(id) ||
+      inv.invoiceNumber === id
+    ) || null;
+  }, [invoices, id]);
+
   const downloadPDFMutation = useDownloadInvoicePDF();
   const sendEmailMutation = useSendInvoiceEmail();
 
   const handleDownloadPDF = () => {
-    if (id) {
-      downloadPDFMutation.mutate(id);
+    if (currentInvoice) {
+      const invoiceId = currentInvoice.invoiceId || currentInvoice.id;
+      if (invoiceId) {
+        downloadPDFMutation.mutate(String(invoiceId));
+      }
     }
   };
 
   const handleSendEmail = () => {
-    if (id) {
-      sendEmailMutation.mutate(id);
+    if (currentInvoice) {
+      const invoiceId = currentInvoice.invoiceId || currentInvoice.id;
+      if (invoiceId) {
+        sendEmailMutation.mutate(String(invoiceId));
+      }
     }
   };
 
   const handlePaymentSuccess = () => {
-    if (id) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(id) });
-    }
+    // Invalidate invoices queries to refetch updated data
+    queryClient.invalidateQueries({ queryKey: queryKeys.invoices.lists() });
   };
 
   const getStatusBadgeClass = (status: string) => {
     const statusMap: Record<string, string> = {
       PAID: 'bg-green-100 text-green-800',
       UNPAID: 'bg-yellow-100 text-yellow-800',
+      PENDING: 'bg-yellow-100 text-yellow-800',
       OVERDUE: 'bg-red-100 text-red-800',
     };
     return statusMap[status] || 'bg-gray-100 text-gray-800';
@@ -113,9 +152,9 @@ const InvoiceDetails = () => {
           <Button variant="outline" onClick={handleSendEmail}>
             Send Email
           </Button>
-          {currentInvoice.paymentStatus === 'UNPAID' && can('canMakePayments') && (
+          {(currentInvoice.paymentStatus === 'UNPAID' || currentInvoice.paymentStatus === 'PENDING') && can('canMakePayments') && (
             <RazorpayButton
-              invoiceId={currentInvoice.id}
+              invoiceId={currentInvoice.invoiceId || currentInvoice.id}
               amount={currentInvoice.totalAmount}
               invoiceNumber={currentInvoice.invoiceNumber}
               onSuccess={handlePaymentSuccess}
@@ -146,7 +185,11 @@ const InvoiceDetails = () => {
           </div>
           <div>
             <p className="text-gray-500 text-sm">Billing Period</p>
-            <p className="font-semibold">{currentInvoice.billingPeriod || 'N/A'}</p>
+            <p className="font-semibold">
+              {currentInvoice.billingPeriodStart && currentInvoice.billingPeriodEnd
+                ? `${formatDate(currentInvoice.billingPeriodStart)} - ${formatDate(currentInvoice.billingPeriodEnd)}`
+                : currentInvoice.billingPeriod || 'N/A'}
+            </p>
           </div>
         </div>
       </Card>
@@ -165,16 +208,18 @@ const InvoiceDetails = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {currentInvoice.lineItems?.map((item, index) => (
-                <tr key={index}>
-                  <td className="px-4 py-3 text-sm">{item.description}</td>
-                  <td className="px-4 py-3 text-sm text-right">{item.quantity}</td>
-                  <td className="px-4 py-3 text-sm text-right">{formatCurrency(item.rate)}</td>
-                  <td className="px-4 py-3 text-sm text-right font-semibold">
-                    {formatCurrency(item.amount)}
-                  </td>
-                </tr>
-              )) || (
+              {currentInvoice.lineItems && Array.isArray(currentInvoice.lineItems) && currentInvoice.lineItems.length > 0 ? (
+                currentInvoice.lineItems.map((item: any, index: number) => (
+                  <tr key={index}>
+                    <td className="px-4 py-3 text-sm">{item.description}</td>
+                    <td className="px-4 py-3 text-sm text-right">{item.quantity}</td>
+                    <td className="px-4 py-3 text-sm text-right">{formatCurrency(item.rate)}</td>
+                    <td className="px-4 py-3 text-sm text-right font-semibold">
+                      {formatCurrency(item.amount)}
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                     No line items available
@@ -189,19 +234,35 @@ const InvoiceDetails = () => {
                   {formatCurrency(currentInvoice.subtotal || currentInvoice.totalAmount)}
                 </td>
               </tr>
-              {currentInvoice.tax > 0 && (
+              {(currentInvoice.cgstAmount && currentInvoice.cgstAmount > 0) && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-3 text-right text-sm">Tax:</td>
+                  <td colSpan={3} className="px-4 py-3 text-right text-sm">CGST:</td>
                   <td className="px-4 py-3 text-right text-sm">
-                    {formatCurrency(currentInvoice.tax)}
+                    {formatCurrency(currentInvoice.cgstAmount)}
                   </td>
                 </tr>
               )}
-              {currentInvoice.discount > 0 && (
+              {(currentInvoice.sgstAmount && currentInvoice.sgstAmount > 0) && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-3 text-right text-sm text-green-600">Discount:</td>
-                  <td className="px-4 py-3 text-right text-sm text-green-600">
-                    -{formatCurrency(currentInvoice.discount)}
+                  <td colSpan={3} className="px-4 py-3 text-right text-sm">SGST:</td>
+                  <td className="px-4 py-3 text-right text-sm">
+                    {formatCurrency(currentInvoice.sgstAmount)}
+                  </td>
+                </tr>
+              )}
+              {(currentInvoice.igstAmount && currentInvoice.igstAmount > 0) && (
+                <tr>
+                  <td colSpan={3} className="px-4 py-3 text-right text-sm">IGST:</td>
+                  <td className="px-4 py-3 text-right text-sm">
+                    {formatCurrency(currentInvoice.igstAmount)}
+                  </td>
+                </tr>
+              )}
+              {(currentInvoice.taxAmount && currentInvoice.taxAmount > 0 && !currentInvoice.cgstAmount && !currentInvoice.sgstAmount && !currentInvoice.igstAmount) && (
+                <tr>
+                  <td colSpan={3} className="px-4 py-3 text-right text-sm">Tax:</td>
+                  <td className="px-4 py-3 text-right text-sm">
+                    {formatCurrency(currentInvoice.taxAmount)}
                   </td>
                 </tr>
               )}

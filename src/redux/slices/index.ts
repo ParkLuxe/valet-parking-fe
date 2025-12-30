@@ -15,41 +15,27 @@ export * from './uiSlice';
 export { default as notificationReducer } from './notificationSlice';
 export * from './notificationSlice';
 
-// Analytics slice - export specific actions to avoid conflicts
+// Analytics slice - export specific actions (still used in Dashboard.tsx)
 export { 
   setMetrics,
-  updateMetric,
-  setValetPerformance,
-  setRecentActivity,
-  addActivity,
-  setHostMetrics,
-  resetAnalytics,
 } from './analyticsSlice';
 
-// Invoice slice - export specific actions
+// Invoice slice - export specific actions (still used in RazorpayButton.tsx)
 export {
-  setInvoices,
-  setInvoicesWithPagination,
   updateInvoice,
-  setCurrentInvoice,
 } from './invoiceSlice';
 
-// Payment slice - export specific actions
+// Payment slice - export specific actions (still used in Subscription.tsx and RazorpayButton.tsx)
 export {
   addPayment,
 } from './paymentSlice';
 
-// Vehicle slice - export specific actions
+// Vehicle slice - export specific actions (still used in QRScanPage.tsx)
 export {
   addVehicle,
-  updateVehicleStatus,
 } from './vehicleSlice';
 
-// Subscription slice - export specific actions
+// Subscription slice - export specific actions (still used in QRScanPage.tsx)
 export {
-  setSubscriptionData,
-  setSubscriptionStatus,
   incrementScanCount,
-  setBillingInfo,
-  addPayment as addSubscriptionPayment,
 } from './subscriptionSlice';

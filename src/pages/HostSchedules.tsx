@@ -11,7 +11,7 @@ import { Button } from '../components';
 import { LoadingSpinner } from '../components';
 import { Modal } from '../components';
 import { Input } from '../components';
-import { useHostSchedules, useCreateSchedule, useUpdateSchedule, useDeleteSchedule } from '../api/hostSchedules';
+import { useHostSchedules, useCreateSchedule, useUpdateSchedule, useDeleteSchedule } from '../hooks/queries/useHostSchedules';
 import { usePermissions } from '../hooks';
 
 const DAYS_OF_WEEK = [

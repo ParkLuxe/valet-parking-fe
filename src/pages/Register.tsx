@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux';
 import { Car } from 'lucide-react';
 import { Card, Input, Button } from '../components';
 import { loginSuccess, setAuthLoading, addToast } from '../redux';
-import { authService } from '../services';
+import { useRegister } from '../hooks/queries/useAuth';
 import {
   validateEmail,
   validatePhone,
@@ -90,6 +90,8 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const registerMutation = useRegister();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -102,15 +104,14 @@ const Register = () => {
     dispatch(setAuthLoading(true));
     
     try {
-      const response = await authService.register(formData);
-      
-      dispatch(loginSuccess(response));
-      dispatch(addToast({
-        type: 'success',
-        message: 'Registration successful! Welcome to Park-Luxe.',
-      }));
-      
-      navigate('/dashboard');
+      await registerMutation.mutateAsync(formData, {
+        onSuccess: (data) => {
+          // Keep previous behavior: log user in and go to dashboard
+          dispatch(loginSuccess(data));
+          dispatch(addToast({ type: 'success', message: 'Registration successful! Welcome to Park-Luxe.' }));
+          navigate('/dashboard');
+        },
+      });
     } catch (err) {
       const errorMessage = err.message || 'Registration failed. Please try again.';
       setError(errorMessage);

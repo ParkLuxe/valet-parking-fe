@@ -6,10 +6,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { apiHelper } from '../services/api';
-import {  loginSuccess, logout as logoutAction  } from '../redux';
-import {  addToast  } from '../redux';
-import type { LoginRequest, RegisterRequest, AuthResponse, User } from '../types/api';
+import { apiHelper } from '../../services/api';
+import {  loginSuccess, logout as logoutAction  } from '../../redux';
+import {  addToast  } from '../../redux';
+import type { LoginRequest, RegisterRequest, AuthResponse, User } from '../../types/api';
 
 // Query keys
 export const authKeys = {
@@ -178,3 +178,4 @@ export const useChangePassword = () => {
     },
   });
 };
+

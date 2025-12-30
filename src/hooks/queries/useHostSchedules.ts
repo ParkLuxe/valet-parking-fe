@@ -5,9 +5,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
-import { apiHelper } from '../services/api';
-import { addToast } from '../redux';
-import { queryKeys } from '../lib/queryKeys';
+import { apiHelper } from '../../services/api';
+import { addToast } from '../../redux';
+import { queryKeys } from '../../lib/queryKeys';
 
 // Create schedule mutation
 export const useCreateSchedule = () => {

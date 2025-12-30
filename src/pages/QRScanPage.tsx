@@ -9,7 +9,10 @@ import type {  RootState  } from '../redux';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import { Card, Input, Button } from '../components';
 import { addToast, addVehicle, incrementScanCount } from "../redux";
-import { useParkVehicle } from '../api/vehicles';
+import { useParkVehicle } from '../hooks/queries/useVehicles';
+import { useParkingSlots } from '../hooks/queries/useParkingSlots';
+import { useHostUsers } from '../hooks/queries/useHostUsers';
+import { useSubscriptionStatus } from '../hooks/queries/useSubscriptions';
 import {
   validateVehicleNumber,
   validatePhone,
@@ -18,12 +21,22 @@ import {
 
 const QRScanPage = () => {
   const dispatch = useDispatch();
-  const { slots } = useSelector((state: RootState) => (state as any).parkingSlots || {});
-  const { valetList } = useSelector((state: RootState) => (state as any).valets || {});
-  const { status: subscriptionStatus, usage } = useSelector((state: RootState) => (state as any).subscription || {});
   const { user } = useSelector((state: RootState) => state.auth);
   
+  const hostId = (user as any)?.hostId || '';
+  
+  // Fetch data using TanStack Query hooks
+  const { data: parkingSlots = [] } = useParkingSlots(hostId);
+  const { data: hostUsers = [] } = useHostUsers(hostId);
+  const { data: subscription } = useSubscriptionStatus(hostId);
+  
   const parkVehicleMutation = useParkVehicle();
+  
+  // Extract values from subscription data
+  const subscriptionStatus = subscription?.status || 'active';
+  const usage = subscription?.usage || { remainingScans: 0 };
+  const slots = parkingSlots || [];
+  const valetList = hostUsers || [];
   
   const [qrValue, setQrValue] = useState('');
   const [formData, setFormData] = useState({

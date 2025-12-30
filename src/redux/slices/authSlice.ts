@@ -21,6 +21,11 @@ let storedUser: User | null = null;
 try {
   const raw = localStorage.getItem(STORAGE_KEYS.USER_DATA);
   storedUser = raw ? JSON.parse(raw) : null;
+  // Normalize legacy `role` -> `roleName` when loading from storage
+  if (storedUser && (storedUser as any).role && !(storedUser as any).roleName) {
+    (storedUser as any).roleName = (storedUser as any).role?.name ?? (storedUser as any).role;
+    delete (storedUser as any).role;
+  }
 } catch (e) {
   storedUser = null;
 }
@@ -64,17 +69,24 @@ const authSlice = createSlice({
     },
     
     setUserData: (state, action: PayloadAction<User>) => {
-      const userData = { ...action.payload };
-      
-      // Normalize role if it's an object with a 'name' property
+      const userData = { ...action.payload } as any;
+
+      // Normalize legacy `role` field (object or string) to `roleName`
       if (userData.role && typeof userData.role === 'object') {
         const roleObj = userData.role as any;
         if (roleObj.name) {
-          userData.role = roleObj.name;
+          userData.roleName = roleObj.name;
         }
+      } else if (userData.role && typeof userData.role === 'string') {
+        userData.roleName = userData.role;
       }
-      
-      state.user = userData;
+
+      // Remove legacy `role` to avoid ambiguity
+      if (userData.role) {
+        delete userData.role;
+      }
+
+      state.user = userData as User;
       localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
     },
     

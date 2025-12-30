@@ -8,8 +8,8 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../redux';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Card, Button, LoadingSpinner, RazorpayButton } from '../components';
-import { useInvoices, useDownloadInvoicePDF } from '../api/invoices';
+import { Card, Button, LoadingSpinner, RazorpayButton, DateRangePicker } from '../components';
+import { useInvoices, useDownloadInvoicePDF } from '../hooks/queries/useInvoices';
 import { queryKeys } from '../lib/queryKeys';
 import { formatCurrency, formatDate } from '../utils';
 import { usePermissions } from '../hooks';
@@ -22,23 +22,63 @@ const Invoices = () => {
   
   const [statusFilter, setStatusFilter] = useState('UNPAID'); // Default to UNPAID (active invoices)
   const [currentPage, setCurrentPage] = useState(0);
+  
+  // Helper functions to format dates with time
+  const formatStartDate = (dateString: string): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    date.setHours(0, 0, 0, 0);
+    return date.toISOString().slice(0, 19);
+  };
+
+  const formatEndDate = (dateString: string): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    date.setHours(23, 59, 59, 999);
+    return date.toISOString().slice(0, 19);
+  };
+
+  // Set default date range to today
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+  
+  const todayDateString = getTodayDate();
+  // Store dates in YYYY-MM-DD format for DateRangePicker compatibility
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ 
+    start: todayDateString, 
+    end: todayDateString 
+  });
   const pageSize = 10;
 
   // ✅ Use TanStack Query hooks
   const filters = useMemo(() => {
     const baseFilters: any = {
-      hostId: user?.hostUserId,
       page: currentPage,
       size: pageSize,
     };
+    
+    // Always include hostId if available
+    if (user?.host?.hostId) {
+      baseFilters.hostId = user.host.hostId;
+    }
     
     // Add status filter if not ALL
     if (statusFilter !== 'ALL') {
       baseFilters.status = statusFilter;
     }
     
+    // Add date range filters if provided (format with time)
+    if (dateRange.start) {
+      baseFilters.dueDateFrom = formatStartDate(dateRange.start);
+    }
+    if (dateRange.end) {
+      baseFilters.dueDateTo = formatEndDate(dateRange.end);
+    }
+    
     return baseFilters;
-  }, [user?.hostUserId, currentPage, statusFilter]);
+  }, [user?.host?.hostId, currentPage, statusFilter, dateRange.start, dateRange.end]);
 
   const { data: invoiceData, isLoading: loading } = useInvoices(filters);
   const downloadPDFMutation = useDownloadInvoicePDF();
@@ -60,13 +100,19 @@ const Invoices = () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.invoices.lists() });
   };
 
+  const handleDateRangeChange = (range: { start: string; end: string }) => {
+    setDateRange(range);
+    setCurrentPage(0); // Reset to first page when changing date range
+  };
+
   const getStatusBadgeClass = (status: string) => {
     const statusMap: Record<string, string> = {
-      PAID: 'bg-green-100 text-green-800',
-      UNPAID: 'bg-yellow-100 text-yellow-800',
-      OVERDUE: 'bg-red-100 text-red-800',
+      PAID: 'bg-green-500/20 text-green-400 border border-green-500/30',
+      UNPAID: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+      PENDING: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+      OVERDUE: 'bg-red-500/20 text-red-400 border border-red-500/30',
     };
-    return statusMap[status] || 'bg-gray-100 text-gray-800';
+    return statusMap[status] || 'bg-gray-500/20 text-gray-400 border border-gray-500/30';
   };
 
   if (loading && !invoices.length) {
@@ -82,27 +128,49 @@ const Invoices = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Invoices</h1>
-          <p className="text-gray-600 mt-1">Manage your billing and payments</p>
+          <h1 className="text-3xl font-bold text-white">Invoices</h1>
+          <p className="text-white/70 mt-1">Manage your billing and payments</p>
         </div>
       </div>
 
       {/* Filters */}
       <Card>
-        <div className="flex gap-2">
-          {['UNPAID', 'PAID', 'OVERDUE', 'ALL'].map((status) => (
-            <Button
-              key={status}
-              variant={statusFilter === status ? 'primary' : 'outline'}
-              onClick={() => {
-                setStatusFilter(status);
-                setCurrentPage(0); // Reset to first page when changing filter
-              }}
-              className="text-sm"
-            >
-              {status}
-            </Button>
-          ))}
+        <div className="space-y-4">
+          {/* Filters Row - Horizontal Layout */}
+          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-end">
+            {/* Status Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-white/90 mb-2">Status</label>
+              <div className="flex gap-2 flex-wrap">
+                {['UNPAID', 'PAID', 'OVERDUE', 'ALL'].map((status) => (
+                  <Button
+                    key={status}
+                    variant={statusFilter === status ? 'primary' : 'outline'}
+                    onClick={() => {
+                      setStatusFilter(status);
+                      setCurrentPage(0); // Reset to first page when changing filter
+                    }}
+                    className="text-sm"
+                  >
+                    {status}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Date Range Filter */}
+            <div className="flex-1 min-w-[300px] max-w-[500px]">
+              <label className="block text-sm font-medium text-white/90 mb-2">Date Range</label>
+              <DateRangePicker
+                onDateChange={handleDateRangeChange}
+                showPresets={true}
+                initialStartDate={dateRange.start}
+                initialEndDate={dateRange.end}
+                showLabel={false}
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -113,7 +181,7 @@ const Invoices = () => {
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg font-semibold">
+                  <h3 className="text-lg font-semibold text-white">
                     Invoice #{invoice.invoiceNumber}
                   </h3>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(invoice.paymentStatus)}`}>
@@ -122,21 +190,21 @@ const Invoices = () => {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500">Date</p>
-                    <p className="font-medium">{formatDate(invoice.invoiceDate)}</p>
+                    <p className="text-white/60">Date</p>
+                    <p className="font-medium text-white">{formatDate(invoice.invoiceDate)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Amount</p>
-                    <p className="font-medium text-lg">{formatCurrency(invoice.totalAmount)}</p>
+                    <p className="text-white/60">Amount</p>
+                    <p className="font-medium text-lg text-white">{formatCurrency(invoice.totalAmount)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Period</p>
-                    <p className="font-medium">{invoice.billingPeriod || 'N/A'}</p>
+                    <p className="text-white/60">Period</p>
+                    <p className="font-medium text-white">{invoice.billingPeriod || 'N/A'}</p>
                   </div>
                   {invoice.dueDate && (
                     <div>
-                      <p className="text-gray-500">Due Date</p>
-                      <p className="font-medium">{formatDate(invoice.dueDate)}</p>
+                      <p className="text-white/60">Due Date</p>
+                      <p className="font-medium text-white">{formatDate(invoice.dueDate)}</p>
                     </div>
                   )}
                 </div>
@@ -145,14 +213,14 @@ const Invoices = () => {
               <div className="flex gap-2 ml-4">
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/invoices/${invoice.id}`)}
+                  onClick={() => navigate(`/invoices/${invoice.invoiceId}`)}
                 >
                   View Details
                 </Button>
                 
                 <Button
                   variant="outline"
-                  onClick={() => handleDownloadPDF(invoice.id)}
+                  onClick={() => handleDownloadPDF(invoice.invoiceId)}
                 >
                   Download PDF
                 </Button>
@@ -175,8 +243,8 @@ const Invoices = () => {
         {invoices?.length === 0 && (
           <Card>
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No invoices found</p>
-              <p className="text-gray-400 mt-2">
+              <p className="text-white/70 text-lg">No invoices found</p>
+              <p className="text-white/50 mt-2">
                 {statusFilter === 'ALL' 
                   ? 'You don\'t have any invoices yet' 
                   : `No ${statusFilter.toLowerCase()} invoices`}
@@ -196,7 +264,7 @@ const Invoices = () => {
           >
             Previous
           </Button>
-          <span className="px-4 py-2 text-gray-700">
+          <span className="px-4 py-2 text-white/70">
             Page {currentPage + 1} of {pagination.totalPages}
           </span>
           <Button
