@@ -27,15 +27,25 @@ export const useCreateParkingSlots = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ hostId, slots }: {
+    mutationFn: async ({ hostId }: {
       hostId: string;
-      slots: Array<{
-        slotNumber: string;
-        slotType?: string;
-        isAvailable?: boolean;
-      }>;
+      // slots: Array<{
+      //   slotNumber: string;
+      //   slotType?: string;
+      //   isAvailable?: boolean;
+      // }>;
     }) => {
-      const response = await apiHelper.post(`/v1/parking-slot/create?hostId=${hostId}`, slots);
+      // Ensure hostId is provided
+      if (!hostId) {
+        throw new Error('Host ID is required to create parking slots');
+      }
+      
+      // Send only hostId in query parameter for now
+      // slots parameter is commented out as per requirements
+      const response = await apiHelper.post(
+        `/v1/parking-slot/create?hostId=${encodeURIComponent(String(hostId))}`, 
+        {} // Empty body, only hostId in query parameter
+      );
       return response;
     },
     onSuccess: () => {

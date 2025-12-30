@@ -3,8 +3,8 @@
  * Modern profile with stats, activity timeline, and glassmorphism design
  */
 
-import React, { useState, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
   Mail,
@@ -16,10 +16,11 @@ import {
   Lock,
   User,
 } from 'lucide-react';
-import { Card, Input, Button } from '../components';
+import { Card, Input, Button, LoadingSpinner } from '../components';
 import { updateProfile, addToast } from '../redux';
 import { useUpdateProfile, useChangePassword } from '../hooks/queries/useAuth';
 import { useCurrentUserProfile } from '../hooks/queries/useHostUsers';
+import type { RootState } from '../redux';
 import {
   validateEmail,
   validatePhone,
@@ -31,10 +32,13 @@ import {
 
 const Profile = () => {
   const dispatch = useDispatch();
+  const authUser = useSelector((state: RootState) => state.auth.user);
   
   // Use TanStack Query hook to fetch user profile
-  const { data: userProfile, isLoading: profileLoading } = useCurrentUserProfile();
-  const user = userProfile;
+  const { data: userProfile, isLoading: profileLoading, error } = useCurrentUserProfile();
+  
+  // Use profile data if available, otherwise fall back to auth user
+  const user = userProfile || authUser;
   
   const [formData, setFormData] = useState({
     name: '',
@@ -53,28 +57,49 @@ const Profile = () => {
     }
   }, [user]);
   
+  // Show error toast
+  useEffect(() => {
+    if (error) {
+      dispatch(addToast({
+        type: 'error',
+        message: (error as Error).message || 'Failed to load profile',
+      }));
+    }
+  }, [error, dispatch]);
+
   // Helper functions for role formatting
   type RoleValue = string | { name: string } | null | undefined;
   
-  const formatRole = (role: RoleValue): string => {
-    if (!role) return 'Unknown';
-    const roleName = typeof role === 'object' ? role.name : role;
+  const getRoleName = (user: any): string => {
+    if (!user) return '';
+    // Check multiple possible role properties
+    const role = user.roleName || user.role || (user as any)?.roleName || '';
+    return typeof role === 'object' ? role.name : role;
+  };
+  
+  const formatRole = (user: any): string => {
+    const roleName = getRoleName(user);
+    if (!roleName) return 'Unknown';
     const roleMap: Record<string, string> = {
       'SUPERADMIN': 'Super Admin',
       'HOSTADMIN': 'Host Admin',
       'HOSTUSER': 'Host User',
+      'VALET': 'Valet',
     };
-    return roleMap[roleName] || roleName;
+    return roleMap[roleName.toUpperCase()] || roleName;
   };
 
-  const getRoleBadgeClass = (role: RoleValue): string => {
-    const roleName = typeof role === 'object' ? role.name : role;
+  const getRoleBadgeClass = (user: any): string => {
+    const roleName = getRoleName(user);
+    if (!roleName) return 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
+    const roleUpper = roleName.toUpperCase();
     const classMap: Record<string, string> = {
       'SUPERADMIN': 'bg-purple-500/20 text-purple-300 border border-purple-500/30',
       'HOSTADMIN': 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
       'HOSTUSER': 'bg-green-500/20 text-green-300 border border-green-500/30',
+      'VALET': 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30',
     };
-    return classMap[roleName || ''] || 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
+    return classMap[roleUpper] || 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
   };
   
   const [passwordData, setPasswordData] = useState({
@@ -239,19 +264,15 @@ const Profile = () => {
     const hasName = !!user?.name;
     const hasEmail = !!user?.email;
     const hasPhone = !!user?.phone;
-    const hasRole = !!(user?.roleName && (typeof user.roleName === 'string' || (typeof user.roleName === 'object' && user.roleName.name)));
+    const hasRole = !!getRoleName(user);
     
     const fields = [hasName, hasEmail, hasPhone, hasRole];
     const completed = fields.filter(Boolean).length;
     return Math.round((completed / fields.length) * 100);
   }, [user]);
 
-  if (profileLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-white">Loading profile...</div>
-      </div>
-    );
+  if (profileLoading && !userProfile) {
+    return <LoadingSpinner message="Loading profile..." fullScreen />;
   }
 
   return (
@@ -286,8 +307,8 @@ const Profile = () => {
                 {user?.name || 'User'}
               </h3>
               <div className="mb-3">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user?.roleName)}`}>
-                  {formatRole(user?.roleName)}
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user)}`}>
+                  {formatRole(user)}
                 </span>
               </div>
 
@@ -319,8 +340,8 @@ const Profile = () => {
                     <Shield className="w-4 h-4" />
                     <span className="text-xs">Role</span>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user?.roleName)}`}>
-                    {formatRole(user?.roleName)}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user)}`}>
+                    {formatRole(user)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-white/70">

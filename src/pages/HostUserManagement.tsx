@@ -37,15 +37,18 @@ const HostUserManagement = () => {
   const filteredUsers = useMemo(() => {
     return (valetList || [])?.filter((user) => {
       const matchesSearch = 
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.phone.includes(searchQuery);
+        user.phone.includes(searchQuery) ||
+        user.roleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.hostName.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesRole = roleFilter === 'all' || user.roleName === roleFilter;
-      
-      return matchesSearch && matchesRole;
+      return matchesSearch;
+    }).sort((a, b) => {
+      return a.firstName.localeCompare(b.firstName);
     });
-  }, [valetList, searchQuery, roleFilter]);
+  }, [valetList, searchQuery]);
 
   // Paginate users
   const paginatedUsers = useMemo(() => {
@@ -172,7 +175,7 @@ const HostUserManagement = () => {
                     {/* Avatar */}
                     <div className="relative">
                       <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-bold">
-                        {getInitials(user.name)}
+                        {getInitials(user.firstName)}
                       </div>
                       {/* Online indicator */}
                       <div className="absolute bottom-0 right-0">
@@ -188,7 +191,7 @@ const HostUserManagement = () => {
                     {/* User Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-white font-semibold">{user.name}</h4>
+                        <h4 className="text-white font-semibold">{user.firstName} {user.lastName}</h4>
                         <span className={cn(
                           'px-2 py-0.5 rounded-full text-xs font-medium',
                           roleBadge.bg,

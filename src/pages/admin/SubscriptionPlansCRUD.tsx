@@ -274,12 +274,8 @@ const SubscriptionPlansCRUD = () => {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="large" />
-      </div>
-    );
+  if (loading && !plans.length) {
+    return <LoadingSpinner message="Loading subscription plans..." fullScreen />;
   }
 
   return (

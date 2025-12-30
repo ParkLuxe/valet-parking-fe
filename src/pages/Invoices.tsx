@@ -3,9 +3,10 @@
  * Display and manage invoices with payment functionality
  */
 
-import React, { useState, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../redux';
+import { addToast } from '../redux';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, Button, LoadingSpinner, RazorpayButton, DateRangePicker } from '../components';
@@ -19,6 +20,7 @@ const Invoices = () => {
   const { can } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
   
   const [statusFilter, setStatusFilter] = useState('UNPAID'); // Default to UNPAID (active invoices)
   const [currentPage, setCurrentPage] = useState(0);
@@ -60,8 +62,8 @@ const Invoices = () => {
     };
     
     // Always include hostId if available
-    if (user?.host?.hostId) {
-      baseFilters.hostId = user.host.hostId;
+    if (user?.hostId) {
+      baseFilters.hostId = user.hostId;
     }
     
     // Add status filter if not ALL
@@ -78,10 +80,21 @@ const Invoices = () => {
     }
     
     return baseFilters;
-  }, [user?.host?.hostId, currentPage, statusFilter, dateRange.start, dateRange.end]);
+  }, [user?.hostId, currentPage, statusFilter, dateRange.start, dateRange.end]);
 
-  const { data: invoiceData, isLoading: loading } = useInvoices(filters);
+  const { data: invoiceData, isLoading: loading, error } = useInvoices(filters);
   const downloadPDFMutation = useDownloadInvoicePDF();
+
+  // Show error toast but don't block rendering
+  useEffect(() => {
+    if (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load invoices';
+      dispatch(addToast({
+        type: 'error',
+        message: errorMessage,
+      }));
+    }
+  }, [error, dispatch]);
 
   // Extract invoices and pagination from response
   const invoices = Array.isArray(invoiceData) ? invoiceData : (invoiceData?.content || []);
@@ -116,11 +129,7 @@ const Invoices = () => {
   };
 
   if (loading && !invoices.length) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingSpinner message="Loading invoices..." fullScreen />;
   }
 
   return (

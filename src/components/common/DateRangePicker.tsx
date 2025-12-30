@@ -19,90 +19,90 @@ interface DateRangePickerProps {
   label?: string;
 }
 
-// Preset date ranges
-const presets = [
-  {
-    label: 'Today',
-    getValue: () => {
-      const today = new Date();
-      return {
+  // Preset date ranges
+  const presets = [
+    {
+      label: 'Today',
+      getValue: () => {
+        const today = new Date();
+        return {
         start: formatDateToYYYYMMDD(today),
         end: formatDateToYYYYMMDD(today),
-      };
+        };
+      },
     },
-  },
-  {
-    label: 'Yesterday',
-    getValue: () => {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      return {
+    {
+      label: 'Yesterday',
+      getValue: () => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        return {
         start: formatDateToYYYYMMDD(yesterday),
         end: formatDateToYYYYMMDD(yesterday),
-      };
+        };
+      },
     },
-  },
-  {
-    label: 'Last 7 Days',
-    getValue: () => {
-      const end = new Date();
-      const start = new Date();
+    {
+      label: 'Last 7 Days',
+      getValue: () => {
+        const end = new Date();
+        const start = new Date();
       start.setDate(start.getDate() - 6); // Include today, so 6 days back
-      return {
+        return {
         start: formatDateToYYYYMMDD(start),
         end: formatDateToYYYYMMDD(end),
-      };
+        };
+      },
     },
-  },
-  {
-    label: 'Last 30 Days',
-    getValue: () => {
-      const end = new Date();
-      const start = new Date();
+    {
+      label: 'Last 30 Days',
+      getValue: () => {
+        const end = new Date();
+        const start = new Date();
       start.setDate(start.getDate() - 29); // Include today, so 29 days back
-      return {
+        return {
         start: formatDateToYYYYMMDD(start),
         end: formatDateToYYYYMMDD(end),
-      };
+        };
+      },
     },
-  },
-  {
-    label: 'This Month',
-    getValue: () => {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth(), 1);
-      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      return {
+    {
+      label: 'This Month',
+      getValue: () => {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return {
         start: formatDateToYYYYMMDD(start),
         end: formatDateToYYYYMMDD(end),
-      };
+        };
+      },
     },
-  },
-  {
-    label: 'Last Month',
-    getValue: () => {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const end = new Date(now.getFullYear(), now.getMonth(), 0);
-      return {
+    {
+      label: 'Last Month',
+      getValue: () => {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const end = new Date(now.getFullYear(), now.getMonth(), 0);
+        return {
         start: formatDateToYYYYMMDD(start),
         end: formatDateToYYYYMMDD(end),
-      };
+        };
+      },
     },
-  },
-  {
-    label: 'This Year',
-    getValue: () => {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), 0, 1);
-      const end = new Date(now.getFullYear(), 11, 31);
-      return {
+    {
+      label: 'This Year',
+      getValue: () => {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 1);
+        const end = new Date(now.getFullYear(), 11, 31);
+        return {
         start: formatDateToYYYYMMDD(start),
         end: formatDateToYYYYMMDD(end),
-      };
+        };
+      },
     },
-  },
-];
+  ];
 
 // Helper function to format date to YYYY-MM-DD in local time
 function formatDateToYYYYMMDD(date: Date): string {
@@ -290,14 +290,56 @@ const DateRangePicker = ({
     }
   }, [startDate]);
 
-  // Calculate calendar position
+  // Calculate calendar position with viewport bounds checking
   const updateCalendarPosition = (buttonElement: HTMLButtonElement) => {
     if (buttonElement) {
       const rect = buttonElement.getBoundingClientRect();
+      // Responsive calendar width - wider to accommodate left panel + dual calendars
+      const isMobile = window.innerWidth < 1024;
+      const calendarWidth = isMobile ? Math.min(680, window.innerWidth - 32) : 800; // Wider for left panel + calendars
+      const calendarHeight = isMobile ? 600 : 500; // Taller on mobile for stacked calendars
+      const padding = 16;
+      const gap = 8;
+      
+      // Calculate initial position (below input)
+      let top = rect.bottom + gap;
+      let left = rect.left;
+      
+      // Check if calendar goes beyond right edge
+      if (left + calendarWidth > window.innerWidth - padding) {
+        // Try to align right edge with input right edge
+        left = Math.max(padding, rect.right - calendarWidth);
+      }
+      
+      // Check if calendar goes beyond left edge
+      if (left < padding) {
+        left = padding;
+      }
+      
+      // Check if calendar goes beyond bottom edge
+      const spaceBelow = window.innerHeight - rect.bottom - gap;
+      const spaceAbove = rect.top - gap;
+      
+      if (spaceBelow < calendarHeight && spaceAbove > spaceBelow) {
+        // Position above the input if there's more space above
+        top = rect.top - calendarHeight - gap;
+        // Ensure it doesn't go above viewport
+        if (top < padding) {
+          top = padding;
+        }
+      } else if (top + calendarHeight > window.innerHeight - padding) {
+        // If it still goes beyond bottom, constrain to viewport
+        top = window.innerHeight - calendarHeight - padding;
+      }
+      
+      // Ensure width doesn't exceed available space
+      const maxWidth = window.innerWidth - left - padding;
+      const finalWidth = Math.min(calendarWidth, maxWidth);
+      
       setCalendarPosition({
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: 680, // Fixed width for dual calendar view
+        top,
+        left,
+        width: finalWidth,
       });
     }
   };
@@ -422,7 +464,7 @@ const DateRangePicker = ({
         {showLabel && (
           <label className="block text-sm font-medium text-white/90 mb-2">{label}</label>
         )}
-        <div className="relative">
+          <div className="relative">
           <button
             ref={buttonRef}
             type="button"
@@ -470,84 +512,121 @@ const DateRangePicker = ({
       {showCalendar && createPortal(
         <div 
           data-calendar-portal
-          className="fixed z-[9999] bg-gradient-to-br from-[#1a1a2e] to-[#16162a] border border-white/20 rounded-xl shadow-2xl backdrop-blur-xl overflow-hidden"
+          className="fixed z-[9999] bg-gradient-to-br from-[#1a1a2e] to-[#16162a] border border-white/20 rounded-xl shadow-2xl backdrop-blur-xl overflow-hidden max-h-[90vh] overflow-y-auto"
           style={{
             top: `${calendarPosition.top}px`,
             left: `${calendarPosition.left}px`,
             width: `${calendarPosition.width}px`,
+            maxWidth: `calc(100vw - 32px)`,
           }}
         >
-          {/* Quick Select Presets */}
-          {showPresets && (
-            <div className="px-6 pt-4 pb-3 border-b border-white/10">
-              <div className="flex flex-wrap gap-2">
-                {presets.map((preset, index) => {
-                  const isSelected = selectedPreset === preset.label;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => handlePresetClick(preset)}
-                      className={cn(
-                        'px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200',
-                        isSelected 
-                          ? 'bg-primary text-white shadow-md' 
-                          : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
-                      )}
-                    >
-                      {preset.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Dual Calendar View */}
-          <div className="p-6">
-            <div className="flex gap-8">
-              {/* Left Calendar */}
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col lg:flex-row">
+            {/* Left Panel - Preset Ranges */}
+            {showPresets && (
+              <div className="w-full lg:w-48 border-b lg:border-b-0 lg:border-r border-white/10 bg-white/5">
+                <div className="p-3 space-y-1">
+                  {presets.map((preset, index) => {
+                    const isSelected = selectedPreset === preset.label;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handlePresetClick(preset)}
+                        className={cn(
+                          'w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                          isSelected 
+                            ? 'bg-primary text-white shadow-md' 
+                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        )}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
                   <button
-                    onClick={() => navigateMonth('prev', 'left')}
-                    className="p-1.5 hover:bg-white/10 rounded-lg transition-colors group"
+                    onClick={() => {
+                      setSelectedPreset('Custom Range');
+                      setStartDate('');
+                      setEndDate('');
+                    }}
+                    className={cn(
+                      'w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                      selectedPreset === 'Custom Range' || (!selectedPreset && (startDate || endDate))
+                        ? 'bg-primary text-white shadow-md' 
+                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    )}
                   >
-                    <ChevronLeft className="w-5 h-5 text-white/70 group-hover:text-primary transition-colors" />
-                  </button>
-                  <h3 className="text-white font-semibold text-sm">
-                    {monthNames[leftMonth.getMonth()]} {leftMonth.getFullYear()}
-                  </h3>
-                  <div className="w-9" /> {/* Spacer for alignment */}
-                </div>
-                <CalendarMonth
-                  date={leftMonth}
-                  selectedStart={startDate}
-                  selectedEnd={endDate}
-                  onDateSelect={handleDateSelect}
-                />
-              </div>
-
-              {/* Right Calendar */}
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-9" /> {/* Spacer for alignment */}
-                  <h3 className="text-white font-semibold text-sm">
-                    {monthNames[rightMonth.getMonth()]} {rightMonth.getFullYear()}
-                  </h3>
-                  <button
-                    onClick={() => navigateMonth('next', 'left')}
-                    className="p-1.5 hover:bg-white/10 rounded-lg transition-colors group"
-                  >
-                    <ChevronRight className="w-5 h-5 text-white/70 group-hover:text-primary transition-colors" />
+                    Custom Range
                   </button>
                 </div>
-                <CalendarMonth
-                  date={rightMonth}
-                  selectedStart={startDate}
-                  selectedEnd={endDate}
-                  onDateSelect={handleDateSelect}
-                  minDate={startDate ? parseLocalDate(startDate) : undefined}
-                />
+              </div>
+            )}
+
+            {/* Right Panel - Dual Calendar View */}
+            <div className="flex-1 flex flex-col">
+              <div className="p-4 sm:p-6 flex-1">
+                <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+                  {/* Left Calendar */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-4">
+                      <button
+                        onClick={() => navigateMonth('prev', 'left')}
+                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors group"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-white/70 group-hover:text-primary transition-colors" />
+                      </button>
+                      <h3 className="text-white font-semibold text-sm">
+                        {monthNames[leftMonth.getMonth()]} {leftMonth.getFullYear()}
+                      </h3>
+                      <div className="w-9" /> {/* Spacer for alignment */}
+                    </div>
+                    <CalendarMonth
+                      date={leftMonth}
+                      selectedStart={startDate}
+                      selectedEnd={endDate}
+                      onDateSelect={handleDateSelect}
+                    />
+                  </div>
+
+                  {/* Right Calendar */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-9" /> {/* Spacer for alignment */}
+                      <h3 className="text-white font-semibold text-sm">
+                        {monthNames[rightMonth.getMonth()]} {rightMonth.getFullYear()}
+                      </h3>
+                      <button
+                        onClick={() => navigateMonth('next', 'left')}
+                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors group"
+                      >
+                        <ChevronRight className="w-5 h-5 text-white/70 group-hover:text-primary transition-colors" />
+                      </button>
+                    </div>
+                    <CalendarMonth
+                      date={rightMonth}
+                      selectedStart={startDate}
+                      selectedEnd={endDate}
+                      onDateSelect={handleDateSelect}
+                      minDate={startDate ? parseLocalDate(startDate) : undefined}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Apply Button */}
+              <div className="px-4 sm:px-6 pb-4 pt-2 border-t border-white/10 flex justify-end">
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    if (startDate && endDate && onDateChange) {
+                      onDateChange({ start: startDate, end: endDate });
+                    }
+                    setShowCalendar(false);
+                  }}
+                  disabled={!startDate || !endDate}
+                  className="min-w-[100px]"
+                >
+                  Apply
+                </Button>
               </div>
             </div>
           </div>

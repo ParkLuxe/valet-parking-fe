@@ -3,27 +3,54 @@
  * Manage operating schedules for the host
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import type {  RootState  } from '../redux';
-import { Card } from '../components';
-import { Button } from '../components';
-import { LoadingSpinner } from '../components';
-import { Modal } from '../components';
-import { Input } from '../components';
+import type { RootState } from '../redux';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from '@tanstack/react-table';
+import { Card, Button, LoadingSpinner, Modal, Input } from '../components';
 import { useHostSchedules, useCreateSchedule, useUpdateSchedule, useDeleteSchedule } from '../hooks/queries/useHostSchedules';
 import { usePermissions } from '../hooks';
+import { Edit2, Trash2, Plus } from 'lucide-react';
+import { cn } from '../utils';
 
 const DAYS_OF_WEEK = [
   'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'
 ];
+
+const DAY_NAMES: Record<string, string> = {
+  MONDAY: 'Monday',
+  TUESDAY: 'Tuesday',
+  WEDNESDAY: 'Wednesday',
+  THURSDAY: 'Thursday',
+  FRIDAY: 'Friday',
+  SATURDAY: 'Saturday',
+  SUNDAY: 'Sunday',
+};
+
+interface Schedule {
+  scheduleId?: string;
+  id?: string;
+  dayOfWeek: string;
+  openTime: string;
+  closeTime: string;
+  isOpen: boolean;
+}
 
 const HostSchedules = () => {
   const { can } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
 
   const [showModal, setShowModal] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<any>(null);
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [formData, setFormData] = useState({
     dayOfWeek: 'MONDAY',
     openTime: '09:00',
@@ -42,18 +69,13 @@ const HostSchedules = () => {
 
     if (editingSchedule) {
       updateMutation.mutate({
-        scheduleId: editingSchedule.scheduleId,
+        scheduleId: editingSchedule.scheduleId || editingSchedule.id || '',
         ...formData,
       }, {
         onSuccess: () => {
           setShowModal(false);
           setEditingSchedule(null);
-          setFormData({
-            dayOfWeek: 'MONDAY',
-            openTime: '09:00',
-            closeTime: '18:00',
-            isOpen: true,
-          });
+          resetForm();
         },
       });
     } else {
@@ -63,18 +85,22 @@ const HostSchedules = () => {
       }, {
         onSuccess: () => {
           setShowModal(false);
-          setFormData({
-            dayOfWeek: 'MONDAY',
-            openTime: '09:00',
-            closeTime: '18:00',
-            isOpen: true,
-          });
+          resetForm();
         },
       });
     }
   };
 
-  const handleEdit = (schedule: any) => {
+  const resetForm = () => {
+    setFormData({
+      dayOfWeek: 'MONDAY',
+      openTime: '09:00',
+      closeTime: '18:00',
+      isOpen: true,
+    });
+  };
+
+  const handleEdit = (schedule: Schedule) => {
     setEditingSchedule(schedule);
     setFormData({
       dayOfWeek: schedule.dayOfWeek,
@@ -89,8 +115,13 @@ const HostSchedules = () => {
     if (!window.confirm('Are you sure you want to delete this schedule?')) {
       return;
     }
-
     deleteMutation.mutate(scheduleId);
+  };
+
+  const handleAddNew = () => {
+    setEditingSchedule(null);
+    resetForm();
+    setShowModal(true);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -102,10 +133,94 @@ const HostSchedules = () => {
     });
   };
 
+  // Define columns for TanStack Table
+  const columns = useMemo<ColumnDef<Schedule>[]>(() => [
+    {
+      accessorKey: 'dayOfWeek',
+      header: 'Day of Week',
+      cell: ({ row }) => (
+        <span className="text-white font-medium">
+          {DAY_NAMES[row.original.dayOfWeek] || row.original.dayOfWeek}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'openTime',
+      header: 'Open Time',
+      cell: ({ row }) => (
+        <span className="text-white/90">{row.original.openTime}</span>
+      ),
+    },
+    {
+      accessorKey: 'closeTime',
+      header: 'Close Time',
+      cell: ({ row }) => (
+        <span className="text-white/90">{row.original.closeTime}</span>
+      ),
+    },
+    {
+      accessorKey: 'isOpen',
+      header: 'Status',
+      cell: ({ row }) => {
+        const isOpen = row.original.isOpen !== false;
+        return (
+          <div className="flex justify-center">
+            <span className={cn(
+              'px-3 py-1 rounded-full text-xs font-semibold',
+              isOpen
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            )}>
+              {isOpen ? 'Open' : 'Closed'}
+            </span>
+          </div>
+        );
+      },
+    },
+    ...(can('canManageSchedules') ? [{
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <div className="flex justify-center gap-2">
+          <Button
+            variant="outline"
+            size="small"
+            onClick={() => handleEdit(row.original)}
+            className="hover:bg-white/10"
+            startIcon={<Edit2 className="w-4 h-4" />}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="outline"
+            size="small"
+            onClick={() => handleDelete(row.original.scheduleId || row.original.id || '')}
+            className="text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
+            startIcon={<Trash2 className="w-4 h-4" />}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    } as ColumnDef<Schedule>] : []),
+  ], [can]);
+
+  const table = useReactTable({
+    data: schedules,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    state: {
+      sorting,
+    },
+  });
+
   if (!can('canManageSchedules') && !can('canViewSchedules')) {
     return (
       <div className="p-6">
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
+        <div className="bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 px-4 py-3 rounded-lg">
           You don't have permission to view schedules.
         </div>
       </div>
@@ -113,11 +228,7 @@ const HostSchedules = () => {
   }
 
   if (isLoading && schedules.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingSpinner message="Loading schedules..." fullScreen />;
   }
 
   const loading = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
@@ -127,20 +238,15 @@ const HostSchedules = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Operating Schedules</h1>
-          <p className="text-gray-600 mt-1">Manage your business hours</p>
+          <h1 className="text-3xl font-bold text-white">Operating Schedules</h1>
+          <p className="text-white/70 mt-1">Manage your business hours</p>
         </div>
         {can('canManageSchedules') && (
-          <Button onClick={() => {
-            setEditingSchedule(null);
-            setFormData({
-              dayOfWeek: 'MONDAY',
-              openTime: '09:00',
-              closeTime: '18:00',
-              isOpen: true,
-            });
-            setShowModal(true);
-          }}>
+          <Button 
+            onClick={handleAddNew}
+            variant="primary"
+            startIcon={<Plus className="w-4 h-4" />}
+          >
             Add Schedule
           </Button>
         )}
@@ -149,81 +255,68 @@ const HostSchedules = () => {
       {/* Schedules Table */}
       <Card>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  Day of Week
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  Open Time
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  Close Time
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                  Status
-                </th>
-                {can('canManageSchedules') && (
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                    Actions
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {schedules.map((schedule: any) => (
-                <tr key={schedule.scheduleId || schedule.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium">
-                    {schedule.dayOfWeek}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {schedule.openTime}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {schedule.closeTime}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      schedule.isOpen !== false
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {schedule.isOpen !== false ? 'Open' : 'Closed'}
-                    </span>
-                  </td>
-                  {can('canManageSchedules') && (
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex justify-center gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => handleEdit(schedule)}
-                          className="text-sm"
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDelete(schedule.scheduleId || schedule.id)}
-                          className="text-sm text-red-600 hover:bg-red-50"
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-
-              {schedules.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
-                    No schedules found. Add a schedule to get started.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          {schedules.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-white/70 text-lg">No schedules found</p>
+              <p className="text-white/50 mt-2">Add a schedule to get started</p>
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-[5px] border border-white/10">
+              <table className="w-full">
+              <thead>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id} className="border-b border-white/10">
+                    {headerGroup.headers.map(header => (
+                      <th
+                        key={header.id}
+                        className={cn(
+                          'px-4 py-3 text-left text-sm font-semibold text-white/90',
+                          header.column.getCanSort() && 'cursor-pointer select-none hover:text-white',
+                          header.id === 'actions' && 'text-center',
+                          header.id === 'isOpen' && 'text-center'
+                        )}
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <div className="flex items-center gap-2">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {header.column.getCanSort() && (
+                            <span className="text-white/50">
+                              {{
+                                asc: ' ↑',
+                                desc: ' ↓',
+                              }[header.column.getIsSorted() as string] ?? ' ⇅'}
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {table.getRowModel().rows.map(row => (
+                  <tr
+                    key={row.id}
+                    className="hover:bg-white/5 transition-colors"
+                  >
+                    {row.getVisibleCells().map(cell => (
+                      <td
+                        key={cell.id}
+                        className={cn(
+                          'px-4 py-3 text-sm',
+                          cell.column.id === 'actions' && 'text-center',
+                          cell.column.id === 'isOpen' && 'text-center'
+                        )}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -239,18 +332,20 @@ const HostSchedules = () => {
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-white/90 mb-2">
                 Day of Week
               </label>
               <select
                 name="dayOfWeek"
                 value={formData.dayOfWeek}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
                 required
               >
                 {DAYS_OF_WEEK.map((day) => (
-                  <option key={day} value={day}>{day}</option>
+                  <option key={day} value={day} className="bg-background-secondary">
+                    {DAY_NAMES[day]}
+                  </option>
                 ))}
               </select>
             </div>
@@ -273,20 +368,20 @@ const HostSchedules = () => {
               required
             />
 
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
               <input
                 type="checkbox"
                 name="isOpen"
                 checked={formData.isOpen}
                 onChange={handleChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-5 h-5 rounded border-white/20 bg-white/5 text-primary focus:ring-2 focus:ring-primary/30 cursor-pointer"
               />
-              <label className="ml-2 text-sm text-gray-700">
+              <label className="text-sm text-white/90 cursor-pointer">
                 Open for business
               </label>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
               <Button
                 type="button"
                 variant="outline"
@@ -297,7 +392,7 @@ const HostSchedules = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" variant="primary" disabled={loading}>
                 {editingSchedule ? 'Update' : 'Create'} Schedule
               </Button>
             </div>

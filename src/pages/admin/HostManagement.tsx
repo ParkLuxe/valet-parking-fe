@@ -327,12 +327,8 @@ const HostManagement = () => {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="large" />
-      </div>
-    );
+  if (loading && !hosts.length) {
+    return <LoadingSpinner message="Loading hosts..." fullScreen />;
   }
 
   return (

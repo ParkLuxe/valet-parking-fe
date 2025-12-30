@@ -174,11 +174,7 @@ const QRCodeManagement = () => {
   }
 
   if (loading && qrCodes.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingSpinner message="Loading QR codes..." fullScreen />;
   }
 
   return (

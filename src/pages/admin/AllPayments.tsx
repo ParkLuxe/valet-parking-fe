@@ -41,8 +41,8 @@ const AllPayments = () => {
   };
   
   // Only include hostId if user is not SuperAdmin
-  if (user?.host?.hostId && user?.roleName !== 'SUPERADMIN') {
-    filters.hostId = user.host.hostId;
+  if (user?.hostId && user?.roleName !== 'SUPERADMIN') {
+    filters.hostId = user.hostId;
   }
   
   const { data: invoicesResponse, isLoading } = useInvoices(filters);
@@ -147,11 +147,7 @@ const AllPayments = () => {
     .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
 
   if (isLoading && !invoices.length) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingSpinner message="Loading payments..." fullScreen />;
   }
 
   return (

@@ -137,7 +137,7 @@ const Dashboard = () => {
     }
   }, [dispatch, isHostAdmin]);
 
-  if (loading) {
+  if (loading && !metrics) {
     return <LoadingSpinner message="Loading dashboard..." fullScreen />;
   }
 

@@ -25,6 +25,7 @@ interface InputProps {
   children?: React.ReactNode;
   icon?: React.ReactNode;
   className?: string;
+  showPlaceholder?: boolean; // Show placeholder text directly (for search inputs)
   [key: string]: any;
 }
 
@@ -48,6 +49,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     children,
     icon,
     className,
+    showPlaceholder = false, // For search inputs
     ...props
   }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
@@ -80,7 +82,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             className={cn(
               'w-full px-4 py-3 bg-white/5 backdrop-blur-sm',
-              'border border-white/10 rounded-input',
+              'border border-white/10 rounded-[5px]',
               'text-white appearance-none cursor-pointer',
               'transition-all duration-300 ease-in-out',
               'focus:outline-none focus:border-primary',
@@ -144,8 +146,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             rows={rows}
             className={cn(
               'w-full px-4 py-3 bg-white/5 backdrop-blur-sm',
-              'border border-white/10 rounded-input',
-              'text-white placeholder-transparent',
+              'border border-white/10 rounded-[5px]',
+              showPlaceholder ? 'text-white placeholder:text-white/50' : 'text-white placeholder-transparent',
               'transition-all duration-300 ease-in-out',
               'focus:outline-none focus:border-primary',
               'focus:ring-2 focus:ring-primary/30',
@@ -169,8 +171,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             className={cn(
               'w-full px-4 py-3 bg-white/5 backdrop-blur-sm',
-              'border border-white/10 rounded-input',
-              'text-white placeholder-transparent',
+              'border border-white/10 rounded-[5px]',
+              showPlaceholder ? 'text-white placeholder:text-white/50' : 'text-white placeholder-transparent',
               'transition-all duration-300 ease-in-out',
               'focus:outline-none focus:border-primary',
               'focus:ring-2 focus:ring-primary/30',
@@ -182,8 +184,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
         )}
 
-        {/* Floating label */}
-        {label && (
+        {/* Floating label - only show if not using placeholder mode */}
+        {label && !showPlaceholder && (
           <label
             htmlFor={name}
             className={cn(
