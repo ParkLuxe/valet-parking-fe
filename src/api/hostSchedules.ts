@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { apiHelper } from '../services/api';
 import { addToast } from '../redux';
+import { queryKeys } from '../lib/queryKeys';
 
 // Create schedule mutation
 export const useCreateSchedule = () => {
@@ -19,7 +20,7 @@ export const useCreateSchedule = () => {
       return response;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules', 'host', variables.hostId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.schedules.host(variables.hostId) });
       dispatch(addToast({
         type: 'success',
         message: 'Schedule created successfully',
@@ -37,7 +38,7 @@ export const useCreateSchedule = () => {
 // Get schedule by ID
 export const useSchedule = (scheduleId: string) => {
   return useQuery({
-    queryKey: ['schedules', scheduleId] as const,
+    queryKey: queryKeys.schedules.detail(scheduleId),
     queryFn: () => apiHelper.get(`/v1/host-schedules/${scheduleId}`),
     enabled: !!scheduleId,
     staleTime: 10 * 60 * 1000,
@@ -47,7 +48,7 @@ export const useSchedule = (scheduleId: string) => {
 // Get all schedules for host
 export const useHostSchedules = (hostId: string) => {
   return useQuery({
-    queryKey: ['schedules', 'host', hostId] as const,
+    queryKey: queryKeys.schedules.host(hostId),
     queryFn: () => apiHelper.get(`/v1/host-schedules/host/${hostId}`),
     enabled: !!hostId,
     staleTime: 10 * 60 * 1000,
@@ -65,8 +66,8 @@ export const useUpdateSchedule = () => {
       return response;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules', variables.scheduleId] });
-      queryClient.invalidateQueries({ queryKey: ['schedules', 'host'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.schedules.detail(variables.scheduleId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.schedules.all });
       dispatch(addToast({
         type: 'success',
         message: 'Schedule updated successfully',
@@ -92,7 +93,7 @@ export const useDeleteSchedule = () => {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.schedules.all });
       dispatch(addToast({
         type: 'success',
         message: 'Schedule deleted successfully',
