@@ -3,13 +3,13 @@
  * View and manage subscription plans
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type {  RootState  } from '../redux';
 import { Card } from '../components';
 import { Button } from '../components';
 import { LoadingSpinner } from '../components';
-import { subscriptionPlanService } from '../services';
+import { useAllSubscriptionPlans, useActiveSubscriptionPlans } from '../api/subscriptionPlans';
 import { subscriptionService } from '../services';
 import {  addToast  } from '../redux';
 import {  formatCurrency  } from '../utils';
@@ -20,34 +20,27 @@ const SubscriptionPlans = () => {
   const { can, isRole } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [currentSubscription, setCurrentSubscription] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    fetchPlans();
+  // Use TanStack Query hooks
+  const { data: allPlansData, isLoading: allPlansLoading } = useAllSubscriptionPlans(0, 20);
+  const { data: activePlansData, isLoading: activePlansLoading } = useActiveSubscriptionPlans();
+
+  // Determine which data to use based on role
+  // Note: getAllPlans returns paginated response with 'content' field, getActivePlans returns array directly
+  const plans = isRole('SUPERADMIN') 
+    ? (Array.isArray(allPlansData) ? allPlansData : allPlansData?.content || [])
+    : (activePlansData || []);
+  const loading = isRole('SUPERADMIN') ? allPlansLoading : activePlansLoading;
+
+  // Fetch current subscription
+  React.useEffect(() => {
     if (user?.hostUserId && can('canManageSubscription')) {
       fetchCurrentSubscription();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-
-  const fetchPlans = async () => {
-    setLoading(true);
-    try {
-      const response = isRole('SUPERADMIN')
-        ? await subscriptionPlanService.getAllPlans()
-        : await subscriptionPlanService.getActivePlans();
-      setPlans(response || []);
-    } catch (err) {
-      dispatch(addToast({
-        type: 'error',
-        message: 'Failed to load subscription plans',
-      }));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchCurrentSubscription = async () => {
     try {
@@ -66,7 +59,7 @@ const SubscriptionPlans = () => {
     }
 
     try {
-      setLoading(true);
+      setActionLoading(true);
       if (currentSubscription) {
         await subscriptionService.updatePlan(user.hostId, planId);
         dispatch(addToast({
@@ -90,7 +83,7 @@ const SubscriptionPlans = () => {
         message: 'Failed to update subscription plan',
       }));
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
@@ -244,7 +237,7 @@ const SubscriptionPlans = () => {
                 <Button
                   onClick={() => handleSelectPlan(plan.id)}
                   className="w-full"
-                  disabled={loading}
+                  disabled={actionLoading}
                 >
                   {currentSubscription ? 'Switch to Plan' : 'Select Plan'}
                 </Button>

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
   Mail,
@@ -19,6 +19,7 @@ import {
 import { Card, Input, Button } from '../components';
 import { updateProfile, addToast } from '../redux';
 import { authService } from '../services';
+import { useCurrentUserProfile } from '../api/hostUsers';
 import {
   validateEmail,
   validatePhone,
@@ -27,17 +28,55 @@ import {
   validatePasswordMatch,
   getInitials,
 } from '../utils';
-import type { RootState } from '../redux';
 
 const Profile = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
+  
+  // Use TanStack Query hook to fetch user profile
+  const { data: userProfile, isLoading: profileLoading } = useCurrentUserProfile();
+  const user = userProfile;
   
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
+    name: '',
+    email: '',
+    phone: '',
   });
+
+  // Update form data when user profile loads
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+  }, [user]);
+  
+  // Helper functions for role formatting
+  type RoleValue = string | { name: string } | null | undefined;
+  
+  const formatRole = (role: RoleValue): string => {
+    if (!role) return 'Unknown';
+    const roleName = typeof role === 'object' ? role.name : role;
+    const roleMap: Record<string, string> = {
+      'SUPERADMIN': 'Super Admin',
+      'HOSTADMIN': 'Host Admin',
+      'HOSTUSER': 'Host User',
+    };
+    return roleMap[roleName] || roleName;
+  };
+
+  const getRoleBadgeClass = (role: RoleValue): string => {
+    const roleName = typeof role === 'object' ? role.name : role;
+    const classMap: Record<string, string> = {
+      'SUPERADMIN': 'bg-purple-500/20 text-purple-300 border border-purple-500/30',
+      'HOSTADMIN': 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
+      'HOSTUSER': 'bg-green-500/20 text-green-300 border border-green-500/30',
+    };
+    return classMap[roleName || ''] || 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
+  };
+  
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
     newPassword: '',
@@ -195,14 +234,23 @@ const Profile = () => {
 
   // Calculate profile completion
   const profileCompletion = useMemo(() => {
-    const fields = [
-      user?.name,
-      user?.email,
-      user?.phone,
-    ];
+    const hasName = !!user?.name;
+    const hasEmail = !!user?.email;
+    const hasPhone = !!user?.phone;
+    const hasRole = !!(user?.role && (typeof user.role === 'string' || (typeof user.role === 'object' && user.role.name)));
+    
+    const fields = [hasName, hasEmail, hasPhone, hasRole];
     const completed = fields.filter(Boolean).length;
     return Math.round((completed / fields.length) * 100);
   }, [user]);
+
+  if (profileLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white">Loading profile...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -235,9 +283,11 @@ const Profile = () => {
               <h3 className="text-xl font-bold text-white mb-1">
                 {user?.name || 'User'}
               </h3>
-              <p className="text-white/60 text-xs mb-3">
-                {user?.role?.replace('_', ' ').toUpperCase()}
-              </p>
+              <div className="mb-3">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user?.role)}`}>
+                  {formatRole(user?.role)}
+                </span>
+              </div>
 
               {/* Profile Completion - COMPACT */}
               <div className="w-full">
@@ -260,18 +310,21 @@ const Profile = () => {
           {/* Account Info - COMPACT */}
           <Card>
             <div className="p-3">
-              <h3 className="text-lg font-bold text-white mb-2">Account Info</h3>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-white/70">
-                  <Shield className="w-4 h-4" />
-                  <span className="text-xs">
-                    {user?.role?.replace('_', ' ').toUpperCase()}
+              <h3 className="text-lg font-bold text-white mb-3">Account Info</h3>
+              <div className="space-y-3">
+                <div className="p-2 bg-white/5 rounded-lg">
+                  <div className="flex items-center gap-2 text-white/70 mb-1">
+                    <Shield className="w-4 h-4" />
+                    <span className="text-xs">Role</span>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user?.role)}`}>
+                    {formatRole(user?.role)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-white/70">
                   <Calendar className="w-4 h-4" />
                   <span className="text-xs">
-                    Member since {new Date(user?.createdAt).toLocaleDateString()}
+                    Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                   </span>
                 </div>
               </div>
