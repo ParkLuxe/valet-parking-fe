@@ -9,8 +9,8 @@ import type {  RootState  } from '../redux';
 import { Card } from '../components';
 import { Button } from '../components';
 import { LoadingSpinner } from '../components';
-import { useAllSubscriptionPlans, useActiveSubscriptionPlans } from '../api/subscriptionPlans';
-import { useSubscription, useInitializeSubscription, useChangeSubscriptionPlan } from '../api/subscriptions';
+import { useAllSubscriptionPlans, useActiveSubscriptionPlans } from '../hooks/queries/useSubscriptionPlans';
+import { useSubscription, useInitializeSubscription, useChangeSubscriptionPlan } from '../hooks/queries/useSubscriptions';
 import {  formatCurrency  } from '../utils';
 import { usePermissions } from '../hooks';
 
@@ -79,11 +79,7 @@ const SubscriptionPlans = () => {
   }
 
   if (loading && plans.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingSpinner message="Loading subscription plans..." fullScreen />;
   }
 
   return (

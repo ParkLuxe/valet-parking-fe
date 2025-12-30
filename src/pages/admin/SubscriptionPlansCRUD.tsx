@@ -3,8 +3,7 @@
  * Manage subscription plans - Create, Read, Update, Delete
  */
 
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState } from 'react';
 import {
   Plus,
   Edit,
@@ -20,15 +19,14 @@ import { Input } from '../../components';
 import { LoadingSpinner } from '../../components';
 import { DataTable } from '../../components';
 import { ConfirmDialog } from '../../components';
-import { subscriptionPlanService } from '../../services';
-import {  addToast  } from '../../redux';
-import {  formatCurrency  } from '../../utils';
+import {
+  useAllSubscriptionPlans,
+  useCreateSubscriptionPlan,
+  useUpdateSubscriptionPlan,
+} from '../../hooks/queries/useSubscriptionPlans';
+import { formatCurrency } from '../../utils';
 
 const SubscriptionPlansCRUD = () => {
-  const dispatch = useDispatch();
-
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, plan: null });
@@ -42,29 +40,12 @@ const SubscriptionPlansCRUD = () => {
     isActive: true,
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchPlans();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchPlans = async () => {
-    setLoading(true);
-    try {
-      const response = await subscriptionPlanService.getAllPlans();
-      setPlans(response || []);
-    } catch (err) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: 'Failed to load subscription plans',
-        })
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use TanStack Query hooks
+  const { data: plansResponse, isLoading: loading } = useAllSubscriptionPlans(0, 100);
+  const plans = plansResponse?.content || plansResponse || [];
+  const createPlanMutation = useCreateSubscriptionPlan();
+  const updatePlanMutation = useUpdateSubscriptionPlan();
 
   const validateForm = () => {
     const errors: any = {};
@@ -116,12 +97,12 @@ const SubscriptionPlansCRUD = () => {
     setShowModal(true);
   };
 
-  const handleOpenEditModal = (plan) => {
+  const handleOpenEditModal = (plan: any) => {
     setEditingPlan(plan);
     setFormData({
-      name: plan.name || '',
-      basePrice: plan.basePrice || '',
-      baseScans: plan.baseScans || '',
+      name: plan.planName || plan.name || '',
+      basePrice: plan.monthlyPrice || plan.basePrice || '',
+      baseScans: plan.scanLimit || plan.baseScans || '',
       additionalScanPrice: plan.additionalScanPrice || '',
       description: plan.description || '',
       features: Array.isArray(plan.features) ? plan.features.join('\n') : '',
@@ -131,112 +112,63 @@ const SubscriptionPlansCRUD = () => {
     setShowModal(true);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    setSubmitting(true);
+    const planData = {
+      planName: formData.name.trim(),
+      monthlyPrice: parseFloat(formData.basePrice),
+      scanLimit: parseInt(formData.baseScans),
+      description: formData.description.trim(),
+      features: formData.features
+        .split('\n')
+        .map((f) => f.trim())
+        .filter((f) => f),
+      isActive: formData.isActive,
+    };
+
     try {
-      const planData = {
-        name: formData.name.trim(),
-        basePrice: parseFloat(formData.basePrice),
-        baseScans: parseInt(formData.baseScans),
-        additionalScanPrice: parseFloat(formData.additionalScanPrice),
-        description: formData.description.trim(),
-        features: formData.features
-          .split('\n')
-          .map((f) => f.trim())
-          .filter((f) => f),
-        isActive: formData.isActive,
-      };
-
       if (editingPlan) {
-        await subscriptionPlanService.updatePlan(editingPlan.id, planData);
-        dispatch(
-          addToast({
-            type: 'success',
-            message: 'Subscription plan updated successfully',
-          })
-        );
+        await updatePlanMutation.mutateAsync({
+          planId: editingPlan.id,
+          ...planData,
+        });
       } else {
-        await subscriptionPlanService.createPlan(planData);
-        dispatch(
-          addToast({
-            type: 'success',
-            message: 'Subscription plan created successfully',
-          })
-        );
+        await createPlanMutation.mutateAsync(planData);
       }
-
       setShowModal(false);
-      fetchPlans();
     } catch (err) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: editingPlan
-            ? 'Failed to update subscription plan'
-            : 'Failed to create subscription plan',
-        })
-      );
-    } finally {
-      setSubmitting(false);
+      // Error handling is done in the mutation hooks
     }
   };
 
-  const handleToggleActive = async (plan) => {
+  const handleToggleActive = async (plan: any) => {
     try {
-      await subscriptionPlanService.updatePlan(plan.id, {
-        ...plan,
+      await updatePlanMutation.mutateAsync({
+        planId: plan.id,
         isActive: !plan.isActive,
       });
-      dispatch(
-        addToast({
-          type: 'success',
-          message: `Plan ${plan.isActive ? 'deactivated' : 'activated'} successfully`,
-        })
-      );
-      fetchPlans();
     } catch (err) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: 'Failed to toggle plan status',
-        })
-      );
+      // Error handling is done in the mutation hook
     }
   };
 
   const handleDeleteConfirm = async () => {
     if (!deleteConfirm.plan) return;
 
-    setSubmitting(true);
     try {
       // Note: Backend may not have delete endpoint, so we'll deactivate instead
-      await subscriptionPlanService.updatePlan(deleteConfirm.plan.id, {
-        ...deleteConfirm.plan,
+      await updatePlanMutation.mutateAsync({
+        planId: deleteConfirm.plan.id,
         isActive: false,
       });
-      dispatch(
-        addToast({
-          type: 'success',
-          message: 'Subscription plan deactivated successfully',
-        })
-      );
       setDeleteConfirm({ isOpen: false, plan: null });
-      fetchPlans();
     } catch (err) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: 'Failed to deactivate subscription plan',
-        })
-      );
-    } finally {
-      setSubmitting(false);
+      // Error handling is done in the mutation hook
     }
   };
 
@@ -342,12 +274,8 @@ const SubscriptionPlansCRUD = () => {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner size="large" />
-      </div>
-    );
+  if (loading && !plans.length) {
+    return <LoadingSpinner message="Loading subscription plans..." fullScreen />;
   }
 
   return (
@@ -493,7 +421,7 @@ const SubscriptionPlansCRUD = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary" loading={submitting}>
+            <Button type="submit" variant="primary" loading={createPlanMutation.isPending || updatePlanMutation.isPending}>
               {editingPlan ? 'Update Plan' : 'Create Plan'}
             </Button>
           </div>
@@ -508,7 +436,7 @@ const SubscriptionPlansCRUD = () => {
         title="Deactivate Subscription Plan"
         message={`Are you sure you want to deactivate the plan "${deleteConfirm.plan?.name}"? This action will make it unavailable for new subscriptions.`}
         confirmText="Deactivate"
-        loading={submitting}
+        loading={updatePlanMutation.isPending}
       />
     </div>
   );

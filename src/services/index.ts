@@ -4,8 +4,7 @@
  */
 
 // Legacy service wrappers (for backward compatibility)
-// New code should use TanStack Query hooks from ../api/* instead
-export { default as authService } from './authService';
+// New code should use TanStack Query hooks from ../api/* or hooks/queries instead
 export { default as invoiceService } from './invoiceService';
 export { default as subscriptionPlanService } from './subscriptionPlanService';
 export { default as hostService } from './hostService';
@@ -16,18 +15,18 @@ export { default as valetService } from './valetService';
 export { apiHelper } from './api';
 
 // Export all TanStack Query API hooks
-export * from '../api/auth';
-export * from '../api/invoices';
-export * from '../api/payments';
-export * from '../api/subscriptions';
-export * from '../api/subscriptionPlans';
-export * from '../api/vehicles';
-export * from '../api/vehicleRequests';
-export * from '../api/qrCodes';
-export * from '../api/analytics';
-export * from '../api/hosts';
-export * from '../api/hostUsers';
-export * from '../api/hostSchedules';
-export * from '../api/parkingSlots';
-export * from '../api/countries';
+export * from '../hooks/queries/useAuth';
+export * from '../hooks/queries/useInvoices';
+export * from '../hooks/queries/usePayments';
+export * from '../hooks/queries/useSubscriptions';
+export * from '../hooks/queries/useSubscriptionPlans';
+export * from '../hooks/queries/useVehicles';
+export * from '../hooks/queries/useVehicleRequests';
+export * from '../hooks/queries/useQRCodes';
+export * from '../hooks/queries/useAnalytics';
+export * from '../hooks/queries/useHosts';
+export * from '../hooks/queries/useHostUsers';
+export * from '../hooks/queries/useHostSchedules';
+export * from '../hooks/queries/useParkingSlots';
+export * from '../hooks/queries/useCountries';
 

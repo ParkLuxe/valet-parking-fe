@@ -30,7 +30,7 @@ const Layout = ({ children }) => {
           transition={{ duration: 0.3 }}
           className="flex-1 p-6 pt-24"
         >
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto bg-gradient-to-br from-[#0a0a0f] to-[#1a1a2e] rounded-tl-[20px] rounded-bl-[20px] p-6 min-h-[calc(100vh-6rem)] shadow-2xl">
             {children}
           </div>
         </motion.main>

@@ -1,6 +1,6 @@
 /**
  * Enhanced Sidebar Navigation Component
- * Features glassmorphism, smooth animations, and gradient highlights
+ * Clean UI with minimal borders, better spacing and visual hierarchy
  */
 
 import React from 'react';
@@ -28,10 +28,10 @@ import {
   FileLineChart,
   Bug,
 } from 'lucide-react';
-import {  toggleSidebar  } from '../../redux';
+import { toggleSidebar } from '../../redux';
 import { cn } from '../../utils';
 import { usePermissions } from '../../hooks';
-import type {  RootState  } from '../../redux';
+import type { RootState } from '../../redux';
 
 const drawerWidth = 260;
 
@@ -85,7 +85,7 @@ const Sidebar = () => {
     !item.permission || can(item.permission)
   );
 
-  const handleNavigate = (path) => {
+  const handleNavigate = (path: string) => {
     navigate(path);
     // Close sidebar on mobile after navigation
     if (window.innerWidth < 900) {
@@ -103,7 +103,7 @@ const Sidebar = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => dispatch(toggleSidebar())}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
           />
         )}
       </AnimatePresence>
@@ -121,17 +121,17 @@ const Sidebar = () => {
         }}
         className={cn(
           'fixed left-0 top-0 h-screen z-50',
-          'w-64 glass-card border-r border-white/10',
-          'flex flex-col',
+          'w-64 bg-gradient-to-b from-[#0a0a0f] to-[#1a1a2e]',
+          'flex flex-col shadow-2xl',
           'lg:translate-x-0'
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
+        <div className="flex items-center justify-between p-6 pb-5">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-primary rounded-lg blur opacity-50" />
-              <div className="relative bg-gradient-primary p-2 rounded-lg">
+              <div className="absolute inset-0 bg-gradient-primary rounded-xl blur-lg opacity-60" />
+              <div className="relative bg-gradient-primary p-2.5 rounded-xl shadow-lg">
                 <img 
                   src="/parkluxe-logo-192.png" 
                   alt="ParkLuxe Logo" 
@@ -139,7 +139,7 @@ const Sidebar = () => {
                 />
               </div>
             </div>
-            <span className="text-xl font-bold text-gradient-primary">
+            <span className="text-xl font-bold text-white">
               Park-Luxe
             </span>
           </div>
@@ -147,14 +147,14 @@ const Sidebar = () => {
           {/* Close button for mobile */}
           <button
             onClick={() => dispatch(toggleSidebar())}
-            className="lg:hidden p-2 rounded-button hover:bg-white/5 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-white" />
+            <ChevronLeft className="w-5 h-5 text-white/70" />
           </button>
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -164,22 +164,22 @@ const Sidebar = () => {
                 key={item.path}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.03 }}
                 onClick={() => handleNavigate(item.path)}
                 className={cn(
-                  'w-full flex items-center gap-3 px-4 py-3 rounded-button',
-                  'text-left font-medium transition-all duration-300',
-                  'group relative overflow-hidden',
+                  'w-full flex items-center gap-3 px-4 py-2.5 rounded-xl',
+                  'text-left font-medium transition-all duration-200',
+                  'group relative',
                   isActive
-                    ? 'bg-gradient-primary text-white shadow-glow-primary'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                    ? 'bg-gradient-primary text-white shadow-lg shadow-primary/30'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
                 )}
               >
-                {/* Active indicator gradient */}
+                {/* Active indicator */}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-gradient-primary"
+                    className="absolute inset-0 bg-gradient-primary rounded-xl"
                     transition={{
                       type: 'spring',
                       stiffness: 300,
@@ -188,28 +188,25 @@ const Sidebar = () => {
                   />
                 )}
 
-                {/* Icon with glow effect */}
-                <div className="relative z-10">
-                  <Icon
-                    className={cn(
-                      'w-5 h-5 transition-transform duration-300',
-                      isActive && 'drop-shadow-glow',
-                      'group-hover:scale-110'
-                    )}
-                  />
+                {/* Icon */}
+                <div className={cn(
+                  'relative z-10 transition-transform duration-200',
+                  isActive ? 'scale-110' : 'group-hover:scale-105'
+                )}>
+                  <Icon className="w-5 h-5" />
                 </div>
 
                 {/* Label */}
-                <span className="relative z-10">{item.label}</span>
+                <span className="relative z-10 text-sm">{item.label}</span>
               </motion.button>
             );
           })}
         </nav>
 
         {/* User Profile Card at bottom */}
-        <div className="p-4 border-t border-white/10">
-          <div className="glass-card p-3 flex items-center gap-3 hover:bg-white/5 transition-colors cursor-pointer">
-            <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold">
+        <div className="p-4 pt-3">
+          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3 hover:bg-white/10 transition-all duration-200 cursor-pointer group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-semibold shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform">
               {user?.name?.charAt(0) || 'U'}
             </div>
             <div className="flex-1 min-w-0">

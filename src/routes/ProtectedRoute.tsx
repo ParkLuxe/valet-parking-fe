@@ -28,11 +28,11 @@ const ProtectedRoute = ({
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRoles && !hasRole(user?.role, requiredRoles)) {
+  if (requiredRoles && !hasRole((user as any)?.roleName, requiredRoles)) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (page && user?.role && !canAccessPage(user.role, page)) {
+  if (page && (user as any)?.roleName && !canAccessPage((user as any).roleName, page)) {
     return <Navigate to="/dashboard" replace />;
   }
 

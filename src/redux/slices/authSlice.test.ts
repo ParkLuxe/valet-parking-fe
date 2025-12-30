@@ -129,7 +129,7 @@ describe('authSlice', () => {
         id: '1',
         name: 'Test User',
         email: 'test@example.com',
-        role: 'HOSTADMIN' as const,
+        roleName: 'HOSTADMIN' as const,
       };
 
       const newState = authReducer(initialState, setUserData(userData));
@@ -160,14 +160,14 @@ describe('authSlice', () => {
 
       const newState = authReducer(initialState, setUserData(userData));
 
-      // Check that role was normalized to a string
-      expect(newState.user?.role).toBe('HOSTADMIN');
-      expect(typeof newState.user?.role).toBe('string');
+      // Check that role was normalized to `roleName` string
+      expect(newState.user?.roleName).toBe('HOSTADMIN');
+      expect(typeof newState.user?.roleName).toBe('string');
 
-      // Check localStorage has normalized role
+      // Check localStorage has normalized roleName
       const storedUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_DATA) || '{}');
-      expect(storedUser.role).toBe('HOSTADMIN');
-      expect(typeof storedUser.role).toBe('string');
+      expect(storedUser.roleName).toBe('HOSTADMIN');
+      expect(typeof storedUser.roleName).toBe('string');
     });
 
     it('should keep role as string when it is already a string', () => {
@@ -184,14 +184,14 @@ describe('authSlice', () => {
         id: '1',
         name: 'Test User',
         email: 'test@example.com',
-        role: 'HOSTADMIN' as const,
+        roleName: 'HOSTADMIN' as const,
       };
 
       const newState = authReducer(initialState, setUserData(userData));
 
-      // Check that role remains a string
-      expect(newState.user?.role).toBe('HOSTADMIN');
-      expect(typeof newState.user?.role).toBe('string');
+      // Check that roleName remains a string
+      expect(newState.user?.roleName).toBe('HOSTADMIN');
+      expect(typeof newState.user?.roleName).toBe('string');
     });
   });
 
@@ -202,7 +202,7 @@ describe('authSlice', () => {
           id: '1',
           name: 'Test User',
           email: 'test@example.com',
-          role: 'HOSTADMIN' as const,
+          roleName: 'HOSTADMIN' as const,
         },
         token: 'test-token',
         refreshToken: 'test-refresh',

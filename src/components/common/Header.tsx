@@ -1,6 +1,6 @@
 /**
- * Enhanced Header Component with Glassmorphism
- * Features backdrop blur, dropdown menus, and smooth animations
+ * Enhanced Header Component
+ * Clean UI with minimal borders, better dropdowns
  */
 
 import React, { useState } from 'react';
@@ -15,10 +15,10 @@ import {
   LogOut,
   Settings,
 } from 'lucide-react';
-import {  toggleSidebar  } from '../../redux';
-import {  logout  } from '../../redux';
-import {  getInitials  } from '../../utils';
-import type {  RootState  } from '../../redux';
+import { toggleSidebar } from '../../redux';
+import { logout } from '../../redux';
+import { getInitials } from '../../utils';
+import type { RootState } from '../../redux';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -47,13 +47,13 @@ const Header = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed top-0 left-0 right-0 z-30 glass-card border-b border-white/10"
+      className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-r from-[#0a0a0f] to-[#1a1a2e] backdrop-blur-xl shadow-lg"
     >
       <div className="flex items-center justify-between px-6 py-4">
         {/* Left: Menu button */}
         <button
           onClick={handleToggleSidebar}
-          className="p-2 rounded-button hover:bg-white/10 transition-colors lg:hidden"
+          className="p-2 rounded-lg hover:bg-white/10 transition-colors lg:hidden"
           aria-label="Toggle sidebar"
         >
           <Menu className="w-6 h-6 text-white" />
@@ -65,17 +65,17 @@ const Header = () => {
         </div>
 
         {/* Right: Notifications and User Menu */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Notifications Dropdown */}
           <DropdownMenu.Root open={showNotifications} onOpenChange={setShowNotifications}>
             <DropdownMenu.Trigger asChild>
-              <button className="relative p-2 rounded-button hover:bg-white/10 transition-colors">
-                <Bell className="w-6 h-6 text-white" />
+              <button className="relative p-2.5 rounded-lg hover:bg-white/10 transition-all duration-200 group">
+                <Bell className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" />
                 {unreadCount > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 bg-error text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    className="absolute -top-0.5 -right-0.5 bg-error text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg"
                   >
                     {unreadCount}
                   </motion.span>
@@ -88,18 +88,20 @@ const Header = () => {
                 <DropdownMenu.Portal forceMount>
                   <DropdownMenu.Content asChild>
                     <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="glass-card p-4 mt-2 w-80 rounded-card shadow-lg"
+                      className="bg-gradient-to-br from-[#1a1a2e] to-[#16162a] backdrop-blur-xl p-5 mt-2 w-80 rounded-xl shadow-2xl"
                     >
-                      <h3 className="text-white font-semibold mb-3">Notifications</h3>
+                      <h3 className="text-white font-semibold text-base mb-4">Notifications</h3>
                       <div className="space-y-2">
                         {unreadCount === 0 ? (
-                          <p className="text-white/50 text-sm text-center py-4">
-                            No new notifications
-                          </p>
+                          <div className="text-center py-8">
+                            <p className="text-white/50 text-sm">
+                              No new notifications
+                            </p>
+                          </div>
                         ) : (
                           <p className="text-white/70 text-sm">
                             You have {unreadCount} unread notifications
@@ -116,13 +118,13 @@ const Header = () => {
           {/* User Dropdown */}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className="flex items-center gap-3 p-2 rounded-button hover:bg-white/10 transition-colors">
-                <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold ring-2 ring-primary/30">
+              <button className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 transition-all duration-200 group">
+                <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-semibold shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform">
                   {user?.profilePicture ? (
                     <img
                       src={user.profilePicture}
                       alt={user.name}
-                      className="w-full h-full rounded-full object-cover"
+                      className="w-full h-full rounded-xl object-cover"
                     />
                   ) : (
                     getInitials(user?.name)
@@ -133,7 +135,7 @@ const Header = () => {
                     {user?.name || 'User'}
                   </p>
                   <p className="text-white/50 text-xs">
-                    {user?.role || 'Role'}
+                    {(user as any)?.roleName || 'Role'}
                   </p>
                 </div>
               </button>
@@ -142,44 +144,46 @@ const Header = () => {
             <DropdownMenu.Portal>
               <DropdownMenu.Content asChild>
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.2 }}
-                  className="glass-card p-2 mt-2 w-56 rounded-card shadow-lg"
+                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16162a] backdrop-blur-xl p-2 mt-2 w-64 rounded-xl shadow-2xl"
                 >
                   {/* User info */}
-                  <div className="px-3 py-2 mb-2 border-b border-white/10">
-                    <p className="text-white font-semibold">{user?.name}</p>
-                    <p className="text-white/50 text-sm">{user?.email}</p>
+                  <div className="px-4 py-3 mb-2 bg-white/5 rounded-lg">
+                    <p className="text-white font-semibold text-sm">{user?.name}</p>
+                    <p className="text-white/50 text-xs mt-0.5">{user?.email}</p>
                   </div>
 
                   {/* Menu items */}
-                  <DropdownMenu.Item asChild>
-                    <button
-                      onClick={handleProfile}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-button text-white hover:bg-white/10 transition-colors text-left"
-                    >
-                      <User className="w-4 h-4" />
-                      <span>Profile</span>
-                    </button>
-                  </DropdownMenu.Item>
+                  <div className="space-y-1">
+                    <DropdownMenu.Item asChild>
+                      <button
+                        onClick={handleProfile}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-left text-sm"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Profile</span>
+                      </button>
+                    </DropdownMenu.Item>
 
-                  <DropdownMenu.Item asChild>
-                    <button
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-button text-white hover:bg-white/10 transition-colors text-left"
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span>Settings</span>
-                    </button>
-                  </DropdownMenu.Item>
+                    <DropdownMenu.Item asChild>
+                      <button
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-left text-sm"
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Settings</span>
+                      </button>
+                    </DropdownMenu.Item>
+                  </div>
 
-                  <DropdownMenu.Separator className="h-px bg-white/10 my-2" />
+                  <div className="h-px bg-white/10 my-2" />
 
                   <DropdownMenu.Item asChild>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-button text-error hover:bg-error/10 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-left text-sm"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Logout</span>

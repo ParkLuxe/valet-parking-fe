@@ -4,8 +4,8 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { apiHelper } from '../services/api';
-import { queryKeys } from '../lib/queryKeys';
+import { apiHelper } from '../../services/api';
+import { queryKeys } from '../../lib/queryKeys';
 
 // Get comprehensive dashboard analytics
 export const useDashboardAnalytics = (hostId: string) => {

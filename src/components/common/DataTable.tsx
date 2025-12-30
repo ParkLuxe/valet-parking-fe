@@ -121,8 +121,7 @@ const DataTable = ({
       {/* Header with search and actions */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         {searchable && (
-          <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
+          <div className="w-full sm:w-96">
             <Input
               type="text"
               placeholder={searchPlaceholder}
@@ -131,7 +130,9 @@ const DataTable = ({
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="pl-10"
+              icon={<Search className="w-5 h-5" />}
+              showPlaceholder={true}
+              className="w-full"
             />
           </div>
         )}
@@ -152,7 +153,7 @@ const DataTable = ({
       )}
 
       {/* Table */}
-      <div className="glass-card overflow-hidden">
+      <div className="glass-card overflow-hidden rounded-[5px]">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

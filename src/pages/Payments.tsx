@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux';
 import { Card, Button, LoadingSpinner } from '../components';
-import { useHostPayments, usePaymentStats } from '../api/payments';
+import { useHostPayments, usePaymentStats } from '../hooks/queries/usePayments';
 import { formatCurrency, formatDate } from '../utils';
 import { usePermissions } from '../hooks';
 
@@ -24,7 +24,18 @@ const Payments = () => {
     currentPage,
     pageSize
   );
-  const { data: statsData } = usePaymentStats(user?.hostId || '');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDateStr = today.toISOString().slice(0, 19);
+  const startDateObj = new Date(startDateStr);
+  const endDateObj = new Date(startDateObj);
+  endDateObj.setDate(endDateObj.getDate() + 1);
+  const toDateTimeString = (d: Date) => d.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:mm:ss"
+  const { data: statsData } = usePaymentStats({
+    hostId: user?.hostId || '',
+    startDate: toDateTimeString(startDateObj),
+    endDate: toDateTimeString(endDateObj),
+  });
 
   // Extract data from response
   const payments = paymentsData?.content || [];
@@ -37,14 +48,14 @@ const Payments = () => {
   const loading = paymentsLoading;
   const error = paymentsError ? String((paymentsError as Error).message || 'Failed to load payments') : null;
 
-  const getStatusBadgeClass = (status) => {
-    const statusMap = {
-      SUCCESS: 'bg-green-100 text-green-800',
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      FAILED: 'bg-red-100 text-red-800',
-      REFUNDED: 'bg-blue-100 text-blue-800',
+  const getStatusBadgeClass = (status: string) => {
+    const statusMap: Record<string, string> = {
+      SUCCESS: 'bg-green-500/20 text-green-400 border border-green-500/30',
+      PENDING: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+      FAILED: 'bg-red-500/20 text-red-400 border border-red-500/30',
+      REFUNDED: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
     };
-    return statusMap[status] || 'bg-gray-100 text-gray-800';
+    return statusMap[status] || 'bg-gray-500/20 text-gray-400 border border-gray-500/30';
   };
 
   if (!can('canViewPaymentHistory')) {
@@ -58,19 +69,15 @@ const Payments = () => {
   }
 
   if (loading && !payments.length) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingSpinner message="Loading payments..." fullScreen />;
   }
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Payment History</h1>
-        <p className="text-gray-600 mt-1">Track all your payment transactions</p>
+        <h1 className="text-3xl font-bold text-white">Payment History</h1>
+        <p className="text-white/70 mt-1">Track all your payment transactions</p>
       </div>
 
       {/* Stats Cards */}
@@ -78,32 +85,32 @@ const Payments = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <div>
-              <p className="text-gray-500 text-sm">Total Paid</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-white/60 text-sm">Total Paid</p>
+              <p className="text-2xl font-bold text-green-400">
                 {formatCurrency(paymentStats.totalPaid || 0)}
               </p>
             </div>
           </Card>
           <Card>
             <div>
-              <p className="text-gray-500 text-sm">Total Payments</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-white/60 text-sm">Total Payments</p>
+              <p className="text-2xl font-bold text-primary">
                 {paymentStats.totalPayments || 0}
               </p>
             </div>
           </Card>
           <Card>
             <div>
-              <p className="text-gray-500 text-sm">Pending Amount</p>
-              <p className="text-2xl font-bold text-yellow-600">
+              <p className="text-white/60 text-sm">Pending Amount</p>
+              <p className="text-2xl font-bold text-yellow-400">
                 {formatCurrency(paymentStats.pendingAmount || 0)}
               </p>
             </div>
           </Card>
           <Card>
             <div>
-              <p className="text-gray-500 text-sm">Refunded</p>
-              <p className="text-2xl font-bold text-gray-600">
+              <p className="text-white/60 text-sm">Refunded</p>
+              <p className="text-2xl font-bold text-white/70">
                 {formatCurrency(paymentStats.totalRefunded || 0)}
               </p>
             </div>
@@ -113,54 +120,55 @@ const Payments = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-[5px]">
           {error}
         </div>
       )}
 
       {/* Payment List */}
       <Card>
-        <h2 className="text-xl font-semibold mb-4">Recent Payments</h2>
+        <h2 className="text-xl font-semibold mb-4 text-white">Recent Payments</h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  Payment ID
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  Invoice
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  Method
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
-                  Amount
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {payments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-mono">
+          <div className="overflow-hidden rounded-[5px] border border-white/10">
+            <table className="w-full">
+              <thead className="bg-white/5">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/90">
+                    Payment ID
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/90">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/90">
+                    Invoice
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-white/90">
+                    Method
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-white/90">
+                    Amount
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-white/90">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/10">
+                {payments.map((payment) => (
+                  <tr key={payment.id} className="hover:bg-white/5 transition-colors">
+                  <td className="px-4 py-3 text-sm font-mono text-white/90">
                     {payment.paymentId || payment.id}
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm text-white/90">
                     {formatDate(payment.paymentDate || payment.createdAt)}
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm text-white/90">
                     {payment.invoiceNumber || 'N/A'}
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm text-white/90">
                     {payment.paymentMethod || 'Razorpay'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right font-semibold">
+                  <td className="px-4 py-3 text-sm text-right font-semibold text-white">
                     {formatCurrency(payment.amount)}
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -173,13 +181,14 @@ const Payments = () => {
 
               {payments.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-12 text-center text-white/50">
                     No payment records found
                   </td>
                 </tr>
               )}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </Card>
 
@@ -193,7 +202,7 @@ const Payments = () => {
           >
             Previous
           </Button>
-          <span className="px-4 py-2 text-gray-700">
+          <span className="px-4 py-2 text-white/70">
             Page {currentPage + 1} of {pagination.totalPages}
           </span>
           <Button

@@ -27,7 +27,8 @@ interface UsePermissionsReturn {
 
 const usePermissions = (): UsePermissionsReturn => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const userRole = user?.role;
+  // Use normalized `roleName` property on user
+  const userRole = (user as any)?.roleName;
 
   return {
     can: (permission: string): boolean => {
