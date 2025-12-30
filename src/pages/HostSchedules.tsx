@@ -100,7 +100,7 @@ const HostSchedules = () => {
     });
   };
 
-  const handleEdit = (schedule: Schedule) => {
+  const handleEdit = React.useCallback((schedule: Schedule) => {
     setEditingSchedule(schedule);
     setFormData({
       dayOfWeek: schedule.dayOfWeek,
@@ -109,14 +109,14 @@ const HostSchedules = () => {
       isOpen: schedule.isOpen !== false,
     });
     setShowModal(true);
-  };
+  }, []);
 
-  const handleDelete = async (scheduleId: string) => {
+  const handleDelete = React.useCallback(async (scheduleId: string) => {
     if (!window.confirm('Are you sure you want to delete this schedule?')) {
       return;
     }
     deleteMutation.mutate(scheduleId);
-  };
+  }, [deleteMutation]);
 
   const handleAddNew = () => {
     setEditingSchedule(null);
@@ -203,7 +203,7 @@ const HostSchedules = () => {
         </div>
       ),
     } as ColumnDef<Schedule>] : []),
-  ], [can]);
+  ], [can, handleEdit, handleDelete]);
 
   const table = useReactTable({
     data: schedules,

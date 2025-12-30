@@ -68,8 +68,6 @@ const Profile = () => {
   }, [error, dispatch]);
 
   // Helper functions for role formatting
-  type RoleValue = string | { name: string } | null | undefined;
-  
   const getRoleName = (user: any): string => {
     if (!user) return '';
     // Check multiple possible role properties
