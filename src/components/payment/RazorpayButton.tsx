@@ -12,6 +12,11 @@ import {  updateInvoice  } from '../../redux';
 import {  addPayment  } from '../../redux';
 import {  RAZORPAY_KEY  } from '../../utils';
 
+interface PaymentVerificationResponse {
+  success: boolean;
+  payment: any;
+}
+
 interface RazorpayButtonProps {
   invoiceId: string;
   amount: number;
@@ -79,9 +84,9 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
               razorpaySignature: response.razorpay_signature,
             };
 
-            const verifyResponse = await verifyPaymentMutation.mutateAsync(verificationData);
+            const verifyResponse = await verifyPaymentMutation.mutateAsync(verificationData) as PaymentVerificationResponse;
 
-            if (verifyResponse && (verifyResponse as any).success) {
+            if (verifyResponse && verifyResponse.success) {
               // Update invoice status in Redux
               dispatch(updateInvoice({
                 id: invoiceId,
@@ -90,7 +95,7 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
               }));
 
               // Add payment to Redux
-              dispatch(addPayment((verifyResponse as any).payment));
+              dispatch(addPayment(verifyResponse.payment));
 
               // Success toast already shown by mutation
 
@@ -135,7 +140,7 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
       };
 
       // Step 4: Open Razorpay checkout
-      const razorpay = new (window as any).Razorpay(options);
+      const razorpay = new window.Razorpay(options);
       
       razorpay.on('payment.failed', function (response: any) {
         console.error('Payment failed:', response.error);

@@ -126,12 +126,20 @@ const QRScanPage = () => {
     
     try {
       const vehicleData = {
-        customerId: user?.userId || 'temp-customer-id', // Use actual customer ID from context
+        customerId: user?.userId || '', // Will be validated by backend
         vehicleNumber: formData.vehicleNumber,
         vehicleModel: formData.vehicleType,
         parkingSlotId: formData.parkingSlotId,
         qrCode: qrValue,
       };
+      
+      if (!vehicleData.customerId) {
+        dispatch(addToast({
+          type: 'error',
+          message: 'User session expired. Please login again.',
+        }));
+        return;
+      }
       
       const newVehicle = await parkVehicleMutation.mutateAsync(vehicleData);
       dispatch(addVehicle(newVehicle));

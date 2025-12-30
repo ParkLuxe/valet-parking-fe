@@ -29,7 +29,7 @@ const QRCodeManagement = () => {
 
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [batchCount, setBatchCount] = useState(10);
-  const [selectedQR, setSelectedQR] = useState(null);
+  const [selectedQR, setSelectedQR] = useState<{ qrCode: string } | null>(null);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [slotId, setSlotId] = useState('');
 
@@ -90,9 +90,17 @@ const QRCodeManagement = () => {
       return;
     }
 
+    if (!selectedQR) {
+      dispatch(addToast({
+        type: 'error',
+        message: 'No QR code selected',
+      }));
+      return;
+    }
+
     try {
       await linkToSlotMutation.mutateAsync({ 
-        qrCode: (selectedQR as any).qrCode, 
+        qrCode: selectedQR.qrCode, 
         slotId 
       });
       setShowLinkModal(false);
