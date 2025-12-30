@@ -145,18 +145,27 @@ const Profile = () => {
   const validateProfile = () => {
     const newErrors: any = {};
     
-    const firstNameValidation = validateName(formData.firstName, 'First Name');
-    if (!firstNameValidation.isValid) {
-      newErrors.firstName = firstNameValidation.error;
+    // Only validate firstName if a value is provided, since it is optional in the User type
+    if (formData.firstName && formData.firstName.trim() !== '') {
+      const firstNameValidation = validateName(formData.firstName, 'First Name');
+      if (!firstNameValidation.isValid) {
+        newErrors.firstName = firstNameValidation.error;
+      }
     }
     
-    const middleNameValidation = validateName(formData.middleName, 'Middle Name');
-    if (!middleNameValidation.isValid) {
-      newErrors.middleName = middleNameValidation.error;
+    if (formData.middleName && formData.middleName.trim()) {
+      const middleNameValidation = validateName(formData.middleName, 'Middle Name');
+      if (!middleNameValidation.isValid) {
+        newErrors.middleName = middleNameValidation.error;
+      }
     }
-    const lastNameValidation = validateName(formData.lastName, 'Last Name');
-    if (!lastNameValidation.isValid) {
-      newErrors.lastName = lastNameValidation.error;
+    
+    const lastName = formData.lastName?.trim();
+    if (lastName) {
+      const lastNameValidation = validateName(lastName, 'Last Name');
+      if (!lastNameValidation.isValid) {
+        newErrors.lastName = lastNameValidation.error;
+      }
     }
     
     const emailValidation = validateEmail(formData.email);
@@ -387,7 +396,7 @@ const Profile = () => {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <Input
-                  label="Full Name"
+                  label="First Name"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
@@ -404,7 +413,6 @@ const Profile = () => {
                   error={!!errors.middleName}
                   helperText={errors.middleName}
                   icon={<User className="w-5 h-5" />}
-                  required
                 />
                 <Input
                   label="Last Name"

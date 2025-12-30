@@ -24,16 +24,20 @@ import { ConfirmDialog } from '../../components';
 import { useHosts, useRegisterHost, useUpdateHost } from '../../hooks/queries/useHosts';
 
 const HostManagement = () => {
-  const [currentPage, setCurrentPage] = useState(0);
+  const currentPage = 0;
   const pageSize = 10;
 
   // Use TanStack Query hooks
-  const { data: hostsResponse, isLoading: loading, refetch: refetchHosts } = useHosts(currentPage, pageSize);
+  const { data: hostsResponse, isLoading: loading } = useHosts(currentPage, pageSize);
   const registerHostMutation = useRegisterHost();
   const updateHostMutation = useUpdateHost();
 
-  // Extract hosts from response
-  const hosts = hostsResponse?.content || hostsResponse || [];
+  // Extract hosts from response with explicit shape checks
+  const hosts = Array.isArray((hostsResponse as any)?.content)
+    ? (hostsResponse as any).content
+    : Array.isArray(hostsResponse)
+      ? hostsResponse
+      : [];
 
   const [showModal, setShowModal] = useState(false);
   const [editingHost, setEditingHost] = useState(null);
