@@ -173,3 +173,47 @@ export const useGenerateInvoicePDF = () => {
     },
   });
 };
+
+// Regenerate PDF mutation
+export const useRegenerateInvoicePDF = () => {
+  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (invoiceId: string) => apiHelper.post(`/v1/invoices/${invoiceId}/regenerate-pdf`),
+    onSuccess: (_, invoiceId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(invoiceId) });
+      dispatch(addToast({
+        type: 'success',
+        message: 'PDF regenerated successfully',
+      }));
+    },
+    onError: (error: any) => {
+      dispatch(addToast({
+        type: 'error',
+        message: error?.message || 'Failed to regenerate PDF',
+      }));
+    },
+  });
+};
+
+// Send invoice via email mutation
+export const useSendInvoiceEmail = () => {
+  const dispatch = useDispatch();
+  
+  return useMutation({
+    mutationFn: (invoiceId: string) => apiHelper.post(`/v1/invoices/${invoiceId}/send-email`),
+    onSuccess: () => {
+      dispatch(addToast({
+        type: 'success',
+        message: 'Invoice sent via email successfully',
+      }));
+    },
+    onError: (error: any) => {
+      dispatch(addToast({
+        type: 'error',
+        message: error?.message || 'Failed to send invoice via email',
+      }));
+    },
+  });
+};

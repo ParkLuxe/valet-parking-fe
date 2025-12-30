@@ -15,18 +15,12 @@ export const useCreateSchedule = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (scheduleData: {
-      hostId: string;
-      dayOfWeek: string;
-      openTime: string;
-      closeTime: string;
-      isOpen: boolean;
-    }) => {
-      const response = await apiHelper.post('/v1/host-schedule', scheduleData);
+    mutationFn: async ({ hostId, ...data }: { hostId: string; dayOfWeek: string; openTime: string; closeTime: string; isOpen: boolean }) => {
+      const response = await apiHelper.post(`/v1/host-schedules/create/host/${hostId}`, data);
       return response;
     },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.hostSchedules.list(data.hostId) });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['schedules', 'host', variables.hostId] });
       dispatch(addToast({
         type: 'success',
         message: 'Schedule created successfully',
@@ -44,18 +38,18 @@ export const useCreateSchedule = () => {
 // Get schedule by ID
 export const useSchedule = (scheduleId: string) => {
   return useQuery({
-    queryKey: [...queryKeys.hostSchedules.all, 'detail', scheduleId] as const,
-    queryFn: () => apiHelper.get(`/v1/host-schedule/${scheduleId}`),
+    queryKey: ['schedules', scheduleId] as const,
+    queryFn: () => apiHelper.get(`/v1/host-schedules/${scheduleId}`),
     enabled: !!scheduleId,
     staleTime: 10 * 60 * 1000,
   });
 };
 
-// Get host schedules
+// Get all schedules for host
 export const useHostSchedules = (hostId: string) => {
   return useQuery({
-    queryKey: queryKeys.hostSchedules.list(hostId),
-    queryFn: () => apiHelper.get(`/v1/host-schedule/host/${hostId}`),
+    queryKey: ['schedules', 'host', hostId] as const,
+    queryFn: () => apiHelper.get(`/v1/host-schedules/host/${hostId}`),
     enabled: !!hostId,
     staleTime: 10 * 60 * 1000,
   });
@@ -67,19 +61,13 @@ export const useUpdateSchedule = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ scheduleId, ...scheduleData }: {
-      scheduleId: string;
-      dayOfWeek?: string;
-      openTime?: string;
-      closeTime?: string;
-      isOpen?: boolean;
-    }) => {
-      const response = await apiHelper.put(`/v1/host-schedule/${scheduleId}`, scheduleData);
+    mutationFn: async ({ scheduleId, ...data }: { scheduleId: string; dayOfWeek?: string; openTime?: string; closeTime?: string; isOpen?: boolean }) => {
+      const response = await apiHelper.put(`/v1/host-schedules/${scheduleId}`, data);
       return response;
     },
-    onSuccess: (data: any, { scheduleId }) => {
-      queryClient.invalidateQueries({ queryKey: [...queryKeys.hostSchedules.all, 'detail', scheduleId] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.hostSchedules.list(data.hostId) });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['schedules', variables.scheduleId] });
+      queryClient.invalidateQueries({ queryKey: ['schedules', 'host'] });
       dispatch(addToast({
         type: 'success',
         message: 'Schedule updated successfully',
@@ -100,12 +88,12 @@ export const useDeleteSchedule = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ scheduleId, hostId }: { scheduleId: string; hostId: string }) => {
-      const response = await apiHelper.delete(`/v1/host-schedule/${scheduleId}`);
-      return { response, hostId };
+    mutationFn: async (scheduleId: string) => {
+      const response = await apiHelper.delete(`/v1/host-schedules/${scheduleId}`);
+      return response;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.hostSchedules.list(data.hostId) });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['schedules'] });
       dispatch(addToast({
         type: 'success',
         message: 'Schedule deleted successfully',

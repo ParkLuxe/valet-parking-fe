@@ -85,10 +85,19 @@ export const useHostPayments = (hostId: string, page: number = 0, size: number =
 };
 
 // Get payment statistics
-export const usePaymentStats = (hostId: string) => {
+export const usePaymentStats = (hostId: string, startDate?: string, endDate?: string) => {
   return useQuery({
-    queryKey: [...queryKeys.payments.all, 'stats', hostId] as const,
-    queryFn: () => apiHelper.get(`/v1/payments/stats/${hostId}`),
+    queryKey: [...queryKeys.payments.all, 'stats', hostId, startDate, endDate] as const,
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      const queryString = params.toString();
+      const url = queryString 
+        ? `/v1/payments/stats/${hostId}?${queryString}`
+        : `/v1/payments/stats/${hostId}`;
+      return apiHelper.get(url);
+    },
     enabled: !!hostId,
     staleTime: 10 * 60 * 1000,
   });
