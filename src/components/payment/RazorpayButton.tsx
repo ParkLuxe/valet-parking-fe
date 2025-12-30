@@ -6,11 +6,16 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Button, { ButtonVariant } from '../common/Button';
-import { paymentService } from '../../services';
+import { useCreatePaymentOrder, useVerifyPayment } from '../../api/payments';
 import {  addToast  } from '../../redux';
 import {  updateInvoice  } from '../../redux';
 import {  addPayment  } from '../../redux';
 import {  RAZORPAY_KEY  } from '../../utils';
+
+interface PaymentVerificationResponse {
+  success: boolean;
+  payment: any;
+}
 
 interface RazorpayButtonProps {
   invoiceId: string;
@@ -37,6 +42,9 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
 }) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  
+  const createOrderMutation = useCreatePaymentOrder();
+  const verifyPaymentMutation = useVerifyPayment();
 
   const handlePayment = async () => {
     if (!invoiceId) {
@@ -51,7 +59,7 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
       setLoading(true);
 
       // Step 1: Create Razorpay order
-      const orderResponse = await paymentService.createOrder(invoiceId);
+      const orderResponse = await createOrderMutation.mutateAsync(invoiceId);
       
       if (!orderResponse || !orderResponse.razorpayOrderId) {
         throw new Error('Failed to create payment order');
@@ -67,16 +75,16 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
         name: 'Park-Luxe',
         description: `Payment for Invoice ${invoiceNumber || invoiceId}`,
         order_id: razorpayOrderId,
-        handler: async function (response) {
+        handler: async function (response: any) {
           try {
             // Step 3: Verify payment on backend
             const verificationData = {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
             };
 
-            const verifyResponse = await paymentService.verifyPayment(verificationData);
+            const verifyResponse = await verifyPaymentMutation.mutateAsync(verificationData) as PaymentVerificationResponse;
 
             if (verifyResponse && verifyResponse.success) {
               // Update invoice status in Redux
@@ -89,11 +97,7 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
               // Add payment to Redux
               dispatch(addPayment(verifyResponse.payment));
 
-              // Show success message
-              dispatch(addToast({
-                type: 'success',
-                message: 'Payment successful! Invoice has been paid.',
-              }));
+              // Success toast already shown by mutation
 
               // Call success callback
               if (onSuccess) {
@@ -102,13 +106,9 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
             } else {
               throw new Error('Payment verification failed');
             }
-          } catch (error) {
+          } catch (error: any) {
             console.error('Payment verification error:', error);
-            dispatch(addToast({
-              type: 'error',
-              message: error.message || 'Payment verification failed. Please contact support.',
-            }));
-
+            
             if (onFailure) {
               onFailure(error);
             }
@@ -142,7 +142,7 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
       // Step 4: Open Razorpay checkout
       const razorpay = new window.Razorpay(options);
       
-      razorpay.on('payment.failed', function (response) {
+      razorpay.on('payment.failed', function (response: any) {
         console.error('Payment failed:', response.error);
         dispatch(addToast({
           type: 'error',
@@ -158,12 +158,8 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
 
       razorpay.open();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment initialization error:', error);
-      dispatch(addToast({
-        type: 'error',
-        message: error.message || 'Failed to initialize payment. Please try again.',
-      }));
       
       if (onFailure) {
         onFailure(error);

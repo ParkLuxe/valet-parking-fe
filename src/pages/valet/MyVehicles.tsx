@@ -3,8 +3,8 @@
  * View and manage vehicles assigned to the valet
  */
 
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import type {  RootState  } from '../../redux';
 import { Car, CheckCircle } from 'lucide-react';
 import { Card } from '../../components';
@@ -12,59 +12,42 @@ import { Button } from '../../components';
 import { LoadingSpinner } from '../../components';
 import { DataTable } from '../../components';
 import { Modal } from '../../components';
-import { vehicleService } from '../../services';
-import {  addToast  } from '../../redux';
+import { useValetVehicles, useMarkOutForDelivery, useDeliverVehicle } from '../../api/vehicles';
 import {  VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY  } from '../../utils';
 
 const MyVehicles = () => {
-  const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  interface VehicleItem {
+    id: string;
+    vehicleNumber: string;
+    vehicleType?: string;
+    status: string;
+    customerName?: string;
+    customerPhone?: string;
+    parkingSlot?: string;
+    parkedAt?: string;
+    // Add other vehicle properties as needed
+  }
 
-  useEffect(() => {
-    fetchMyVehicles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleItem | null>(null);
 
-  const fetchMyVehicles = async () => {
-    setLoading(true);
+  // Use TanStack Query hooks
+  const { data: vehicles = [], isLoading: loading } = useValetVehicles(user?.userId || '');
+  const markOutForDeliveryMutation = useMarkOutForDelivery();
+  const deliverVehicleMutation = useDeliverVehicle();
+
+  const handleUpdateStatus = async (vehicleId: string, newStatus: string) => {
     try {
-      // This would normally filter vehicles by valet ID
-      const response = await vehicleService.getVehicleStatus('mock-id');
-      setVehicles(response ? [response] : []);
-    } catch (err) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: 'Failed to load vehicles',
-        })
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateStatus = async (vehicleId, newStatus) => {
-    try {
-      await vehicleService.updateVehicleStatus(vehicleId, { status: newStatus });
-      dispatch(
-        addToast({
-          type: 'success',
-          message: 'Vehicle status updated successfully',
-        })
-      );
+      if (newStatus === VEHICLE_STATUS.OUT_FOR_DELIVERY) {
+        await markOutForDeliveryMutation.mutateAsync(vehicleId);
+      } else if (newStatus === VEHICLE_STATUS.DELIVERED) {
+        await deliverVehicleMutation.mutateAsync(vehicleId);
+      }
       setSelectedVehicle(null);
-      fetchMyVehicles();
     } catch (err) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: 'Failed to update vehicle status',
-        })
-      );
+      // Error already handled by mutation
+      console.error('Failed to update vehicle status:', err);
     }
   };
 
