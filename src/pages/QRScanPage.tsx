@@ -23,7 +23,7 @@ const QRScanPage = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   
-  const hostId = (user as any)?.hostId || '';
+  const hostId = user?.hostId || '';
   
   // Fetch data using TanStack Query hooks
   const { data: parkingSlots = [] } = useParkingSlots(hostId);

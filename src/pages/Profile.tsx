@@ -41,7 +41,9 @@ const Profile = () => {
   const user = userProfile || authUser;
   
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
     email: '',
     phone: '',
   });
@@ -50,7 +52,9 @@ const Profile = () => {
   React.useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name || '',
+        firstName: user.firstName || '',
+        middleName: user.middleName || '',
+        lastName: user.lastName || '',
         email: user.email || '',
         phone: user.phone || '',
       });
@@ -71,7 +75,7 @@ const Profile = () => {
   const getRoleName = (user: any): string => {
     if (!user) return '';
     // Check multiple possible role properties
-    const role = user.roleName || user.role || (user as any)?.roleName || '';
+    const role = user.roleName || user.role || '';
     return typeof role === 'object' ? role.name : role;
   };
   
@@ -141,9 +145,18 @@ const Profile = () => {
   const validateProfile = () => {
     const newErrors: any = {};
     
-    const nameValidation = validateName(formData.name, 'Full Name');
-    if (!nameValidation.isValid) {
-      newErrors.name = nameValidation.error;
+    const firstNameValidation = validateName(formData.firstName, 'First Name');
+    if (!firstNameValidation.isValid) {
+      newErrors.firstName = firstNameValidation.error;
+    }
+    
+    const middleNameValidation = validateName(formData.middleName, 'Middle Name');
+    if (!middleNameValidation.isValid) {
+      newErrors.middleName = middleNameValidation.error;
+    }
+    const lastNameValidation = validateName(formData.lastName, 'Last Name');
+    if (!lastNameValidation.isValid) {
+      newErrors.lastName = lastNameValidation.error;
     }
     
     const emailValidation = validateEmail(formData.email);
@@ -296,13 +309,27 @@ const Profile = () => {
                 <div className="absolute inset-0 bg-gradient-primary rounded-full blur opacity-75 transition-opacity" />
                 <div className="relative w-24 h-24 rounded-full bg-gradient-primary p-1">
                   <div className="w-full h-full rounded-full bg-[#1a1a2e] flex items-center justify-center text-3xl font-bold text-white">
-                    {getInitials(user?.name)}
+                    {(() => {
+                      if (user?.firstName || user?.lastName) {
+                        const first = user?.firstName?.charAt(0) || '';
+                        const last = user?.lastName?.charAt(0) || '';
+                        return (first + last).toUpperCase() || getInitials(user?.name);
+                      }
+                      return getInitials(user?.name);
+                    })()}
                   </div>
                 </div>
               </div>
 
               <h3 className="text-xl font-bold text-white mb-1">
-                {user?.name || 'User'}
+                {(() => {
+                  const nameParts = [
+                    user?.firstName,
+                    user?.middleName,
+                    user?.lastName
+                  ].filter(Boolean);
+                  return nameParts.length > 0 ? nameParts.join(' ') : (user?.name || 'User');
+                })()}
               </h3>
               <div className="mb-3">
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user)}`}>
@@ -361,11 +388,31 @@ const Profile = () => {
               <div className="grid grid-cols-1 gap-4">
                 <Input
                   label="Full Name"
-                  name="name"
-                  value={formData.name}
+                  name="firstName"
+                  value={formData.firstName}
                   onChange={handleChange}
-                  error={!!errors.name}
-                  helperText={errors.name}
+                  error={!!errors.firstName}
+                  helperText={errors.firstName}
+                  icon={<User className="w-5 h-5" />}
+                  required
+                />
+                <Input
+                  label="Middle Name"
+                  name="middleName"
+                  value={formData.middleName}
+                  onChange={handleChange}
+                  error={!!errors.middleName}
+                  helperText={errors.middleName}
+                  icon={<User className="w-5 h-5" />}
+                  required
+                />
+                <Input
+                  label="Last Name"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  error={!!errors.lastName}
+                  helperText={errors.lastName}
                   icon={<User className="w-5 h-5" />}
                   required
                 />

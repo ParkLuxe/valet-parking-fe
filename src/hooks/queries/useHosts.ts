@@ -15,23 +15,13 @@ export const useRegisterHost = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (hostData: {
-      name: string;
-      email: string;
-      phone: string;
-      address?: string;
-      city?: string;
-      state?: string;
-      country?: string;
-      zipCode?: string;
-      businessName?: string;
-      gstNumber?: string;
-    }) => {
+    mutationFn: async (hostData: any) => {
       const response = await apiHelper.post('/v1/admin/host/register', hostData);
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.hosts.lists() });
+      // Invalidate all host list queries to refetch
+      queryClient.invalidateQueries({ queryKey: queryKeys.hosts.all });
       dispatch(addToast({
         type: 'success',
         message: 'Host registered successfully',
@@ -71,7 +61,7 @@ export const useUpdateHost = () => {
     },
     onSuccess: (_, { hostId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.hosts.detail(hostId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.hosts.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hosts.all });
       dispatch(addToast({
         type: 'success',
         message: 'Host updated successfully',
@@ -97,10 +87,14 @@ export const useHost = (hostId: string) => {
 };
 
 // Get all hosts (SUPERADMIN, paginated)
+// Using filter endpoint as the primary method since GET endpoint may not be available
 export const useHosts = (page: number = 0, size: number = 10) => {
   return useQuery({
     queryKey: queryKeys.hosts.list(page, size),
-    queryFn: () => apiHelper.get(`/v1/admin/host?page=${page}&size=${size}`),
+    queryFn: () => apiHelper.post('/v1/admin/host/filter', {
+      page,
+      size,
+    }),
     staleTime: 10 * 60 * 1000,
   });
 };

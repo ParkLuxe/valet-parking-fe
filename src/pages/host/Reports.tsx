@@ -10,8 +10,8 @@ import { Button } from '../../components';
 import { DateRangePicker } from '../../components';
 
 const Reports = () => {
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
-
+  // Date range for report filtering - TODO: Implement report generation with date range
+  const [_dateRange, setDateRange] = useState({ start: '', end: '' });
   const reportTypes = [
     {
       id: 'daily',
@@ -41,7 +41,7 @@ const Reports = () => {
   ];
 
   const handleGenerateReport = (reportType) => {
-    console.log('Generating report:', reportType, dateRange);
+    // Generate report
   };
 
   return (

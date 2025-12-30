@@ -93,7 +93,7 @@ const Login = () => {
         const userData = await apiHelper.get('/v1/host-users/me');
         // Normalize role -> roleName
         if (userData.role && typeof userData.role === 'object' && 'name' in userData.role) {
-          userData.roleName = (userData.role as any).name;
+          userData.roleName = (userData.role as { name: string }).name;
         } else if (userData.role && typeof userData.role === 'string') {
           userData.roleName = userData.role;
         }

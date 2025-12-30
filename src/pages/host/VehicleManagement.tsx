@@ -23,7 +23,7 @@ const VehicleManagement = () => {
   const [showFilters, setShowFilters] = useState(false);
   // Date range filtering - TODO: Implement backend support for date range filtering
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [_, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
 
   // Use TanStack Query hook
   const { data: vehicles = [], isLoading: loading } = useParkedVehicles(user?.hostId || '');

@@ -24,7 +24,7 @@ import { useHostUsers } from '../hooks/queries/useHostUsers';
 
 const HostUserManagement = () => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const hostId = (user as any)?.hostId || '';
+  const hostId = user?.hostId || '';
   const { data: valetList = [] } = useHostUsers(hostId);
   
   const [searchQuery, setSearchQuery] = useState('');
