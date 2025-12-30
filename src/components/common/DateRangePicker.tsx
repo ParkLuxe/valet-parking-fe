@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar, ChevronLeft, ChevronRight, X, CalendarDays } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, CalendarDays } from 'lucide-react';
 import Button from './Button';
 import { cn } from '../../utils';
 
