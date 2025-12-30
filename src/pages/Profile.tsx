@@ -54,7 +54,9 @@ const Profile = () => {
   }, [user]);
   
   // Helper functions for role formatting
-  const formatRole = (role: any): string => {
+  type RoleValue = string | { name: string } | null | undefined;
+  
+  const formatRole = (role: RoleValue): string => {
     if (!role) return 'Unknown';
     const roleName = typeof role === 'object' ? role.name : role;
     const roleMap: Record<string, string> = {
@@ -65,14 +67,14 @@ const Profile = () => {
     return roleMap[roleName] || roleName;
   };
 
-  const getRoleBadgeClass = (role: any): string => {
+  const getRoleBadgeClass = (role: RoleValue): string => {
     const roleName = typeof role === 'object' ? role.name : role;
     const classMap: Record<string, string> = {
       'SUPERADMIN': 'bg-purple-500/20 text-purple-300 border border-purple-500/30',
       'HOSTADMIN': 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
       'HOSTUSER': 'bg-green-500/20 text-green-300 border border-green-500/30',
     };
-    return classMap[roleName] || 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
+    return classMap[roleName || ''] || 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
   };
   
   const [passwordData, setPasswordData] = useState({
@@ -232,12 +234,12 @@ const Profile = () => {
 
   // Calculate profile completion
   const profileCompletion = useMemo(() => {
-    const fields = [
-      user?.name,
-      user?.email,
-      user?.phone,
-      user?.role,
-    ];
+    const hasName = !!user?.name;
+    const hasEmail = !!user?.email;
+    const hasPhone = !!user?.phone;
+    const hasRole = !!(user?.role && (typeof user.role === 'string' || (typeof user.role === 'object' && user.role.name)));
+    
+    const fields = [hasName, hasEmail, hasPhone, hasRole];
     const completed = fields.filter(Boolean).length;
     return Math.round((completed / fields.length) * 100);
   }, [user]);

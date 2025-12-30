@@ -35,7 +35,7 @@ const Payments = () => {
   };
   const paymentStats = statsData || null;
   const loading = paymentsLoading;
-  const error = paymentsError ? (paymentsError as any).message : null;
+  const error = paymentsError ? String((paymentsError as Error).message || 'Failed to load payments') : null;
 
   const getStatusBadgeClass = (status) => {
     const statusMap = {

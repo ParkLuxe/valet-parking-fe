@@ -28,8 +28,9 @@ const SubscriptionPlans = () => {
   const { data: activePlansData, isLoading: activePlansLoading } = useActiveSubscriptionPlans();
 
   // Determine which data to use based on role
+  // Note: getAllPlans returns paginated response with 'content' field, getActivePlans returns array directly
   const plans = isRole('SUPERADMIN') 
-    ? (allPlansData?.content || allPlansData || [])
+    ? (Array.isArray(allPlansData) ? allPlansData : allPlansData?.content || [])
     : (activePlansData || []);
   const loading = isRole('SUPERADMIN') ? allPlansLoading : activePlansLoading;
 
