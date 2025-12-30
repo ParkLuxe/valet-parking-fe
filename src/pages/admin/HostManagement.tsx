@@ -47,6 +47,7 @@ const HostManagement = () => {
 
   useEffect(() => {
     fetchHosts();
+    // fetchHosts is stable and doesn't depend on any props or state
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -167,7 +168,7 @@ const HostManagement = () => {
 
       if (editingHost) {
         // await hostService.updateHost(editingHost.id, hostData);
-        console.log('Update host:', editingHost.id, hostData);
+        // Update host
         dispatch(
           addToast({
             type: 'success',
@@ -205,7 +206,7 @@ const HostManagement = () => {
     setSubmitting(true);
     try {
       // Mock implementation - would use actual API
-      console.log('Toggle host status:', toggleConfirm.host.id);
+      // Toggle host status
       dispatch(
         addToast({
           type: 'success',

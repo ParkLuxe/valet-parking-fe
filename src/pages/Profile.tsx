@@ -71,7 +71,7 @@ const Profile = () => {
   const getRoleName = (user: any): string => {
     if (!user) return '';
     // Check multiple possible role properties
-    const role = user.roleName || user.role || (user as any)?.roleName || '';
+    const role = user.roleName || user.role || '';
     return typeof role === 'object' ? role.name : role;
   };
   

@@ -10,6 +10,8 @@ import { Button } from '../../components';
 import { DateRangePicker } from '../../components';
 
 const Reports = () => {
+  // Date range for report filtering - TODO: Implement report generation with date range
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
   const reportTypes = [
@@ -41,7 +43,7 @@ const Reports = () => {
   ];
 
   const handleGenerateReport = (reportType) => {
-    console.log('Generating report:', reportType, dateRange);
+    // Generate report
   };
 
   return (

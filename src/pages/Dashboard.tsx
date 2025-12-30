@@ -120,9 +120,9 @@ const Dashboard = () => {
   const { activeVehicles = [] } = useSelector((state: RootState) => (state as any).vehicles || {});
 
   // Check if user is SuperAdmin
-  const isSuperAdmin = (user as any)?.roleName === USER_ROLES.SUPERADMIN;
+  const isSuperAdmin = user?.roleName === USER_ROLES.SUPERADMIN;
   // Check if user is Host/HostAdmin (should see stats)
-  const isHostAdmin = (user as any)?.roleName === USER_ROLES.HOSTADMIN;
+  const isHostAdmin = user?.roleName === USER_ROLES.HOSTADMIN;
 
   useEffect(() => {
     // Fetch dashboard metrics only for Host/HostAdmin
