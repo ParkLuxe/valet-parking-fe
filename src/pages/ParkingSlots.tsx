@@ -240,9 +240,8 @@ const ParkingSlots = () => {
       });
       setSlotErrors({});
       setShowAddModal(false);
-    } catch (err) {
-      // Error is handled by the mutation
-      console.error('Failed to create slot:', err);
+    } catch (err: unknown) {
+      // Error is handled by the mutation hook with toast notification
     }
   };
 
