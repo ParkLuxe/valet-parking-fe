@@ -14,15 +14,29 @@ import {  RAZORPAY_KEY  } from '../../utils';
 
 interface PaymentVerificationResponse {
   success: boolean;
-  payment: any;
+  payment: {
+    id: string;
+    amount: number;
+    status: string;
+    [key: string]: unknown;
+  };
+}
+
+interface RazorpayError {
+  code?: string;
+  description?: string;
+  source?: string;
+  step?: string;
+  reason?: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface RazorpayButtonProps {
   invoiceId: string;
   amount: number;
   invoiceNumber: string;
-  onSuccess: (response?: any) => void;
-  onFailure?: (error: any) => void;
+  onSuccess: (response?: RazorpayResponse) => void;
+  onFailure?: (error: RazorpayError | Error) => void;
   buttonText?: string;
   buttonVariant?: ButtonVariant;
   disabled?: boolean;
@@ -75,7 +89,7 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
         name: 'Park-Luxe',
         description: `Payment for Invoice ${invoiceNumber || invoiceId}`,
         order_id: razorpayOrderId,
-        handler: async function (response: any) {
+        handler: async function (response: RazorpayResponse) {
           try {
             // Step 3: Verify payment on backend
             const verificationData = {
@@ -106,11 +120,15 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
             } else {
               throw new Error('Payment verification failed');
             }
-          } catch (error: any) {
-            console.error('Payment verification error:', error);
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Payment verification failed';
+            dispatch(addToast({
+              type: 'error',
+              message: errorMessage,
+            }));
             
             if (onFailure) {
-              onFailure(error);
+              onFailure(error instanceof Error ? error : new Error(errorMessage));
             }
           } finally {
             setLoading(false);
@@ -142,11 +160,11 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
       // Step 4: Open Razorpay checkout
       const razorpay = new window.Razorpay(options);
       
-      razorpay.on('payment.failed', function (response: any) {
-        console.error('Payment failed:', response.error);
+      razorpay.on('payment.failed', function (response: { error: RazorpayError }) {
+        const errorMessage = response.error?.description || 'Payment failed';
         dispatch(addToast({
           type: 'error',
-          message: `Payment failed: ${response.error.description || 'Unknown error'}`,
+          message: `Payment failed: ${errorMessage}`,
         }));
         
         if (onFailure) {
@@ -158,11 +176,15 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
 
       razorpay.open();
 
-    } catch (error: any) {
-      console.error('Payment initialization error:', error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to initialize payment';
+      dispatch(addToast({
+        type: 'error',
+        message: errorMessage,
+      }));
       
       if (onFailure) {
-        onFailure(error);
+        onFailure(error instanceof Error ? error : new Error(errorMessage));
       }
       
       setLoading(false);

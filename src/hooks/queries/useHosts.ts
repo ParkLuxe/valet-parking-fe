@@ -9,13 +9,49 @@ import { apiHelper } from '../../services/api';
 import { addToast } from '../../redux';
 import { queryKeys } from '../../lib/queryKeys';
 
+// Host registration data interface
+export interface HostRegistrationData {
+  // Host Basic Information
+  hostName: string;
+  hostType: 'ORGANIZATION' | 'INDIVIDUAL';
+  phoneNumber: string;
+  hostEmail: string;
+  
+  // Address Details
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  countryCode: string;
+  
+  // Business Details
+  parkingSlots: number;
+  hostSize?: number;
+  website?: string;
+  gstInNumber?: string;
+  
+  // Social Media
+  instagramProfileUrl?: string;
+  twitterProfileUrl?: string;
+  linkedInProfileUrl?: string;
+  
+  // Master Admin Details
+  username: string;
+  masterFirstName: string;
+  masterLastName: string;
+  masterPassword?: string;
+  masterPhoneNumber: string;
+  designation?: string;
+}
+
 // Register new host mutation
 export const useRegisterHost = () => {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (hostData: any) => {
+    mutationFn: async (hostData: HostRegistrationData) => {
       const response = await apiHelper.post('/v1/admin/host/register', hostData);
       return response;
     },
@@ -87,7 +123,7 @@ export const useHost = (hostId: string) => {
 };
 
 // Get all hosts (SUPERADMIN, paginated)
-// Using filter endpoint as the primary method since GET endpoint may not be available
+// Uses the filter endpoint as the canonical paginated host listing API
 export const useHosts = (page: number = 0, size: number = 10) => {
   return useQuery({
     queryKey: queryKeys.hosts.list(page, size),

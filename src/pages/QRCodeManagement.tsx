@@ -46,9 +46,8 @@ const QRCodeManagement = () => {
         hostId: user.hostId,
       });
       refetch();
-    } catch (err) {
-      // Error already handled by mutation
-      console.error('Failed to generate QR code:', err);
+    } catch (err: unknown) {
+      // Error already handled by mutation hook with toast notification
     }
   };
 
@@ -61,9 +60,8 @@ const QRCodeManagement = () => {
       setShowBatchModal(false);
       setBatchCount(10);
       refetch();
-    } catch (err) {
-      // Error already handled by mutation
-      console.error('Failed to generate batch QR codes:', err);
+    } catch (err: unknown) {
+      // Error already handled by mutation hook with toast notification
     }
   };
 
@@ -75,9 +73,8 @@ const QRCodeManagement = () => {
     try {
       await deactivateMutation.mutateAsync(qrCode);
       refetch();
-    } catch (err) {
-      // Error already handled by mutation
-      console.error('Failed to deactivate QR code:', err);
+    } catch (err: unknown) {
+      // Error already handled by mutation hook with toast notification
     }
   };
 
@@ -107,9 +104,8 @@ const QRCodeManagement = () => {
       setSelectedQR(null);
       setSlotId('');
       refetch();
-    } catch (err) {
-      // Error already handled by mutation
-      console.error('Failed to link QR code to slot:', err);
+    } catch (err: unknown) {
+      // Error already handled by mutation hook with toast notification
     }
   };
 

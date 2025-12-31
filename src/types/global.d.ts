@@ -27,9 +27,20 @@ interface RazorpayResponse {
   razorpay_signature: string;
 }
 
+interface RazorpayErrorResponse {
+  error: {
+    code?: string;
+    description?: string;
+    source?: string;
+    step?: string;
+    reason?: string;
+    metadata?: Record<string, unknown>;
+  };
+}
+
 interface RazorpayInstance {
   open(): void;
-  on(event: string, callback: (response: any) => void): void;
+  on(event: 'payment.failed', callback: (response: RazorpayErrorResponse) => void): void;
 }
 
 interface Window {

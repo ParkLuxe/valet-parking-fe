@@ -104,7 +104,7 @@ const Login = () => {
           .trim();
         dispatch(setUserData(userData));
       } catch (profileError) {
-        console.error('Failed to fetch user profile:', profileError);
+        // Logout and show error - error will be displayed via toast in the hook
         dispatch(logout());
         throw new Error('Failed to load user profile. Please try again.');
       }

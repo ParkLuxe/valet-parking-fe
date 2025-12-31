@@ -169,9 +169,8 @@ const QRScanPage = () => {
         valetId: '',
       });
       generateQRCode();
-    } catch (err: any) {
-      // Error already handled by mutation
-      console.error('Failed to park vehicle:', err);
+    } catch (err: unknown) {
+      // Error already handled by mutation hook with toast notification
     }
   };
 
