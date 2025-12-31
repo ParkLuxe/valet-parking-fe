@@ -33,8 +33,17 @@ const HostManagement = () => {
   const registerHostMutation = useRegisterHost();
   const updateHostMutation = useUpdateHost();
 
-  // Extract hosts from response
-  const hosts = hostsResponse?.content || hostsResponse || [];
+  // Extract hosts from response with explicit shape checks
+  const hosts = (() => {
+    const response = hostsResponse as any;
+    if (Array.isArray(response?.content)) {
+      return response.content;
+    }
+    if (Array.isArray(response)) {
+      return response;
+    }
+    return [];
+  })();
 
   const [showModal, setShowModal] = useState(false);
   const [editingHost, setEditingHost] = useState(null);

@@ -42,7 +42,10 @@ const Reports = () => {
   ];
 
   const handleGenerateReport = (reportType) => {
-    // Generate report
+    // TODO: Implement report generation logic
+    // - Generate report based on reportType and selected date range
+    // - Export as PDF/CSV
+    // - Store in recent reports list
   };
 
   return (

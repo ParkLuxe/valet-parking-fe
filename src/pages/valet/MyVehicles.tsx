@@ -45,9 +45,8 @@ const MyVehicles = () => {
         await deliverVehicleMutation.mutateAsync(vehicleId);
       }
       setSelectedVehicle(null);
-    } catch (err) {
-      // Error already handled by mutation
-      console.error('Failed to update vehicle status:', err);
+    } catch (err: unknown) {
+      // Error already handled by mutation hook with toast notification
     }
   };
 
