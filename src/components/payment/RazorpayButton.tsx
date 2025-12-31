@@ -99,9 +99,9 @@ const RazorpayButton: React.FC<RazorpayButtonProps> = ({
 
               // Success toast already shown by mutation
 
-              // Call success callback
+              // Call success callback with the original Razorpay response
               if (onSuccess) {
-                onSuccess(verifyResponse);
+                onSuccess(response);
               }
             } else {
               throw new Error('Payment verification failed');

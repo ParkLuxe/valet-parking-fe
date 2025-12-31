@@ -24,11 +24,12 @@ import { ConfirmDialog } from '../../components';
 import { useHosts, useRegisterHost, useUpdateHost } from '../../hooks/queries/useHosts';
 
 const HostManagement = () => {
-  const [currentPage, setCurrentPage] = useState(0);
+  // Pagination will be implemented in the future
+  const currentPage = 0;
   const pageSize = 10;
 
   // Use TanStack Query hooks
-  const { data: hostsResponse, isLoading: loading, refetch: refetchHosts } = useHosts(currentPage, pageSize);
+  const { data: hostsResponse, isLoading: loading } = useHosts(currentPage, pageSize);
   const registerHostMutation = useRegisterHost();
   const updateHostMutation = useUpdateHost();
 
