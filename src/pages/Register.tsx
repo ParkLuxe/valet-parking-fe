@@ -8,7 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Car } from 'lucide-react';
 import { Card, Input, Button } from '../components';
-import { loginSuccess, setAuthLoading, addToast, setUserData } from '../redux';
+import { setAuthLoading, addToast, setUserData } from '../redux';
 import type { User as UserType, AuthResponse } from '../types/api';
 import { useRegister } from '../hooks/queries/useAuth';
 import {
@@ -107,7 +107,7 @@ const Register = () => {
     try {
       const data = await registerMutation.mutateAsync(formData) as AuthResponse;
       // Store tokens and set user from auth response so we don't depend on /me (which can 403 for newly registered users)
-      dispatch(loginSuccess(data));
+      dispatch(setUserData(data.user));
       const u = data.user ?? {};
       const fullName = (u as Partial<UserType>).name ?? data.name ?? formData.name?.trim() ?? 'User';
       const nameParts = fullName.trim().split(/\s+/);
