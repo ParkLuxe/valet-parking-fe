@@ -8,7 +8,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Car } from 'lucide-react';
 import { Card, Input, Button } from '../components';
-import { loginSuccess, setAuthLoading, addToast } from '../redux';
+import { loginSuccess, setAuthLoading, addToast, setUserData } from '../redux';
+import type { User as UserType, AuthResponse } from '../types/api';
 import { useRegister } from '../hooks/queries/useAuth';
 import {
   validateEmail,
@@ -28,11 +29,11 @@ const Register = () => {
     email: '',
     phone: '',
     businessName: '',
+    designation: '',
     password: '',
     confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoadingState] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -91,6 +92,7 @@ const Register = () => {
   };
 
   const registerMutation = useRegister();
+  const loading = registerMutation.isPending;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,27 +102,45 @@ const Register = () => {
       return;
     }
     
-    setLoadingState(true);
     dispatch(setAuthLoading(true));
     
     try {
-      await registerMutation.mutateAsync(formData, {
-        onSuccess: (data) => {
-          // Keep previous behavior: log user in and go to dashboard
-          dispatch(loginSuccess(data));
-          dispatch(addToast({ type: 'success', message: 'Registration successful! Welcome to Park-Luxe.' }));
-          navigate('/dashboard');
-        },
-      });
-    } catch (err) {
-      const errorMessage = err.message || 'Registration failed. Please try again.';
+      const data = await registerMutation.mutateAsync(formData) as AuthResponse;
+      // Store tokens and set user from auth response so we don't depend on /me (which can 403 for newly registered users)
+      dispatch(loginSuccess(data));
+      const u = data.user ?? {};
+      const fullName = (u as Partial<UserType>).name ?? data.name ?? formData.name?.trim() ?? 'User';
+      const nameParts = fullName.trim().split(/\s+/);
+      const firstName = (u as Partial<UserType>).firstName ?? nameParts[0] ?? '';
+      const lastName = (u as Partial<UserType>).lastName ?? nameParts.slice(1).join(' ') ?? '';
+      const minimalUser: UserType = {
+        ...u,
+        id: (u as Partial<UserType>).id ?? data.id ?? '',
+        name: fullName,
+        firstName,
+        lastName,
+        email: (u as Partial<UserType>).email ?? data.email ?? formData.email ?? '',
+        roleName: (u as Partial<UserType>).roleName ?? (u as Partial<UserType>).role ?? data.role ?? 'HOSTADMIN',
+        hostId: (u as Partial<UserType>).hostId ?? data.hostId,
+      };
+      dispatch(setUserData(minimalUser));
+      dispatch(addToast({ type: 'success', message: 'Registration successful! Welcome to Park-Luxe.' }));
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      const e = err as { message?: string; data?: Record<string, string> };
+      let errorMessage = e?.message || 'Registration failed. Please try again.';
+      if (e?.data && typeof e.data === 'object') {
+        const firstFieldError = Object.values(e.data)[0];
+        if (firstFieldError) {
+          errorMessage = Array.isArray(firstFieldError) ? firstFieldError[0] : firstFieldError;
+        }
+      }
       setError(errorMessage);
       dispatch(addToast({
         type: 'error',
         message: errorMessage,
       }));
     } finally {
-      setLoadingState(false);
       dispatch(setAuthLoading(false));
     }
   };
@@ -196,6 +216,18 @@ const Register = () => {
                 helperText={errors.businessName}
                 required
                 placeholder="Restaurant, Mall, Hospital, etc."
+              />
+
+              <Input
+                label="Designation"
+                name="designation"
+                value={formData.designation}
+                onChange={handleChange}
+                error={!!errors.designation}
+                helperText={errors.designation}
+                multiline
+                rows={3}
+                placeholder="e.g. Owner, Manager, Parking Coordinator"
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

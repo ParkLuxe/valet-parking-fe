@@ -17,14 +17,21 @@ import {
   Award,
   Circle,
   Filter,
+  MapPin,
+  Building2,
+  CreditCard,
+  Briefcase,
+  User,
+  Lock,
 } from 'lucide-react';
 import { Card, Button, Modal, Input } from '../components';
 import { cn, getInitials } from '../utils';
-import { useHostUsers } from '../hooks/queries/useHostUsers';
+import { useHostUsers, useCreateHostUser } from '../hooks/queries/useHostUsers';
 
 const HostUserManagement = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const hostId = user?.hostId || '';
+  const isSuperAdmin = user?.roleName === 'SUPERADMIN' || (user as any)?.role === 'SUPERADMIN';
   const { data: valetList = [] } = useHostUsers(hostId);
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,6 +39,98 @@ const HostUserManagement = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Create host user mutation
+  const createHostUserMutation = useCreateHostUser();
+  const isCreating = createHostUserMutation.isPending;
+
+  // Add User form state
+  const initialFormData = {
+    firstName: '',
+    lastName: '',
+    userName: '',
+    password: '',
+    phoneNumber: '',
+    email: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    countryCode: 'IN',
+    dlNumber: '',
+    designation: '',
+    userRole: 'HOSTUSER' as 'HOSTADMIN' | 'HOSTUSER' | 'VALET',
+    hostId: '',
+  };
+  const [formData, setFormData] = useState(initialFormData);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.firstName.trim()) errors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
+    if (!formData.userName.trim()) errors.userName = 'Username is required';
+    if (!formData.password || formData.password.length < 6) errors.password = 'Password must be at least 6 characters';
+    if (!formData.phoneNumber.trim()) errors.phoneNumber = 'Phone number is required';
+    if (!formData.email.trim()) errors.email = 'Email is required';
+    if (!formData.designation.trim()) errors.designation = 'Designation is required';
+    if (isSuperAdmin && !formData.hostId.trim()) errors.hostId = 'Host ID is required for Super Admin';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    try {
+      const payload: any = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        userName: formData.userName.trim(),
+        password: formData.password,
+        phoneNumber: formData.phoneNumber.trim(),
+        email: formData.email.trim(),
+        userRole: formData.userRole,
+      };
+      // Optional fields
+      if (formData.addressLine1.trim()) payload.addressLine1 = formData.addressLine1.trim();
+      if (formData.addressLine2.trim()) payload.addressLine2 = formData.addressLine2.trim();
+      if (formData.city.trim()) payload.city = formData.city.trim();
+      if (formData.state.trim()) payload.state = formData.state.trim();
+      if (formData.postalCode.trim()) payload.postalCode = formData.postalCode.trim();
+      if (formData.countryCode.trim()) payload.countryCode = formData.countryCode.trim();
+      if (formData.dlNumber.trim()) payload.dlNumber = formData.dlNumber.trim();
+      if (formData.designation.trim()) payload.designation = formData.designation.trim();
+
+      // SuperAdmin passes hostId; HostAdmin does not
+      if (isSuperAdmin && formData.hostId.trim()) {
+        payload.hostId = formData.hostId.trim();
+      }
+
+      await createHostUserMutation.mutateAsync(payload);
+      setFormData(initialFormData);
+      setFormErrors({});
+      setShowAddModal(false);
+    } catch {
+      // error toast handled by the hook
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    setFormData(initialFormData);
+    setFormErrors({});
+  };
 
   // Filter and search users
   const filteredUsers = useMemo(() => {
@@ -285,34 +384,199 @@ const HostUserManagement = () => {
       {showAddModal && (
         <Modal
           open={showAddModal}
-          onClose={() => setShowAddModal(false)}
+          onClose={handleCloseModal}
           title="Add New Host User"
         >
-          <div className="space-y-4">
-            <Input label="Full Name" placeholder="John Doe" required />
-            <Input label="Email" type="email" placeholder="john@example.com" required />
-            <Input label="Phone" placeholder="+919876543210" required />
+          <form onSubmit={handleAddUser} className="space-y-4">
+            {/* Name Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleFormChange}
+                icon={<User className="w-5 h-5" />}
+                error={!!formErrors.firstName}
+                helperText={formErrors.firstName}
+                required
+              />
+              <Input
+                label="Last Name"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleFormChange}
+                icon={<User className="w-5 h-5" />}
+                error={!!formErrors.lastName}
+                helperText={formErrors.lastName}
+                required
+              />
+            </div>
+
+            {/* Credentials Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Username"
+                name="userName"
+                value={formData.userName}
+                onChange={handleFormChange}
+                icon={<User className="w-5 h-5" />}
+                error={!!formErrors.userName}
+                helperText={formErrors.userName}
+                placeholder="e.g. john.doe"
+                required
+              />
+              <Input
+                label="Password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleFormChange}
+                icon={<Lock className="w-5 h-5" />}
+                error={!!formErrors.password}
+                helperText={formErrors.password}
+                required
+              />
+            </div>
+
+            {/* Contact Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleFormChange}
+                icon={<Mail className="w-5 h-5" />}
+                error={!!formErrors.email}
+                helperText={formErrors.email}
+                required
+              />
+              <Input
+                label="Phone Number"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleFormChange}
+                icon={<Phone className="w-5 h-5" />}
+                error={!!formErrors.phoneNumber}
+                helperText={formErrors.phoneNumber}
+                placeholder="+919876543210"
+                required
+              />
+            </div>
+
+            {/* Role & Designation Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1">Role *</label>
+                <select
+                  name="userRole"
+                  value={formData.userRole}
+                  onChange={handleFormChange}
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-button text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="HOSTUSER">Host User</option>
+                  <option value="HOSTADMIN">Host Admin</option>
+                  <option value="VALET">Valet</option>
+                </select>
+              </div>
+              <Input
+                label="Designation"
+                name="designation"
+                value={formData.designation}
+                onChange={handleFormChange}
+                icon={<Briefcase className="w-5 h-5" />}
+                error={!!formErrors.designation}
+                helperText={formErrors.designation}
+                placeholder="e.g. Valet Attendant"
+                required
+              />
+            </div>
+
+            {/* SuperAdmin: Host ID */}
+            {isSuperAdmin && (
+              <Input
+                label="Host ID"
+                name="hostId"
+                value={formData.hostId}
+                onChange={handleFormChange}
+                icon={<Building2 className="w-5 h-5" />}
+                error={!!formErrors.hostId}
+                helperText={formErrors.hostId}
+                placeholder="Host ID to assign user to"
+                required
+              />
+            )}
+
+            {/* DL Number */}
             <Input
-              select
-              label="Role"
-              required
-            >
-              <option value="valet">Valet</option>
-              <option value="valet_head">Valet Manager</option>
-            </Input>
+              label="DL Number"
+              name="dlNumber"
+              value={formData.dlNumber}
+              onChange={handleFormChange}
+              icon={<CreditCard className="w-5 h-5" />}
+              placeholder="Driving License Number (optional)"
+            />
+
+            {/* Address Section */}
+            <div className="pt-3 border-t border-white/10">
+              <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-blue-400" />
+                Address (optional)
+              </h4>
+              <div className="space-y-4">
+                <Input
+                  label="Address Line 1"
+                  name="addressLine1"
+                  value={formData.addressLine1}
+                  onChange={handleFormChange}
+                  icon={<MapPin className="w-5 h-5" />}
+                  placeholder="Street address"
+                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="City"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleFormChange}
+                    icon={<Building2 className="w-5 h-5" />}
+                  />
+                  <Input
+                    label="State"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleFormChange}
+                    icon={<Building2 className="w-5 h-5" />}
+                  />
+                  <Input
+                    label="Postal Code"
+                    name="postalCode"
+                    value={formData.postalCode}
+                    onChange={handleFormChange}
+                    icon={<MapPin className="w-5 h-5" />}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Buttons */}
             <div className="flex gap-3 pt-4">
-              <Button variant="gradient" className="flex-1">
+              <Button
+                type="submit"
+                variant="gradient"
+                className="flex-1"
+                loading={isCreating}
+              >
                 Add User
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setShowAddModal(false)}
+                onClick={handleCloseModal}
                 className="flex-1"
               >
                 Cancel
               </Button>
             </div>
-          </div>
+          </form>
         </Modal>
       )}
     </div>

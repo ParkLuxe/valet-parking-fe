@@ -33,6 +33,31 @@ export const useCreatePaymentOrder = () => {
   });
 };
 
+// Create Razorpay order (Razorpay checkout flow - /v1/payment/ singular path)
+export const useCreateRazorpayOrder = () => {
+  return useMutation({
+    mutationFn: async (invoiceId: string) => {
+      const response = await apiHelper.post(`/v1/payment/create-order?invoiceId=${invoiceId}`);
+      return response as { keyId: string; amount: number; currency: string; orderId: string; customerName?: string; customerEmail?: string; customerPhone?: string };
+    },
+  });
+};
+
+// Verify Razorpay payment (Razorpay checkout flow - /v1/payment/ singular path)
+export const useVerifyRazorpayPayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { orderId: string; paymentId: string; signature: string }) => {
+      const response = await apiHelper.post('/v1/payment/verify', payload);
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
+    },
+  });
+};
+
 // Verify payment mutation
 export const useVerifyPayment = () => {
   const dispatch = useDispatch();

@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 import { Card } from '../components';
 import { Button } from '../components';
-import {  API_BASE_URL, WS_URL  } from '../utils';
+import { API_BASE_URL, WS_URL } from '../utils';
+import { useApiHealthCheck } from '../hooks/queries/useHealthCheck';
 
 const DebugDashboard = () => {
   const location = useLocation();
@@ -43,9 +44,11 @@ const DebugDashboard = () => {
   // Local state
   const [localStorageData, setLocalStorageData] = useState({});
   const [consoleErrors, setConsoleErrors] = useState([]);
-  const [apiStatus, setApiStatus] = useState('checking');
   const [wsStatus, setWsStatus] = useState('checking');
   const [browserInfo, setBrowserInfo] = useState({});
+
+  // API health check via TanStack Query
+  const { apiStatus, refetch: refetchApiHealth } = useApiHealthCheck();
 
   // Get localStorage data
   useEffect(() => {
@@ -102,26 +105,7 @@ const DebugDashboard = () => {
     };
   }, []);
 
-  // Test API connectivity
-  const testApiConnection = async () => {
-    setApiStatus('checking');
-    try {
-      const response = await fetch(`${API_BASE_URL}/health`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        setApiStatus('connected');
-      } else {
-        setApiStatus('error');
-      }
-    } catch (error) {
-      setApiStatus('error');
-    }
-  };
+  const testApiConnection = () => refetchApiHealth();
 
   // Test WebSocket connectivity
   const testWsConnection = () => {

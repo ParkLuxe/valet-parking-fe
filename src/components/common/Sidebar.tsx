@@ -49,7 +49,7 @@ const getAllMenuItems = () => [
   { path: '/system-settings', label: 'System Settings', icon: Settings, permission: 'canManageSystemSettings' },
   
   // Host Admin
-  { path: '/vehicle-management', label: 'Vehicles', icon: Car, permission: 'canManageVehicles' },
+  { path: '/customers', label: 'Customers', icon: Users, permission: 'canManageVehicles' },
   { path: '/parking-slots', label: 'Parking Slots', icon: ParkingSquare, permission: 'canManageParkingSlots' },
   { path: '/qr-management', label: 'QR Codes', icon: QrCode, permission: 'canManageQR' },
   { path: '/host-users', label: 'Host Users', icon: Users, permission: 'canManageUsers' },

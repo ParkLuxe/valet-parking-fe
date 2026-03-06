@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import { apiHelper } from '../../services/api';
 import { addToast } from '../../redux';
 import { queryKeys } from '../../lib/queryKeys';
+import type { User } from '../../types/api';
 
 // Create host user mutation
 export const useCreateHostUser = () => {
@@ -16,19 +17,35 @@ export const useCreateHostUser = () => {
   
   return useMutation({
     mutationFn: async (userData: {
-      name: string;
+      firstName: string;
+      lastName: string;
       userName: string;
-      phone?: string;
       password: string;
-      role: 'HOSTADMIN' | 'HOSTUSER' | 'VALET';
-      hostId: string;
+      phoneNumber: string;
+      email: string;
+      addressLine1?: string;
+      addressLine2?: string;
+      city?: string;
+      state?: string;
+      postalCode?: string;
+      countryCode?: string;
+      dlNumber?: string;
+      designation?: string;
+      userRole: 'HOSTADMIN' | 'HOSTUSER' | 'VALET';
+      hostId?: string;
     }) => {
       const { hostId, ...data } = userData;
-      const response = await apiHelper.post(`/v1/host-users/create?hostId=${hostId}`, data);
+      const url = hostId
+        ? `/v1/host-users/create?hostId=${hostId}`
+        : '/v1/host-users/create';
+      const response = await apiHelper.post(url, data);
       return response;
     },
     onSuccess: (data: any, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.list(variables.hostId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+      if (variables.hostId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.list(variables.hostId) });
+      }
       dispatch(addToast({
         type: 'success',
         message: 'Host user created successfully',
@@ -49,20 +66,14 @@ export const useUpdateHostUser = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ userId, ...userData }: {
-      userId: string;
-      name?: string;
-      email?: string;
-      phone?: string;
-      role?: 'HOSTADMIN' | 'HOSTUSER' | 'VALET';
-      isActive?: boolean;
-    }) => {
+    mutationFn: async ({ userId, ...userData }: Partial<User> & { userId: string }) => {
       const response = await apiHelper.put(`/v1/host-users/${userId}`, userData);
       return response;
     },
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.detail(userId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.profile() });
       dispatch(addToast({
         type: 'success',
         message: 'Host user updated successfully',
@@ -102,11 +113,14 @@ export const useHostUsers = (hostId: string, role?: string) => {
   });
 };
 
+// Fetch current user profile (for use with queryClient.fetchQuery, e.g. after login)
+export const fetchCurrentUserProfile = () => apiHelper.get('/v1/host-users/me');
+
 // Get current user profile
 export const useCurrentUserProfile = () => {
   return useQuery({
     queryKey: queryKeys.users.profile(),
-    queryFn: () => apiHelper.get('/v1/host-users/me'),
+    queryFn: fetchCurrentUserProfile,
     staleTime: 10 * 60 * 1000,
   });
 };

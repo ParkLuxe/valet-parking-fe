@@ -10,9 +10,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as Tabs from '@radix-ui/react-tabs';
 import { Car, Users, Building, Shield, User, Lock, AlertCircle } from 'lucide-react';
 import { Input, Button } from '../components';
-import { loginSuccess, setAuthLoading, addToast, setUserData, logout } from '../redux';
+import { loginSuccess, setAuthLoading, addToast, setUserData } from '../redux';
 import { useLogin } from '../hooks/queries/useAuth';
-import { apiHelper } from '../services/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../lib/queryKeys';
+import { fetchCurrentUserProfile } from '../hooks/queries/useHostUsers';
+import type { User as UserType, AuthResponse } from '../types/api';
 import { validateRequired, cn } from '../utils';
 
 const Login = () => {
@@ -25,8 +28,8 @@ const Login = () => {
     password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoadingState] = useState(false);
   const [error, setError] = useState('');
+  const queryClient = useQueryClient();
 
   const roles = ['HOSTADMIN', 'HOSTUSER', 'SUPERADMIN'];
   const roleLabels = ['Host', 'Host User (Valet)', 'Super Admin'];
@@ -64,6 +67,7 @@ const Login = () => {
   };
 
   const loginMutation = useLogin();
+  const loading = loginMutation.isPending;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,52 +77,70 @@ const Login = () => {
       return;
     }
     
-    setLoadingState(true);
     dispatch(setAuthLoading(true));
     
+    let loginSucceeded = false;
+    let authData: AuthResponse | null = null;
     try {
-      // Use mutation but override onSuccess for this call so we control navigation
-      await loginMutation.mutateAsync(
-        { ...formData, role: roles[selectedTab] },
-        {
-          onSuccess: (data) => {
-            dispatch(loginSuccess(data));
-            dispatch(addToast({ type: 'success', message: 'Login successful!' }));
-          },
-        }
-      );
+      // mutation's onSuccess in useLogin already dispatches loginSuccess + toast once
+      authData = await loginMutation.mutateAsync({ ...formData, role: roles[selectedTab] });
+      loginSucceeded = true;
 
-      // Fetch profile after login
-      try {
-        const userData = await apiHelper.get('/v1/host-users/me');
-        // Normalize role -> roleName
-        if (userData.role && typeof userData.role === 'object' && 'name' in userData.role) {
-          userData.roleName = (userData.role as { name: string }).name;
-        } else if (userData.role && typeof userData.role === 'string') {
-          userData.roleName = userData.role;
-        }
-        if (userData.role) delete userData.role;
-        userData.name = [userData.firstName, userData.middleName, userData.lastName]
-          .filter(Boolean)
-          .join(' ')
-          .trim();
-        dispatch(setUserData(userData));
-      } catch (profileError) {
-        // Logout and show error - error will be displayed via toast in the hook
-        dispatch(logout());
-        throw new Error('Failed to load user profile. Please try again.');
+      // Fetch profile via TanStack Query (populates cache for useCurrentUserProfile)
+      const userData = await queryClient.fetchQuery({
+        queryKey: queryKeys.users.profile(),
+        queryFn: fetchCurrentUserProfile,
+      });
+      const normalized = { ...userData } as Record<string, unknown>;
+      if (normalized.role && typeof normalized.role === 'object' && normalized.role !== null && 'name' in normalized.role) {
+        normalized.roleName = (normalized.role as { name: string }).name;
+      } else if (typeof normalized.role === 'string') {
+        normalized.roleName = normalized.role;
       }
+      if (normalized.role) delete normalized.role;
+      normalized.name = [normalized.firstName, normalized.middleName, normalized.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+      dispatch(setUserData(normalized as unknown as UserType));
 
       navigate('/dashboard');
     } catch (err) {
-      const errorMessage = err.message || 'Login failed. Please try again.';
-      setError(errorMessage);
-      dispatch(addToast({
-        type: 'error',
-        message: errorMessage,
-      }));
+      if (loginSucceeded && authData) {
+        // Profile fetch failed after successful login: keep credentials, set minimal user so Redux is populated
+        const u: Partial<UserType> = authData.user ?? {};
+        const fullName = u.name ?? authData.name ?? 'User';
+        const nameParts = String(fullName).trim().split(/\s+/);
+        const firstName = u.firstName ?? nameParts[0] ?? '';
+        const lastName = u.lastName ?? nameParts.slice(1).join(' ') ?? '';
+        const minimalUser: UserType = {
+          ...u,
+          id: u.id ?? authData.id ?? '',
+          name: fullName,
+          firstName,
+          lastName,
+          email: u.email ?? authData.email ?? '',
+          roleName: u.roleName ?? u.role ?? authData.role,
+        };
+        dispatch(setUserData(minimalUser));
+        dispatch(addToast({
+          type: 'info',
+          message: 'Profile could not be loaded. You can continue to the dashboard and retry from your profile.',
+        }));
+        navigate('/dashboard');
+      } else {
+        const e = err as { message?: string; error?: string };
+        const errorMessage =
+          (typeof e?.message === 'string' ? e.message : null) ||
+          (typeof e?.error === 'string' ? e.error : null) ||
+          'Login failed. Please try again.';
+        setError(errorMessage);
+        dispatch(addToast({
+          type: 'error',
+          message: errorMessage,
+        }));
+      }
     } finally {
-      setLoadingState(false);
       dispatch(setAuthLoading(false));
     }
   };

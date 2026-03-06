@@ -15,6 +15,10 @@ import {
   CheckCircle,
   Lock,
   User,
+  MapPin,
+  Building2,
+  CreditCard,
+  Briefcase,
 } from 'lucide-react';
 import { Card, Input, Button, LoadingSpinner } from '../components';
 import { updateProfile, addToast } from '../redux';
@@ -46,17 +50,42 @@ const Profile = () => {
     lastName: '',
     email: '',
     phone: '',
+    userName: '',
+    designation: '',
+    contactNumber: '',
+    dlNumber: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    postalCode: '',
   });
 
-  // Update form data when user profile loads
+  // Update form data when user profile loads (derive firstName/lastName from name when missing)
   React.useEffect(() => {
     if (user) {
+      let firstName = user.firstName ?? '';
+      let lastName = user.lastName ?? '';
+      if ((!firstName || !lastName) && user.name) {
+        const parts = user.name.trim().split(/\s+/);
+        if (!firstName) firstName = parts[0] ?? '';
+        if (!lastName) lastName = parts.slice(1).join(' ') ?? '';
+      }
       setFormData({
-        firstName: user.firstName || '',
-        middleName: user.middleName || '',
-        lastName: user.lastName || '',
-        email: user.email || '',
-        phone: user.phone || '',
+        firstName,
+        middleName: user.middleName ?? '',
+        lastName,
+        email: user.email ?? '',
+        phone: user.phone ?? user.contactNumber ?? '',
+        userName: user.userName ?? user.username ?? '',
+        designation: user.designation ?? '',
+        contactNumber: user.contactNumber ?? user.phone ?? '',
+        dlNumber: user.dlNumber ?? '',
+        addressLine1: user.addressLine1 ?? '',
+        addressLine2: user.addressLine2 ?? '',
+        city: user.city ?? '',
+        state: user.state ?? '',
+        postalCode: user.postalCode ?? '',
       });
     }
   }, [user]);
@@ -111,8 +140,6 @@ const Profile = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -211,6 +238,7 @@ const Profile = () => {
   };
 
   const updateProfileMutation = useUpdateProfile();
+  const loading = updateProfileMutation.isPending;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -219,23 +247,42 @@ const Profile = () => {
       return;
     }
     
-    setLoading(true);
-    
     try {
-      const updatedUser = await updateProfileMutation.mutateAsync(formData);
-      // Update redux state
+      const userId = user?.id;
+      if (!userId) {
+        dispatch(addToast({ type: 'error', message: 'User ID not found. Please log in again.' }));
+        return;
+      }
+      const payload = {
+        userId,
+        email: formData.email,
+        firstName: formData.firstName,
+        middleName: formData.middleName || null,
+        lastName: formData.lastName,
+        userName: formData.userName,
+        isEmailVerified: user?.isEmailVerified ?? false,
+        isApproved: user?.isApproved ?? false,
+        designation: formData.designation || null,
+        contactNumber: formData.contactNumber || formData.phone,
+        dlNumber: formData.dlNumber || null,
+        addressLine1: formData.addressLine1,
+        addressLine2: formData.addressLine2,
+        city: formData.city,
+        state: formData.state,
+        postalCode: formData.postalCode,
+      };
+      const updatedUser = await updateProfileMutation.mutateAsync(payload);
       dispatch(updateProfile(updatedUser));
     } catch (err) {
       dispatch(addToast({
         type: 'error',
-        message: err.message || 'Failed to update profile',
+        message: (err as Error).message || 'Failed to update profile',
       }));
-    } finally {
-      setLoading(false);
     }
   };
 
   const changePasswordMutation = useChangePassword();
+  const passwordLoading = changePasswordMutation.isPending;
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -244,15 +291,19 @@ const Profile = () => {
       return;
     }
     
-    setPasswordLoading(true);
-    
     try {
+      const userId = user?.id;
+      if (!userId) {
+        dispatch(addToast({ type: 'error', message: 'User ID not found. Please log in again.' }));
+        return;
+      }
       await changePasswordMutation.mutateAsync({
+        userId,
         currentPassword: passwordData.oldPassword,
         newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword,
       });
-      // toast handled by mutation onSuccess but keep redux toast as fallback
-      dispatch(addToast({ type: 'success', message: 'Password changed successfully!' }));
+      // Toast shown by useChangePassword onSuccess; only clear form here
       setPasswordData({
         oldPassword: '',
         newPassword: '',
@@ -261,10 +312,8 @@ const Profile = () => {
     } catch (err) {
       dispatch(addToast({
         type: 'error',
-        message: err.message || 'Failed to change password',
+        message: (err as Error).message || 'Failed to change password',
       }));
-    } finally {
-      setPasswordLoading(false);
     }
   };
 
@@ -285,12 +334,15 @@ const Profile = () => {
 
   // Calculate profile completion
   const profileCompletion = useMemo(() => {
-    const hasName = !!user?.name;
+    const hasName = !!user?.name || !!user?.firstName;
     const hasEmail = !!user?.email;
-    const hasPhone = !!user?.phone;
+    const hasPhone = !!user?.phone || !!user?.contactNumber;
     const hasRole = !!getRoleName(user);
+    const hasDesignation = !!user?.designation;
+    const hasAddress = !!user?.addressLine1;
+    const hasCity = !!user?.city;
     
-    const fields = [hasName, hasEmail, hasPhone, hasRole];
+    const fields = [hasName, hasEmail, hasPhone, hasRole, hasDesignation, hasAddress, hasCity];
     const completed = fields.filter(Boolean).length;
     return Math.round((completed / fields.length) * 100);
   }, [user]);
@@ -399,35 +451,56 @@ const Profile = () => {
           <Card title="Personal Information">
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 gap-4">
-                <Input
-                  label="First Name"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  error={!!errors.firstName}
-                  helperText={errors.firstName}
-                  icon={<User className="w-5 h-5" />}
-                  required
-                />
-                <Input
-                  label="Middle Name"
-                  name="middleName"
-                  value={formData.middleName}
-                  onChange={handleChange}
-                  error={!!errors.middleName}
-                  helperText={errors.middleName}
-                  icon={<User className="w-5 h-5" />}
-                />
-                <Input
-                  label="Last Name"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  error={!!errors.lastName}
-                  helperText={errors.lastName}
-                  icon={<User className="w-5 h-5" />}
-                  required
-                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="First Name"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    error={!!errors.firstName}
+                    helperText={errors.firstName}
+                    icon={<User className="w-5 h-5" />}
+                    required
+                  />
+                  <Input
+                    label="Middle Name"
+                    name="middleName"
+                    value={formData.middleName}
+                    onChange={handleChange}
+                    error={!!errors.middleName}
+                    helperText={errors.middleName}
+                    icon={<User className="w-5 h-5" />}
+                  />
+                  <Input
+                    label="Last Name"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    error={!!errors.lastName}
+                    helperText={errors.lastName}
+                    icon={<User className="w-5 h-5" />}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Username"
+                    name="userName"
+                    value={formData.userName}
+                    onChange={handleChange}
+                    icon={<User className="w-5 h-5" />}
+                    disabled
+                  />
+                  <Input
+                    label="Designation"
+                    name="designation"
+                    value={formData.designation}
+                    onChange={handleChange}
+                    icon={<Briefcase className="w-5 h-5" />}
+                    placeholder="e.g. CEO, Manager"
+                  />
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
@@ -441,7 +514,17 @@ const Profile = () => {
                     icon={<Mail className="w-5 h-5" />}
                     required
                   />
+                  <Input
+                    label="Contact Number"
+                    name="contactNumber"
+                    value={formData.contactNumber}
+                    onChange={handleChange}
+                    icon={<Phone className="w-5 h-5" />}
+                    placeholder="+91XXXXXXXXXX"
+                  />
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Phone Number"
                     name="phone"
@@ -450,8 +533,64 @@ const Profile = () => {
                     error={!!errors.phone}
                     helperText={errors.phone}
                     icon={<Phone className="w-5 h-5" />}
-                    required
                   />
+                  <Input
+                    label="DL Number"
+                    name="dlNumber"
+                    value={formData.dlNumber}
+                    onChange={handleChange}
+                    icon={<CreditCard className="w-5 h-5" />}
+                    placeholder="Driving License Number"
+                  />
+                </div>
+              </div>
+
+              {/* Address Section */}
+              <div className="pt-4 border-t border-white/10">
+                <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-blue-400" />
+                  Address Information
+                </h4>
+                <div className="grid grid-cols-1 gap-4">
+                  <Input
+                    label="Address Line 1"
+                    name="addressLine1"
+                    value={formData.addressLine1}
+                    onChange={handleChange}
+                    icon={<MapPin className="w-5 h-5" />}
+                    placeholder="Street address"
+                  />
+                  <Input
+                    label="Address Line 2"
+                    name="addressLine2"
+                    value={formData.addressLine2}
+                    onChange={handleChange}
+                    icon={<MapPin className="w-5 h-5" />}
+                    placeholder="Apt, suite, floor (optional)"
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input
+                      label="City"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      icon={<Building2 className="w-5 h-5" />}
+                    />
+                    <Input
+                      label="State"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleChange}
+                      icon={<Building2 className="w-5 h-5" />}
+                    />
+                    <Input
+                      label="Postal Code"
+                      name="postalCode"
+                      value={formData.postalCode}
+                      onChange={handleChange}
+                      icon={<MapPin className="w-5 h-5" />}
+                    />
+                  </div>
                 </div>
               </div>
 

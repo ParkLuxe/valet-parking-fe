@@ -58,6 +58,16 @@ export const queryKeys = {
     widget: (hostId: string) => [...queryKeys.users.all, 'widget', hostId] as const,
   },
 
+  // Customer query keys
+  customers: {
+    all: ['customers'] as const,
+    lists: () => [...queryKeys.customers.all, 'list'] as const,
+    list: (filters: Record<string, any>) =>
+      [...queryKeys.customers.lists(), filters] as const,
+    details: () => [...queryKeys.customers.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.customers.details(), id] as const,
+  },
+
   // Host query keys
   hosts: {
     all: ['hosts'] as const,

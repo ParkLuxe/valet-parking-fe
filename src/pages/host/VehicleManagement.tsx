@@ -35,7 +35,7 @@ const VehicleManagement = () => {
     if (activeTab === 'active') {
       filtered = filtered.filter(
         (v) =>
-          v.status === VEHICLE_STATUS.BEING_ASSIGNED ||
+          v.status === VEHICLE_STATUS.ASSIGNED ||
           v.status === VEHICLE_STATUS.PARKING_IN_PROGRESS ||
           v.status === VEHICLE_STATUS.RETRIEVAL_REQUESTED ||
           v.status === VEHICLE_STATUS.OUT_FOR_DELIVERY
@@ -78,7 +78,7 @@ const VehicleManagement = () => {
       sortable: true,
       render: (value) => {
         const statusColors = {
-          [VEHICLE_STATUS.BEING_ASSIGNED]: 'bg-yellow-500/20 text-yellow-400',
+          [VEHICLE_STATUS.ASSIGNED]: 'bg-yellow-500/20 text-yellow-400',
           [VEHICLE_STATUS.PARKING_IN_PROGRESS]: 'bg-blue-500/20 text-blue-400',
           [VEHICLE_STATUS.PARKED]: 'bg-green-500/20 text-green-400',
           [VEHICLE_STATUS.RETRIEVAL_REQUESTED]: 'bg-orange-500/20 text-orange-400',
@@ -130,7 +130,7 @@ const VehicleManagement = () => {
       label: 'Active',
       count: vehicles.filter(
         (v) =>
-          v.status === VEHICLE_STATUS.BEING_ASSIGNED ||
+          v.status === VEHICLE_STATUS.ASSIGNED ||
           v.status === VEHICLE_STATUS.PARKING_IN_PROGRESS ||
           v.status === VEHICLE_STATUS.RETRIEVAL_REQUESTED ||
           v.status === VEHICLE_STATUS.OUT_FOR_DELIVERY

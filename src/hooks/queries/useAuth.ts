@@ -11,6 +11,62 @@ import {  loginSuccess, logout as logoutAction  } from '../../redux';
 import {  addToast  } from '../../redux';
 import type { LoginRequest, RegisterRequest, AuthResponse, User } from '../../types/api';
 
+/** Payload expected by POST /v1/admin/host/register (same as HostManagement) */
+interface HostRegisterPayload {
+  hostName: string;
+  hostType: 'ORGANIZATION' | 'INDIVIDUAL';
+  phoneNumber: string;
+  hostEmail: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  countryCode: string;
+  parkingSlots: number;
+  username: string;
+  masterFirstName: string;
+  masterLastName: string;
+  masterPassword: string;
+  masterPhoneNumber: string;
+  /** Master user role for the new host (required by backend) */
+  userRole: 'HOSTADMIN';
+  designation?: string;
+}
+
+/**
+ * Maps the simple Register page form to the full host register API payload.
+ * Uses sensible defaults for required fields not collected on the simple form.
+ */
+function mapRegisterFormToHostPayload(form: RegisterRequest & { phone?: string; businessName?: string; designation?: string }): HostRegisterPayload {
+  const namePart = (form.name || 'User').trim();
+  const parts = namePart.split(/\s+/);
+  const masterFirstName = parts[0] || 'User';
+  const masterLastName = parts.slice(1).join(' ') || '';
+  const username = (form.email || '').replace(/@.+$/, '').replace(/\W/g, '') || 'user';
+  const designation = (form as { designation?: string }).designation?.trim();
+  return {
+    hostName: (form as { businessName?: string }).businessName?.trim() || namePart,
+    hostType: 'ORGANIZATION',
+    phoneNumber: (form as { phone?: string }).phone?.trim() || '',
+    hostEmail: form.email.trim(),
+    addressLine1: 'To be updated',
+    addressLine2: '',
+    city: 'To be updated',
+    state: 'To be updated',
+    postalCode: '',
+    countryCode: 'IN',
+    parkingSlots: 1,
+    username,
+    masterFirstName,
+    masterLastName,
+    masterPassword: form.password,
+    masterPhoneNumber: (form as { phone?: string }).phone?.trim() || '',
+    userRole: 'HOSTADMIN',
+    ...(designation ? { designation } : {}),
+  };
+}
+
 // Query keys
 export const authKeys = {
   all: ['auth'] as const,
@@ -18,10 +74,9 @@ export const authKeys = {
   validate: () => [...authKeys.all, 'validate'] as const,
 };
 
-// Login mutation
+// Login mutation (caller controls navigation so profile can be fetched first)
 export const useLogin = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   
   return useMutation({
     mutationFn: async (credentials: LoginRequest & { role?: string }) => {
@@ -38,39 +93,19 @@ export const useLogin = () => {
         type: 'success',
         message: 'Login successful!',
       }));
-      navigate('/dashboard');
     },
-    onError: (error: any) => {
-      dispatch(addToast({
-        type: 'error',
-        message: error?.response?.data?.message || 'Login failed. Please try again.',
-      }));
-    },
+    // Error handling: caller (Login page) shows a single toast in its catch block
   });
 };
 
-// Register mutation
+// Register mutation (caller controls post-success and post-error: e.g. auto-login + navigate, or show error toast in catch)
+// Accepts simple form (name, email, phone, businessName, password) and maps to host register API payload.
 export const useRegister = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  
   return useMutation({
-    mutationFn: async (userData: RegisterRequest) => {
-      const response = await apiHelper.post('/v1/admin/host/register', userData);
+    mutationFn: async (formData: RegisterRequest & { phone?: string; businessName?: string; designation?: string }) => {
+      const payload = mapRegisterFormToHostPayload(formData);
+      const response = await apiHelper.post('/v1/admin/host/register', payload);
       return response as AuthResponse;
-    },
-    onSuccess: () => {
-      dispatch(addToast({
-        type: 'success',
-        message: 'Registration successful! Please login.',
-      }));
-      navigate('/login');
-    },
-    onError: (error: any) => {
-      dispatch(addToast({
-        type: 'error',
-        message: error?.response?.data?.message || 'Registration failed. Please try again.',
-      }));
     },
   });
 };
@@ -135,12 +170,14 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (userData: Partial<User>) => {
-      const response = await apiHelper.put('/v1/users/profile', userData);
+    mutationFn: async ({ userId, ...userData }: Partial<User> & { userId: string }) => {
+      const response = await apiHelper.put(`/v1/host-users/${userId}`, userData);
       return response as User;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: authKeys.profile() });
+      // Also invalidate the host-users profile cache
+      queryClient.invalidateQueries({ queryKey: ['users', 'profile'] });
       dispatch(addToast({
         type: 'success',
         message: 'Profile updated successfully',
@@ -149,7 +186,7 @@ export const useUpdateProfile = () => {
     onError: (error: any) => {
       dispatch(addToast({
         type: 'error',
-        message: error?.response?.data?.message || 'Failed to update profile',
+        message: error?.response?.data?.message || error?.message || 'Failed to update profile',
       }));
     },
   });
@@ -160,8 +197,8 @@ export const useChangePassword = () => {
   const dispatch = useDispatch();
   
   return useMutation({
-    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
-      const response = await apiHelper.post('/v1/users/change-password', data);
+    mutationFn: async ({ userId, ...data }: { userId: string; currentPassword: string; newPassword: string; confirmPassword: string }) => {
+      const response = await apiHelper.post(`/v1/host-users/${userId}/change-password`, data);
       return response;
     },
     onSuccess: () => {
@@ -173,7 +210,7 @@ export const useChangePassword = () => {
     onError: (error: any) => {
       dispatch(addToast({
         type: 'error',
-        message: error?.response?.data?.message || 'Failed to change password',
+        message: error?.response?.data?.message || error?.message || 'Failed to change password',
       }));
     },
   });

@@ -23,7 +23,7 @@ export const USER_ROLES = {
 
 // Vehicle Status Constants - Updated to match backend
 export const VEHICLE_STATUS = {
-  BEING_ASSIGNED: 'BEING_ASSIGNED',
+  ASSIGNED: 'ASSIGNED',
   PARKING_IN_PROGRESS: 'PARKING_IN_PROGRESS',
   PARKED: 'PARKED',
   RETRIEVAL_REQUESTED: 'RETRIEVAL_REQUESTED',
@@ -33,7 +33,7 @@ export const VEHICLE_STATUS = {
 
 // Vehicle Status Display Names
 export const VEHICLE_STATUS_DISPLAY = {
-  [VEHICLE_STATUS.BEING_ASSIGNED]: 'Being Assigned',
+  [VEHICLE_STATUS.ASSIGNED]: 'Assigned',
   [VEHICLE_STATUS.PARKING_IN_PROGRESS]: 'Parking In Progress',
   [VEHICLE_STATUS.PARKED]: 'Parked',
   [VEHICLE_STATUS.RETRIEVAL_REQUESTED]: 'Retrieval Requested',

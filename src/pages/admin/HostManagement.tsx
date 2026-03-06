@@ -82,6 +82,7 @@ const HostManagement = () => {
     masterPassword: '',
     masterPhoneNumber: '',
     designation: '',
+    hostUserRole: 'HOSTADMIN',
     
     // Legacy fields (for backward compatibility)
     name: '',
@@ -153,6 +154,10 @@ const HostManagement = () => {
       errors.masterPhoneNumber = 'Master phone number is required';
     }
 
+    if (!formData.designation.trim()) {
+      errors.designation = 'Designation is required';
+    }
+
     // Business Details
     if (!formData.parkingSlots.trim()) {
       errors.parkingSlots = 'Parking slots is required';
@@ -205,6 +210,7 @@ const HostManagement = () => {
       masterPassword: '',
       masterPhoneNumber: '',
       designation: '',
+      hostUserRole: 'HOSTADMIN',
       name: '',
       email: '',
       phone: '',
@@ -242,6 +248,7 @@ const HostManagement = () => {
       masterPassword: '',
       masterPhoneNumber: host.masterPhoneNumber || '',
       designation: host.designation || '',
+      hostUserRole: host.hostUserRole || 'HOSTADMIN',
       name: host.name || '',
       email: host.email || '',
       phone: host.phone || '',
@@ -277,6 +284,7 @@ const HostManagement = () => {
         masterFirstName: formData.masterFirstName.trim(),
         masterLastName: formData.masterLastName.trim(),
         masterPhoneNumber: formData.masterPhoneNumber.trim(),
+        userRole: formData.hostUserRole,
       };
 
       // Optional fields - only include if they have values
@@ -732,8 +740,24 @@ const HostManagement = () => {
                 name="designation"
                 value={formData.designation}
                 onChange={handleInputChange}
+                error={!!formErrors.designation}
+                helperText={formErrors.designation}
                 placeholder="CEO"
+                required
               />
+              <div>
+                <label className="block text-sm text-white/70 mb-2">Role</label>
+                <select
+                  name="hostUserRole"
+                  value={formData.hostUserRole}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-[5px] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="SUPERADMIN">Superadmin</option>
+                  <option value="HOSTADMIN">Host</option>
+                  <option value="HOSTUSER">User</option>
+                </select>
+              </div>
               {!editingHost && (
                 <div className="lg:col-span-2">
                   <Input

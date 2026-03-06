@@ -1,17 +1,10 @@
 /**
  * Services Barrel Export
  * Central export for all service modules and API hooks
+ * Data fetching: use TanStack Query hooks from ../hooks/queries instead.
  */
 
-// Legacy service wrappers (for backward compatibility)
-// New code should use TanStack Query hooks from ../api/* or hooks/queries instead
-export { default as invoiceService } from './invoiceService';
-export { default as subscriptionPlanService } from './subscriptionPlanService';
-export { default as hostService } from './hostService';
-
-// Core services (kept)
 export { default as websocketService } from './websocketService';
-export { default as valetService } from './valetService';
 export { apiHelper } from './api';
 
 // Export all TanStack Query API hooks

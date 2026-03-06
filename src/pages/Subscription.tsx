@@ -40,10 +40,10 @@ const Subscription = () => {
   // Razorpay payment hook
   const { initiatePayment, loading: paymentLoading } = useRazorpay({
     invoiceId,
-    onSuccess: (verificationData) => {
+    onSuccess: (verificationData: { paymentId?: string }) => {
       // Create payment history entry
       const paymentEntry = {
-        id: verificationData.paymentId || Date.now(),
+        id: verificationData?.paymentId || Date.now(),
         amount: billing.currentAmount,
         date: new Date().toISOString(),
         status: 'success',

@@ -276,6 +276,7 @@ export const canAccessPage = (role: string, page: string): boolean => {
     // Host pages
     reports: ['canViewReports'],
     vehicleManagement: ['canManageVehicles', 'canViewVehicles'],
+    customerManagement: ['canManageVehicles', 'canViewVehicles'],
     
     // Valet pages
     myVehicles: ['canViewAssignedVehicles'],

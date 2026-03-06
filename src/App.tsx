@@ -37,7 +37,7 @@ import SystemSettings from './pages/admin/SystemSettings';
 import AllPayments from './pages/admin/AllPayments';
 
 // Host Pages  
-import VehicleManagement from './pages/host/VehicleManagement';
+import CustomerManagement from './pages/host/CustomerManagement';
 import Reports from './pages/host/Reports';
 
 // Valet Pages
@@ -289,11 +289,11 @@ const App: React.FC = () => {
 
           {/* Host Routes */}
           <Route
-            path="/vehicle-management"
+            path="/customers"
             element={
-              <ProtectedRoute page="vehicleManagement">
+              <ProtectedRoute page="customerManagement">
                 <Layout>
-                  <VehicleManagement />
+                  <CustomerManagement />
                 </Layout>
               </ProtectedRoute>
             }

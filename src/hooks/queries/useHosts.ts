@@ -43,6 +43,7 @@ export interface HostRegistrationData {
   masterPassword?: string;
   masterPhoneNumber: string;
   designation?: string;
+  userRole: 'SUPERADMIN' | 'HOSTADMIN' | 'HOSTUSER';
 }
 
 // Register new host mutation
@@ -64,9 +65,21 @@ export const useRegisterHost = () => {
       }));
     },
     onError: (error: any) => {
+      const msgStr =
+        typeof error?.message === 'string'
+          ? error.message
+          : typeof error?.error === 'string'
+            ? error.error
+            : '';
+      const isUsernameExists =
+        /username.*already exists|already exists.*username|company username already exists|duplicate.*username/i.test(msgStr) ||
+        (error?.status ?? error?.statusCode) === 409;
+      const message = isUsernameExists
+        ? 'Company username already exists.'
+        : (msgStr || 'Failed to register host');
       dispatch(addToast({
         type: 'error',
-        message: error?.message || 'Failed to register host',
+        message,
       }));
     },
   });

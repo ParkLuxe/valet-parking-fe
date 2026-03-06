@@ -1,29 +1,32 @@
 /**
  * Custom hook for Razorpay payment integration
  * Handles payment order creation, checkout initialization, and payment verification
+ * Uses TanStack Query mutations for API calls.
  */
 
 import { useState } from 'react';
-import { apiHelper } from '../services/api';
+import { useCreateRazorpayOrder, useVerifyRazorpayPayment } from './queries/usePayments';
 
-const useRazorpay = ({ invoiceId, onSuccess, onFailure }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+interface UseRazorpayOptions {
+  invoiceId: string | number;
+  onSuccess?: (data: unknown) => void;
+  onFailure?: (message: string) => void;
+}
 
-  /**
-   * Initiates the Razorpay payment process
-   */
+const useRazorpay = ({ invoiceId, onSuccess, onFailure }: UseRazorpayOptions) => {
+  const [error, setError] = useState<string | null>(null);
+
+  const createOrderMutation = useCreateRazorpayOrder();
+  const verifyPaymentMutation = useVerifyRazorpayPayment();
+
+  const loading = createOrderMutation.isPending || verifyPaymentMutation.isPending;
+
   const initiatePayment = async () => {
-    setLoading(true);
     setError(null);
 
     try {
-      // Step 1: Create order with backend
-      const orderData = await apiHelper.post(
-        `/v1/payment/create-order?invoiceId=${invoiceId}`
-      );
+      const orderData = await createOrderMutation.mutateAsync(String(invoiceId));
 
-      // Step 2: Initialize Razorpay checkout
       const options = {
         key: orderData.keyId,
         amount: orderData.amount,
@@ -38,63 +41,43 @@ const useRazorpay = ({ invoiceId, onSuccess, onFailure }) => {
           contact: orderData.customerPhone,
         },
         theme: {
-          color: '#8B5CF6', // Purple brand color
+          color: '#8B5CF6',
         },
-        handler: async function (response) {
-          // Step 3: Verify payment with backend
+        handler: async function (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) {
           try {
-            const verificationData = await apiHelper.post('/v1/payment/verify', {
+            const verificationData = await verifyPaymentMutation.mutateAsync({
               orderId: response.razorpay_order_id,
               paymentId: response.razorpay_payment_id,
               signature: response.razorpay_signature,
             });
-
-            setLoading(false);
-            
-            // Call success callback with verification data
             if (onSuccess) {
               onSuccess(verificationData);
             }
-          } catch (verifyError) {
-            setLoading(false);
-            const errorMessage = verifyError?.message || 'Payment verification failed';
+          } catch (verifyErr) {
+            const errorMessage = (verifyErr as Error)?.message || 'Payment verification failed';
             setError(errorMessage);
-            
-            if (onFailure) {
-              onFailure(errorMessage);
-            }
+            onFailure?.(errorMessage);
           }
         },
         modal: {
           ondismiss: function () {
-            setLoading(false);
             const dismissMessage = 'Payment cancelled by user';
             setError(dismissMessage);
-            
-            if (onFailure) {
-              onFailure(dismissMessage);
-            }
+            onFailure?.(dismissMessage);
           },
         },
       };
 
-      // Check if Razorpay script is loaded
-      if (!window.Razorpay) {
+      if (typeof window === 'undefined' || !(window as unknown as { Razorpay?: unknown }).Razorpay) {
         throw new Error('Razorpay SDK not loaded. Please refresh the page and try again.');
       }
 
-      // Create Razorpay instance and open checkout
-      const razorpay = new window.Razorpay(options);
+      const razorpay = new (window as unknown as { Razorpay: new (opts: unknown) => { open: () => void } }).Razorpay(options);
       razorpay.open();
-
     } catch (err) {
-      setLoading(false);
-      const errorMessage = err?.message || 'Failed to create payment order';
+      const errorMessage = (err as Error)?.message || 'Failed to create payment order';
       setError(errorMessage);
-      
-      if (onFailure) {
-        onFailure(errorMessage);
-      }
+      onFailure?.(errorMessage);
     }
   };
 
