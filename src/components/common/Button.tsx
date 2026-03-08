@@ -24,7 +24,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
 }
 
-// Normalize size aliases
+// Normalize size aliases to standard size names
 const normalizeSize = (size?: ButtonSize): 'small' | 'medium' | 'large' => {
   if (size === 'sm') return 'small';
   if (size === 'md') return 'medium';
