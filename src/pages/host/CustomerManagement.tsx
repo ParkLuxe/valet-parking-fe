@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import type { RootState } from '../../redux';
 import { Users, Filter, Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Card, Button, LoadingSpinner } from '../../components';
@@ -14,8 +15,13 @@ import { useFilterCustomers } from '../../hooks/queries/useCustomers';
 import type { CustomerFilters } from '../../hooks/queries/useCustomers';
 
 const CustomerManagement = () => {
+  const location = useLocation();
   const { user } = useSelector((state: RootState) => state.auth);
   const isSuperAdmin = user?.roleName === 'SUPERADMIN' || (user as any)?.role === 'SUPERADMIN';
+
+  const searchParams = new URLSearchParams(location.search);
+  const highlightCustomerId = searchParams.get('highlightCustomerId');
+  const highlightedCustomerIdNum = highlightCustomerId ? Number(highlightCustomerId) : null;
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -57,6 +63,21 @@ const CustomerManagement = () => {
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
+
+  // If user came from dashboard recent activity, focus the table on that customer.
+  useEffect(() => {
+    if (highlightedCustomerIdNum && !Number.isNaN(highlightedCustomerIdNum)) {
+      setPage(0);
+      setFilterInputs((prev) => ({
+        ...prev,
+        customerId: highlightedCustomerIdNum,
+      }));
+      setAppliedFilters((prev) => ({
+        ...prev,
+        customerId: highlightedCustomerIdNum,
+      }));
+    }
+  }, [highlightedCustomerIdNum]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -235,6 +256,20 @@ const CustomerManagement = () => {
           <div className="p-4 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <div>
+                <label className="block text-sm font-medium text-white/70 mb-1">Customer ID</label>
+                <input
+                  name="customerId"
+                  type="number"
+                  value={filterInputs.customerId ?? ''}
+                  onChange={(e) => setFilterInputs((prev) => ({
+                    ...prev,
+                    customerId: e.target.value ? Number(e.target.value) : undefined,
+                  }))}
+                  placeholder="e.g. 102"
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-button text-white placeholder-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-white/70 mb-1">Customer Name</label>
                 <input
                   name="customerName"
@@ -374,6 +409,11 @@ const CustomerManagement = () => {
           searchable={false}
           emptyMessage="No customers found. Adjust your filters and try again."
           pageSize={size}
+          getRowClassName={(row) =>
+            highlightedCustomerIdNum && row.customerId === highlightedCustomerIdNum
+              ? 'bg-yellow-400/15 ring-1 ring-yellow-300/40'
+              : ''
+          }
         />
 
         {/* Server-side Pagination */}

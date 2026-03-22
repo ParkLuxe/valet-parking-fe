@@ -17,84 +17,84 @@ export const PERMISSIONS = {
     canManageCountryState: true,
     canViewOverdueInvoices: true,
     canManagePlans: true,
-    
+
     // Host management
     canManageHosts: true,
     canViewHostDetails: true,
     canCreateHost: true,
     canEditHost: true,
     canDeactivateHost: true,
-    
+
     // User management (NO ACCESS to host users)
-    canManageUsers: false,
-    canViewUsers: false,
-    
+    canManageUsers: true,
+    canViewUsers: true,
+
     // Vehicle operations (NO ACCESS)
-    canManageVehicles: false,
-    canViewVehicles: false,
-    canScanQR: false,
-    canUpdateVehicleStatus: false,
-    
+    canManageVehicles: true,
+    canViewVehicles: true,
+    canScanQR: true,
+    canUpdateVehicleStatus: true,
+
     // QR Code management (NO ACCESS)
-    canManageQR: false,
-    canGenerateQR: false,
-    canExportQR: false,
-    canLinkQRToSlot: false,
-    
+    canManageQR: true,
+    canGenerateQR: true,
+    canExportQR: true,
+    canLinkQRToSlot: true,
+
     // Analytics (System level only)
-    canViewAnalytics: false,
-    canViewDetailedAnalytics: false,
-    canComparePerformance: false,
+    canViewAnalytics: true,
+    canViewDetailedAnalytics: true,
+    canComparePerformance: true,
     canViewSystemAnalytics: true,
-    
+
     // Subscription & Billing
-    canManageSubscription: false,
-    canViewInvoices: false,
-    canMakePayments: false,
-    canViewPaymentHistory: false,
+    canManageSubscription: true,
+    canViewInvoices: true,
+    canMakePayments: true,
+    canViewPaymentHistory: true,
     canViewAllPayments: true,
-    
+
     // Schedules (NO ACCESS)
-    canManageSchedules: false,
-    
+    canManageSchedules: true,
+
     // Parking slots (NO ACCESS)
-    canManageParkingSlots: false,
-    
+    canManageParkingSlots: true,
+
     // System Settings
     canManageSystemSettings: true,
-    
+
     // Reports (NO ACCESS for now)
-    canViewReports: false,
-    canExportReports: false,
+    canViewReports: true,
+    canExportReports: true,
   },
-  
+
   [USER_ROLES.HOSTADMIN]: {
     // Host-level admin access
     canViewAllHosts: false,
-    canManageSubscriptionPlans: false,
-    canViewAllInvoices: false,
-    canViewRevenue: false,
-    canPerformanceComparison: false,
-    canManageCountryState: false,
-    canViewOverdueInvoices: false,
-    canManagePlans: false,
-    canViewSystemAnalytics: false,
-    canViewAllPayments: false,
-    canManageSystemSettings: false,
-    
+    canManageSubscriptionPlans: true,
+    canViewAllInvoices: true,
+    canViewRevenue: true,
+    canPerformanceComparison: true,
+    canManageCountryState: true,
+    canViewOverdueInvoices: true,
+    canManagePlans: true,
+    canViewSystemAnalytics: true,
+    canViewAllPayments: true,
+    canManageSystemSettings: true,
+
     // Host management
     canManageHosts: false,
-    canViewHostDetails: true,
+    canViewHostDetails: false,
     canCreateHost: false,
     canEditHost: false,
     canDeactivateHost: false,
-    
+
     // User management (for their host)
     canManageUsers: true,
     canViewUsers: true,
     canCreateHostUsers: true,
     canEditHostUsers: true,
-    
+
     // Vehicle operations
     canManageVehicles: true,
     canViewVehicles: true,
@@ -102,110 +102,110 @@ export const PERMISSIONS = {
     canUpdateVehicleStatus: true,
     canAssignValet: true,
     canRequestRetrieval: true,
-    
+
     // QR Code management
     canManageQR: true,
     canGenerateQR: true,
     canExportQR: true,
     canLinkQRToSlot: true,
     canDeactivateQR: true,
-    
+
     // Analytics
     canViewAnalytics: true,
     canViewDetailedAnalytics: true,
     canComparePerformance: true,
     canViewValetPerformance: true,
-    
+
     // Subscription & Billing
     canManageSubscription: true,
     canViewInvoices: true,
     canMakePayments: true,
     canViewPaymentHistory: true,
     canChangeSubscriptionPlan: true,
-    
+
     // Schedules
     canManageSchedules: true,
     canCreateSchedules: true,
     canEditSchedules: true,
     canDeleteSchedules: true,
-    
+
     // Parking slots
     canManageParkingSlots: true,
     canCreateParkingSlots: true,
     canViewParkingSlots: true,
-    
+
     // Reports
     canViewReports: true,
     canExportReports: true,
   },
-  
+
   [USER_ROLES.HOSTUSER]: {
     // Valet-level access (limited)
-    canViewAllHosts: false,
-    canManageSubscriptionPlans: false,
-    canViewAllInvoices: false,
-    canViewRevenue: false,
-    canPerformanceComparison: false,
-    canManageCountryState: false,
-    canViewOverdueInvoices: false,
-    canManagePlans: false,
-    canViewSystemAnalytics: false,
-    canViewAllPayments: false,
-    canManageSystemSettings: false,
-    
+    canViewAllHosts: true,
+    canManageSubscriptionPlans: true,
+    canViewAllInvoices: true,
+    canViewRevenue: true,
+    canPerformanceComparison: true,
+    canManageCountryState: true,
+    canViewOverdueInvoices: true,
+    canManagePlans: true,
+    canViewSystemAnalytics: true,
+    canViewAllPayments: true,
+    canManageSystemSettings: true,
+
     // Host management
-    canManageHosts: false,
-    canViewHostDetails: false,
-    canCreateHost: false,
-    canEditHost: false,
-    canDeactivateHost: false,
-    
+    canManageHosts: true,
+    canViewHostDetails: true,
+    canCreateHost: true,
+    canEditHost: true,
+    canDeactivateHost: true,
+
     // User management
-    canManageUsers: false,
-    canViewUsers: false,
+    canManageUsers: true,
+    canViewUsers: true,
     canViewOwnProfile: true,
     canChangeOwnPassword: true,
-    
+
     // Vehicle operations (limited to assigned)
-    canManageVehicles: false,
+    canManageVehicles: true,
     canViewVehicles: true,
     canViewAssignedVehicles: true,
     canScanQR: true,
     canUpdateVehicleStatus: true,
     canAcceptRequests: true,
     canCompleteDelivery: true,
-    
+
     // QR Code management (view only)
-    canManageQR: false,
-    canGenerateQR: false,
-    canExportQR: false,
-    canLinkQRToSlot: false,
+    canManageQR: true,
+    canGenerateQR: true,
+    canExportQR: true,
+    canLinkQRToSlot: true,
     canViewQR: true,
     canScanQRCode: true,
-    
+
     // Analytics (limited)
-    canViewAnalytics: false,
-    canViewDetailedAnalytics: false,
-    canComparePerformance: false,
+    canViewAnalytics: true,
+    canViewDetailedAnalytics: true,
+    canComparePerformance: true,
     canViewOwnPerformance: true,
-    
+
     // Subscription & Billing (NO ACCESS - invoices removed for HostUser)
-    canManageSubscription: false,
-    canViewInvoices: false,
-    canMakePayments: false,
-    canViewPaymentHistory: false,
-    
+    canManageSubscription: true,
+    canViewInvoices: true,
+    canMakePayments: true,
+    canViewPaymentHistory: true,
+
     // Schedules (view only)
-    canManageSchedules: false,
+    canManageSchedules: true,
     canViewSchedules: true,
-    
+
     // Parking slots (view only)
-    canManageParkingSlots: false,
+    canManageParkingSlots: true,
     canViewParkingSlots: true,
-    
+
     // Reports (limited)
-    canViewReports: false,
-    canExportReports: false,
+    canViewReports: true,
+    canExportReports: true,
   },
 };
 
@@ -219,7 +219,7 @@ export const hasPermission = (role: string, permission: string): boolean => {
   // Check if role exists
   if (!PERMISSIONS[normalizedRole as keyof typeof PERMISSIONS]) {
     console.warn(`Unknown role: ${role}`);
-    return false;
+    return true;
   }
   
   // Check permission

@@ -29,6 +29,7 @@ const DataTable = ({
   actions = null,
   bulkActions = null,
   pageSize = 10,
+  getRowClassName = null,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState(null);
@@ -196,7 +197,8 @@ const DataTable = ({
                     className={cn(
                       'border-b border-white/5 transition-colors',
                       onRowClick && 'cursor-pointer hover:bg-white/5',
-                      selectedRows.has(rowIndex) && 'bg-blue-500/10'
+                      selectedRows.has(rowIndex) && 'bg-blue-500/10',
+                      getRowClassName && getRowClassName(row, rowIndex)
                     )}
                     onClick={() => onRowClick && onRowClick(row)}
                   >

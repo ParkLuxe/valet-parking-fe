@@ -4,8 +4,9 @@
  * Role-based rendering: Stats for Host/HostAdmin, minimal for SuperAdmin
  */
 
-import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../redux';
 import { motion } from 'framer-motion';
 import {
@@ -15,12 +16,12 @@ import {
   TrendingUp,
   TrendingDown,
   Activity,
-  DollarSign,
   ParkingSquare,
+  IndianRupee,
 } from 'lucide-react';
 import { Card, LoadingSpinner } from '../components';
-import { setMetrics } from '../redux';
 import { formatDuration, cn, USER_ROLES } from '../utils';
+import { useDashboardAnalytics } from '../hooks/queries/useAnalytics';
 
 // Animated Counter Component
 export interface AnimatedCounterProps {
@@ -113,31 +114,50 @@ const getStatusStyle = (status) => {
   return styles[status] || styles['Parked'];
 };
 
+const getDisplayStatus = (status) => {
+  const statusMap = {
+    PARKED: 'Parked',
+    OUT_FOR_DELIVERY: 'Out for Delivery',
+    DELIVERED: 'Delivered',
+    BEING_ASSIGNED: 'Being Assigned',
+    PARKING_IN_PROGRESS: 'Parking In Progress',
+  };
+
+  return statusMap[status] || status;
+};
+
 const Dashboard = () => {
-  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { metrics = {}, loading = false } = useSelector((state: RootState) => (state as any).analytics || {});
-  const { activeVehicles = [] } = useSelector((state: RootState) => (state as any).vehicles || {});
+  const hostId = user?.hostId || '';
 
   // Check if user is SuperAdmin
   const isSuperAdmin = user?.roleName === USER_ROLES.SUPERADMIN;
   // Check if user is Host/HostAdmin (should see stats)
   const isHostAdmin = user?.roleName === USER_ROLES.HOSTADMIN;
 
-  useEffect(() => {
-    // Fetch dashboard metrics only for Host/HostAdmin
-    if (isHostAdmin) {
-      // TODO: Replace with actual API call
-      dispatch(setMetrics({
-        activeValets: 5,
-        carsParked: 12,
-        avgParkingTime: 8,
-        avgDeliveryTime: 5,
-      }));
-    }
-  }, [dispatch, isHostAdmin]);
+  const {
+    data: analyticsData,
+    isLoading: analyticsLoading,
+  } = useDashboardAnalytics(hostId);
 
-  if (loading && !metrics) {
+  const metrics = useMemo(() => {
+    const data = (analyticsData || {}) as Record<string, any>;
+
+    return {
+      activeValets: Number(data.activeValets ?? data.activeValetCount ?? data.activeValetsCount ?? 0),
+      carsParked: Number(data.carsParked ?? data.totalParkedVehicles ?? data.parkedVehicles ?? data.currentParkedVehicles ?? 0),
+      avgParkingTime: Number(data.avgParkingTime ?? data.averageParkingTime ?? 0),
+      avgDeliveryTime: Number(data.avgDeliveryTime ?? data.averageDeliveryTime ?? 0),
+      valetRateIncrease: Number(data.valetRateIncrease ?? 0),
+      vehiclesParkedToday: Number(data.vehiclesParkedToday ?? 0),
+      slotsTaken: Number(data.slotsTaken ?? 0),
+      slotsAvailable: Number(data.slotsAvailable ?? data.availableSlots ?? 0),
+      recentActivity: Array.isArray(data.recentActivity) ? data.recentActivity : [],
+    };
+  }, [analyticsData]);
+
+  if (isHostAdmin && analyticsLoading) {
     return <LoadingSpinner message="Loading dashboard..." fullScreen />;
   }
 
@@ -176,7 +196,7 @@ const Dashboard = () => {
           <Card className="p-6 hover:scale-105 transition-transform cursor-pointer">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-primary rounded-lg">
-                <DollarSign className="w-6 h-6 text-white" />
+                <IndianRupee className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 className="text-white font-semibold">All Invoices</h3>
@@ -226,7 +246,7 @@ const Dashboard = () => {
             value={metrics.activeValets}
             icon={Users}
             trend="up"
-            trendValue={12}
+            trendValue={metrics.valetRateIncrease}
             delay={0}
           />
           <MetricCard
@@ -245,14 +265,6 @@ const Dashboard = () => {
             trendValue={5}
             delay={0.2}
           />
-          <MetricCard
-            title="Revenue Today"
-            value="₹2,400"
-            icon={DollarSign}
-            trend="up"
-            trendValue={15}
-            delay={0.3}
-          />
         </div>
       )}
 
@@ -267,17 +279,23 @@ const Dashboard = () => {
             className="lg:col-span-2"
           >
             <Card title="Recent Activity" className="h-full">
-              {activeVehicles.length > 0 ? (
+              {metrics.recentActivity.length > 0 ? (
                 <div className="space-y-3">
-                  {activeVehicles.slice(0, 5).map((vehicle, index) => {
-                    const statusStyle = getStatusStyle(vehicle.status);
+                  {metrics.recentActivity.slice(0, 5).map((activity, index) => {
+                    const displayStatus = getDisplayStatus(activity.status);
+                    const statusStyle = getStatusStyle(displayStatus);
                     return (
                       <motion.div
-                        key={vehicle.id}
+                        key={`${activity.customerId || index}-${activity.timestamp || index}`}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.5 + index * 0.1 }}
-                        className="flex items-center justify-between p-4 rounded-button bg-white/5 hover:bg-white/10 transition-colors group"
+                        className="flex items-center justify-between p-4 rounded-button bg-white/5 hover:bg-white/10 transition-colors group cursor-pointer"
+                        onClick={() => {
+                          if (activity.customerId) {
+                            navigate(`/customers?highlightCustomerId=${activity.customerId}`);
+                          }
+                        }}
                       >
                         <div className="flex items-center gap-4">
                           <div className="relative">
@@ -286,10 +304,10 @@ const Dashboard = () => {
                           </div>
                           <div>
                             <p className="text-white font-medium group-hover:text-primary transition-colors">
-                              {vehicle.vehicleNumber}
+                              {activity.vehicleNumber || 'Vehicle'}
                             </p>
                             <p className="text-white/50 text-sm">
-                              {vehicle.valetName} • Slot {vehicle.parkingSlot}
+                              {activity.type || 'Activity'} • {activity.timestamp ? new Date(activity.timestamp).toLocaleString() : 'Just now'}
                             </p>
                           </div>
                         </div>
@@ -297,7 +315,7 @@ const Dashboard = () => {
                           'px-3 py-1 rounded-button text-sm font-medium border',
                           statusStyle.color
                         )}>
-                          {vehicle.status}
+                          {displayStatus}
                         </div>
                       </motion.div>
                     );
@@ -324,28 +342,19 @@ const Dashboard = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 rounded-button bg-gradient-primary/10 border border-primary/20">
                   <div>
-                    <p className="text-white/60 text-sm mb-1">Total Vehicles</p>
+                    <p className="text-white/60 text-sm mb-1">Vehicles Parked Today</p>
                     <p className="text-2xl font-bold text-white">
-                      <AnimatedCounter end={24} />
+                      <AnimatedCounter end={metrics.vehiclesParkedToday} />
                     </p>
                   </div>
                   <Car className="w-8 h-8 text-primary" />
                 </div>
-
-                <div className="flex items-center justify-between p-3 rounded-button bg-gradient-accent/10 border border-accent/20">
-                  <div>
-                    <p className="text-white/60 text-sm mb-1">Revenue</p>
-                    <p className="text-2xl font-bold text-white">
-                      ₹<AnimatedCounter end={2400} />
-                    </p>
-                  </div>
-                  <DollarSign className="w-8 h-8 text-accent" />
-                </div>
-
                 <div className="flex items-center justify-between p-3 rounded-button bg-success/10 border border-success/20">
                   <div>
                     <p className="text-white/60 text-sm mb-1">Available Slots</p>
-                    <p className="text-2xl font-bold text-white">8 / 20</p>
+                    <p className="text-2xl font-bold text-white">
+                      {metrics.slotsTaken} / {metrics.slotsAvailable}
+                    </p>
                   </div>
                   <ParkingSquare className="w-8 h-8 text-success" />
                 </div>

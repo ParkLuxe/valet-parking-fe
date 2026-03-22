@@ -155,7 +155,7 @@ const App: React.FC = () => {
           <Route
             path="/parking-slots"
             element={
-              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD, USER_ROLES.VALET]}>
+              <ProtectedRoute requiredRoles={[USER_ROLES.SUPERADMIN, USER_ROLES.HOST, USER_ROLES.VALET_HEAD, USER_ROLES.VALET]}>
                 <Layout>
                   <ParkingSlots />
                 </Layout>

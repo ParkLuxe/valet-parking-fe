@@ -67,7 +67,7 @@ export const useUpdateHostUser = () => {
   
   return useMutation({
     mutationFn: async ({ userId, ...userData }: Partial<User> & { userId: string }) => {
-      const response = await apiHelper.put(`/v1/host-users/${userId}`, userData);
+      const response = await apiHelper.put(`/v1/host-users`, userData);
       return response;
     },
     onSuccess: (_, { userId }) => {
@@ -105,7 +105,7 @@ export const useHostUsers = (hostId: string, role?: string) => {
     queryFn: () => {
       const url = role 
         ? `/v1/host-users/host/${hostId}?role=${role}`
-        : `/v1/host-users/host/${hostId}`;
+        : `/v1/host-users`;
       return apiHelper.get(url);
     },
     enabled: !!hostId,

@@ -20,28 +20,11 @@ import { useHostSchedules, useCreateSchedule, useUpdateSchedule, useDeleteSchedu
 import { usePermissions } from '../hooks';
 import { Edit2, Trash2, Plus } from 'lucide-react';
 import { cn } from '../utils';
-
-const DAYS_OF_WEEK = [
-  'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'
-];
-
-const DAY_NAMES: Record<string, string> = {
-  MONDAY: 'Monday',
-  TUESDAY: 'Tuesday',
-  WEDNESDAY: 'Wednesday',
-  THURSDAY: 'Thursday',
-  FRIDAY: 'Friday',
-  SATURDAY: 'Saturday',
-  SUNDAY: 'Sunday',
-};
-
 interface Schedule {
   scheduleId?: string;
   id?: string;
-  dayOfWeek: string;
-  openTime: string;
-  closeTime: string;
-  isOpen: boolean;
+  cronExpression: string;
+  timeZone: string;
 }
 
 const HostSchedules = () => {
@@ -52,13 +35,12 @@ const HostSchedules = () => {
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [formData, setFormData] = useState({
-    dayOfWeek: 'MONDAY',
-    openTime: '09:00',
-    closeTime: '18:00',
-    isOpen: true,
+    cronExpression: '',
+    timeZone: 'Asia/Kolkata',
   });
 
   // ✅ Use TanStack Query hooks
+  const isSuperAdmin = user?.roleName === 'SUPERADMIN';
   const { data: schedules = [], isLoading } = useHostSchedules(user?.hostId || '');
   const createMutation = useCreateSchedule();
   const updateMutation = useUpdateSchedule();
@@ -80,7 +62,7 @@ const HostSchedules = () => {
       });
     } else {
       createMutation.mutate({
-        hostId: user?.hostId || '',
+        ...(isSuperAdmin && user?.hostId ? { hostId: user.hostId } : {}),
         ...formData,
       }, {
         onSuccess: () => {
@@ -93,20 +75,16 @@ const HostSchedules = () => {
 
   const resetForm = () => {
     setFormData({
-      dayOfWeek: 'MONDAY',
-      openTime: '09:00',
-      closeTime: '18:00',
-      isOpen: true,
+      cronExpression: '',
+      timeZone: 'Asia/Kolkata',
     });
   };
 
   const handleEdit = React.useCallback((schedule: Schedule) => {
     setEditingSchedule(schedule);
     setFormData({
-      dayOfWeek: schedule.dayOfWeek,
-      openTime: schedule.openTime,
-      closeTime: schedule.closeTime,
-      isOpen: schedule.isOpen !== false,
+      cronExpression: schedule.cronExpression,
+      timeZone: schedule.timeZone,
     });
     setShowModal(true);
   }, []);
@@ -136,46 +114,25 @@ const HostSchedules = () => {
   // Define columns for TanStack Table
   const columns = useMemo<ColumnDef<Schedule>[]>(() => [
     {
-      accessorKey: 'dayOfWeek',
-      header: 'Day of Week',
+      accessorKey: 'cronExpression',
+      header: 'Cron Expression',
       cell: ({ row }) => (
-        <span className="text-white font-medium">
-          {DAY_NAMES[row.original.dayOfWeek] || row.original.dayOfWeek}
-        </span>
+        <span className="text-white font-mono">{row.original.cronExpression}</span>
       ),
     },
     {
-      accessorKey: 'openTime',
-      header: 'Open Time',
+      accessorKey: 'timeZone',
+      header: 'Time Zone',
       cell: ({ row }) => (
-        <span className="text-white/90">{row.original.openTime}</span>
+        <span className="text-white/90">{row.original.timeZone}</span>
       ),
     },
     {
-      accessorKey: 'closeTime',
-      header: 'Close Time',
+      accessorKey: 'id',
+      header: 'Schedule ID',
       cell: ({ row }) => (
-        <span className="text-white/90">{row.original.closeTime}</span>
+        <span className="text-white/60 text-xs font-mono">{row.original.id || row.original.scheduleId || '—'}</span>
       ),
-    },
-    {
-      accessorKey: 'isOpen',
-      header: 'Status',
-      cell: ({ row }) => {
-        const isOpen = row.original.isOpen !== false;
-        return (
-          <div className="flex justify-center">
-            <span className={cn(
-              'px-3 py-1 rounded-full text-xs font-semibold',
-              isOpen
-                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                : 'bg-red-500/20 text-red-400 border border-red-500/30'
-            )}>
-              {isOpen ? 'Open' : 'Closed'}
-            </span>
-          </div>
-        );
-      },
     },
     ...(can('canManageSchedules') ? [{
       id: 'actions',
@@ -331,55 +288,28 @@ const HostSchedules = () => {
           title={editingSchedule ? 'Edit Schedule' : 'Add Schedule'}
         >
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
-                Day of Week
-              </label>
-              <select
-                name="dayOfWeek"
-                value={formData.dayOfWeek}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
-                required
-              >
-                {DAYS_OF_WEEK.map((day) => (
-                  <option key={day} value={day} className="bg-background-secondary">
-                    {DAY_NAMES[day]}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <Input
-              label="Open Time"
-              type="time"
-              name="openTime"
-              value={formData.openTime}
+              label="Cron Expression"
+              type="text"
+              name="cronExpression"
+              value={formData.cronExpression}
               onChange={handleChange}
+              placeholder="e.g. 0 0 5 * * ?"
               required
             />
+            <p className="text-xs text-white/50 -mt-2">
+              Standard cron format: seconds minutes hours day month weekday
+            </p>
 
             <Input
-              label="Close Time"
-              type="time"
-              name="closeTime"
-              value={formData.closeTime}
+              label="Time Zone"
+              type="text"
+              name="timeZone"
+              value={formData.timeZone}
               onChange={handleChange}
+              placeholder="e.g. Asia/Kolkata"
               required
             />
-
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="isOpen"
-                checked={formData.isOpen}
-                onChange={handleChange}
-                className="w-5 h-5 rounded border-white/20 bg-white/5 text-primary focus:ring-2 focus:ring-primary/30 cursor-pointer"
-              />
-              <label className="text-sm text-white/90 cursor-pointer">
-                Open for business
-              </label>
-            </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
               <Button

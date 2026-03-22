@@ -15,12 +15,19 @@ export const useCreateSchedule = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ hostId, ...data }: { hostId: string; dayOfWeek: string; openTime: string; closeTime: string; isOpen: boolean }) => {
-      const response = await apiHelper.post(`/v1/host-schedules/create/host/${hostId}`, data);
+    mutationFn: async ({ hostId, cronExpression, timeZone }: { hostId?: string; cronExpression: string; timeZone: string }) => {
+      const url = hostId
+        ? `/v1/host-schedules/create?hostId=${encodeURIComponent(hostId)}`
+        : '/v1/host-schedules/create';
+      const response = await apiHelper.post(url, { cronExpression, timeZone });
       return response;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.schedules.host(variables.hostId) });
+      if (variables.hostId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.schedules.host(variables.hostId) });
+      } else {
+        queryClient.invalidateQueries({ queryKey: queryKeys.schedules.all });
+      }
       dispatch(addToast({
         type: 'success',
         message: 'Schedule created successfully',
@@ -61,7 +68,7 @@ export const useUpdateSchedule = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ scheduleId, ...data }: { scheduleId: string; dayOfWeek?: string; openTime?: string; closeTime?: string; isOpen?: boolean }) => {
+    mutationFn: async ({ scheduleId, ...data }: { scheduleId: string; cronExpression?: string; timeZone?: string }) => {
       const response = await apiHelper.put(`/v1/host-schedules/${scheduleId}`, data);
       return response;
     },

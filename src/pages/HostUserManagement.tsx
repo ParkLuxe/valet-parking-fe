@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Modal, Input } from '../components';
 import { cn, getInitials } from '../utils';
-import { useHostUsers, useCreateHostUser } from '../hooks/queries/useHostUsers';
+import { useHostUsers, useCreateHostUser, useUpdateHostUser } from '../hooks/queries/useHostUsers';
 
 const HostUserManagement = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -43,6 +43,94 @@ const HostUserManagement = () => {
   // Create host user mutation
   const createHostUserMutation = useCreateHostUser();
   const isCreating = createHostUserMutation.isPending;
+
+  // Update host user mutation
+  const updateHostUserMutation = useUpdateHostUser();
+  const isUpdating = updateHostUserMutation.isPending;
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const initialEditFormData = {
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    email: '',
+    contactNumber: '',
+    designation: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    countryCode: 'IN',
+    dlNumber: '',
+    status: '',
+  };
+  const [editFormData, setEditFormData] = useState(initialEditFormData);
+  const [editFormErrors, setEditFormErrors] = useState<Record<string, string>>({});
+
+  const handleOpenEditModal = (hostUser: any) => {
+    setEditingUserId(String(hostUser.id));
+    setEditFormData({
+      firstName: hostUser.firstName || '',
+      middleName: hostUser.middleName || '',
+      lastName: hostUser.lastName || '',
+      email: hostUser.email || '',
+      contactNumber: hostUser.phone || hostUser.contactNumber || '',
+      designation: hostUser.designation || '',
+      addressLine1: hostUser.addressLine1 || '',
+      addressLine2: hostUser.addressLine2 || '',
+      city: hostUser.city || '',
+      state: hostUser.state || '',
+      postalCode: hostUser.postalCode || '',
+      countryCode: hostUser.countryCode || 'IN',
+      dlNumber: hostUser.dlNumber || '',
+      status: hostUser.status || '',
+    });
+    setEditFormErrors({});
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingUserId(null);
+    setEditFormData(initialEditFormData);
+    setEditFormErrors({});
+  };
+
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+    if (editFormErrors[name]) {
+      setEditFormErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateEditForm = () => {
+    const errors: Record<string, string> = {};
+    if (!editFormData.firstName.trim()) errors.firstName = 'First name is required';
+    if (!editFormData.lastName.trim()) errors.lastName = 'Last name is required';
+    if (!editFormData.email.trim()) errors.email = 'Email is required';
+    if (!editFormData.contactNumber.trim()) errors.contactNumber = 'Phone number is required';
+    if (!editFormData.designation.trim()) errors.designation = 'Designation is required';
+    setEditFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateEditForm() || !editingUserId) return;
+    try {
+      await updateHostUserMutation.mutateAsync({
+        userId: editingUserId,
+        ...editFormData,
+      });
+      handleCloseEditModal();
+    } catch {
+      // error toast handled by the hook
+    }
+  };
 
   // Add User form state
   const initialFormData = {
@@ -332,7 +420,11 @@ const HostUserManagement = () => {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2">
-                        <button className="p-2 rounded-button hover:bg-white/5 transition-colors">
+                        <button
+                          className="p-2 rounded-button hover:bg-white/5 transition-colors"
+                          onClick={() => handleOpenEditModal(user)}
+                          title="Edit user"
+                        >
                           <Edit className="w-5 h-5 text-blue-400" />
                         </button>
                         <button className="p-2 rounded-button hover:bg-white/5 transition-colors">
@@ -379,6 +471,147 @@ const HostUserManagement = () => {
           )}
         </div>
       </Card>
+
+      {/* Edit User Modal */}
+      {showEditModal && (
+        <Modal
+          open={showEditModal}
+          onClose={handleCloseEditModal}
+          title="Edit Host User"
+        >
+          <form onSubmit={handleUpdateUser} className="space-y-4">
+            {/* Name Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                name="firstName"
+                value={editFormData.firstName}
+                onChange={handleEditFormChange}
+                icon={<User className="w-5 h-5" />}
+                error={!!editFormErrors.firstName}
+                helperText={editFormErrors.firstName}
+                required
+              />
+              <Input
+                label="Last Name"
+                name="lastName"
+                value={editFormData.lastName}
+                onChange={handleEditFormChange}
+                icon={<User className="w-5 h-5" />}
+                error={!!editFormErrors.lastName}
+                helperText={editFormErrors.lastName}
+                required
+              />
+            </div>
+
+            {/* Contact Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                value={editFormData.email}
+                onChange={handleEditFormChange}
+                icon={<Mail className="w-5 h-5" />}
+                error={!!editFormErrors.email}
+                helperText={editFormErrors.email}
+                required
+              />
+              <Input
+                label="Phone Number"
+                name="contactNumber"
+                value={editFormData.contactNumber}
+                onChange={handleEditFormChange}
+                icon={<Phone className="w-5 h-5" />}
+                error={!!editFormErrors.contactNumber}
+                helperText={editFormErrors.contactNumber}
+                required
+              />
+            </div>
+
+            {/* Designation */}
+            <Input
+              label="Designation"
+              name="designation"
+              value={editFormData.designation}
+              onChange={handleEditFormChange}
+              icon={<Briefcase className="w-5 h-5" />}
+              error={!!editFormErrors.designation}
+              helperText={editFormErrors.designation}
+              required
+            />
+
+            {/* DL Number */}
+            <Input
+              label="DL Number"
+              name="dlNumber"
+              value={editFormData.dlNumber}
+              onChange={handleEditFormChange}
+              icon={<CreditCard className="w-5 h-5" />}
+              placeholder="Driving License Number (optional)"
+            />
+
+            {/* Address Section */}
+            <div className="pt-3 border-t border-white/10">
+              <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-blue-400" />
+                Address
+              </h4>
+              <div className="space-y-4">
+                <Input
+                  label="Address Line 1"
+                  name="addressLine1"
+                  value={editFormData.addressLine1}
+                  onChange={handleEditFormChange}
+                  icon={<MapPin className="w-5 h-5" />}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="City"
+                    name="city"
+                    value={editFormData.city}
+                    onChange={handleEditFormChange}
+                    icon={<Building2 className="w-5 h-5" />}
+                  />
+                  <Input
+                    label="State"
+                    name="state"
+                    value={editFormData.state}
+                    onChange={handleEditFormChange}
+                    icon={<Building2 className="w-5 h-5" />}
+                  />
+                  <Input
+                    label="Postal Code"
+                    name="postalCode"
+                    value={editFormData.postalCode}
+                    onChange={handleEditFormChange}
+                    icon={<MapPin className="w-5 h-5" />}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="submit"
+                variant="gradient"
+                className="flex-1"
+                loading={isUpdating}
+              >
+                Save Changes
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCloseEditModal}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {/* Add User Modal */}
       {showAddModal && (

@@ -38,7 +38,7 @@ const Login = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value.trim(),
     }));
     // Clear error for this field
     if (errors[name]) {

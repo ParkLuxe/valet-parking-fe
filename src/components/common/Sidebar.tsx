@@ -38,37 +38,85 @@ const drawerWidth = 260;
 // Menu items configuration with permissions
 const getAllMenuItems = () => [
   // Common
-  { path: '/dashboard', label: 'Dashboard', icon: Home, permission: null },
-  { path: '/profile', label: 'Profile', icon: User, permission: null },
-  
+  { path: "/dashboard", label: "Dashboard", icon: Home, permission: null },
+  {
+    path: "/qr-scan",
+    label: "QR Scanner",
+    icon: QrCode,
+    permission: "canScanQR",
+  },
+
   // SuperAdmin Only
-  { path: '/host-management', label: 'Hosts Management', icon: Building2, permission: 'canManageHosts' },
-  { path: '/subscription-plans-crud', label: 'Subscription Plans', icon: Package, permission: 'canManageSubscriptionPlans' },
-  { path: '/all-payments', label: 'All Payments', icon: DollarSign, permission: 'canViewAllPayments' },
-  { path: '/super-admin-analytics', label: 'System Analytics', icon: TrendingUp, permission: 'canViewSystemAnalytics' },
-  { path: '/system-settings', label: 'System Settings', icon: Settings, permission: 'canManageSystemSettings' },
-  
+  {
+    path: "/host-management",
+    label: "Hosts Management",
+    icon: Building2,
+    permission: "canManageHosts",
+  },
+  {
+    path: "/subscription-plans-crud",
+    label: "Subscription Plans",
+    icon: Package,
+    permission: "canManageSubscriptionPlans",
+  },
+
   // Host Admin
-  { path: '/customers', label: 'Customers', icon: Users, permission: 'canManageVehicles' },
-  { path: '/parking-slots', label: 'Parking Slots', icon: ParkingSquare, permission: 'canManageParkingSlots' },
-  { path: '/qr-management', label: 'QR Codes', icon: QrCode, permission: 'canManageQR' },
-  { path: '/host-users', label: 'Host Users', icon: Users, permission: 'canManageUsers' },
-  { path: '/host-schedules', label: 'Operating Hours', icon: Calendar, permission: 'canManageSchedules' },
-  { path: '/analytics', label: 'Analytics', icon: BarChart3, permission: 'canViewAnalytics' },
-  { path: '/reports', label: 'Reports', icon: FileLineChart, permission: 'canViewReports' },
-  { path: '/invoices', label: 'Invoices', icon: FileText, permission: 'canViewInvoices' },
-  { path: '/payments', label: 'Payments', icon: DollarSign, permission: 'canViewPaymentHistory' },
-  { path: '/subscription', label: 'Subscription', icon: CreditCard, permission: 'canManageSubscription' },
-  
+  {
+    path: "/customers",
+    label: "Customers",
+    icon: Users,
+    permission: "canManageVehicles",
+  },
+  {
+    path: "/host-users",
+    label: "Host Users",
+    icon: Users,
+    permission: "canManageUsers",
+  },
+  {
+    path: "/host-schedules",
+    label: "Operating Hours",
+    icon: Calendar,
+    permission: "canManageSchedules",
+  },
+  {
+    path: "/invoices",
+    label: "Invoices",
+    icon: FileText,
+    permission: "canViewInvoices",
+  },
+  {
+    path: "/subscription",
+    label: "Subscription",
+    icon: CreditCard,
+    permission: "canManageSubscription",
+  },
+
   // Valet/Host User
-  { path: '/my-vehicles', label: 'My Vehicles', icon: Car, permission: 'canViewAssignedVehicles' },
-  { path: '/qr-scan', label: 'QR Scanner', icon: QrCode, permission: 'canScanQR' },
-  { path: '/my-performance', label: 'My Performance', icon: Activity, permission: 'canViewOwnPerformance' },
-  
+  {
+    path: "/my-vehicles",
+    label: "My Vehicles",
+    icon: Car,
+    permission: "canViewAssignedVehicles",
+  },
+  {
+    path: "/my-performance",
+    label: "My Performance",
+    icon: Activity,
+    permission: "canViewOwnPerformance",
+  },
+
   // Debug (dev environment only)
-  ...(process.env.NODE_ENV === 'development' ? [
-    { path: '/debug-protected', label: 'Debug Dashboard', icon: Bug, permission: null },
-  ] : []),
+  ...(process.env.NODE_ENV === "development"
+    ? [
+        {
+          path: "/debug-protected",
+          label: "Debug Dashboard",
+          icon: Bug,
+          permission: null,
+        },
+      ]
+    : []),
 ];
 
 const Sidebar = () => {

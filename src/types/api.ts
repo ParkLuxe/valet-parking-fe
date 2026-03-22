@@ -275,10 +275,8 @@ export interface QRCode {
 export interface HostSchedule {
   id: string;
   hostId: string;
-  dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-  openTime: string;
-  closeTime: string;
-  isOpen: boolean;
+  cronExpression: string;
+  timeZone: string;
   createdAt?: string;
   updatedAt?: string;
 }

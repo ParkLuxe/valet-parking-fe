@@ -11,7 +11,14 @@ import { queryKeys } from '../../lib/queryKeys';
 export const useDashboardAnalytics = (hostId: string) => {
   return useQuery({
     queryKey: queryKeys.analytics.dashboard(hostId),
-    queryFn: () => apiHelper.get(`/v1/analytics/dashboard/${hostId}`),
+    queryFn: async () => {
+      try {
+        return await apiHelper.get(`/v1/analytics/host/${hostId}`);
+      } catch {
+        // Backward compatibility for environments that still expose the legacy route.
+        return apiHelper.get(`/v1/analytics/dashboard/${hostId}`);
+      }
+    },
     enabled: !!hostId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

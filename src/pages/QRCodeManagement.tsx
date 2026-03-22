@@ -192,11 +192,11 @@ const QRCodeManagement = () => {
               </Button>
             </>
           )}
-          {can('canExportQR') && (
+          {/* {can('canExportQR') && (
             <Button onClick={handleExport} variant="outline" disabled={loading}>
               Export All
             </Button>
-          )}
+          )} */}
         </div>
       </div>
 
