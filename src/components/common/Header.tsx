@@ -1,6 +1,7 @@
 /**
  * Enhanced Header Component
- * Clean UI with minimal borders, better dropdowns
+ * Valet Mobile Operations — Operational Elegance Design System
+ * Midnight dark background, cyan avatar highlight, Manrope/Inter typography
  */
 
 import React, { useState } from 'react';
@@ -14,11 +15,14 @@ import {
   User,
   LogOut,
   Settings,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { toggleSidebar } from '../../redux';
 import { logout } from '../../redux';
 import { getInitials } from '../../utils';
 import type { RootState } from '../../redux';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -26,6 +30,7 @@ const Header = () => {
   
   const { user } = useSelector((state: RootState) => state.auth);
   const { unreadCount } = useSelector((state: RootState) => state.notifications);
+  const { isDark, toggle, colors } = useTheme();
   
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -43,39 +48,75 @@ const Header = () => {
   };
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
+    <motion.div
+      initial={{ y: -24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-r from-[#0a0a0f] to-[#1a1a2e] backdrop-blur-xl shadow-lg"
+      className="relative z-40"
+      style={{
+        background: colors.contentBg,
+        borderBottom: `1px solid ${colors.border}`,
+      }}
     >
-      <div className="flex items-center justify-between px-6 py-4">
+      <div className="flex items-center justify-between px-6 py-4 lg:px-8">
         {/* Left: Menu button */}
         <button
           onClick={handleToggleSidebar}
-          className="p-2 rounded-lg hover:bg-white/10 transition-colors lg:hidden"
+          className="p-2 rounded-[0.375rem] transition-colors"
+          style={{ color: colors.text }}
+          onMouseEnter={e => (e.currentTarget.style.background = colors.hoverBg)}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           aria-label="Toggle sidebar"
         >
-          <Menu className="w-6 h-6 text-white" />
+          <Menu className="w-6 h-6" />
         </button>
 
-        {/* Center: Page title (can be dynamic) */}
-        <div className="flex-1 lg:ml-64">
-          {/* Empty for now, can add breadcrumbs or search */}
-        </div>
+        <div className="flex-1" />
 
-        {/* Right: Notifications and User Menu */}
         <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <button
+              onClick={toggle}
+              className="p-2.5 rounded-[0.375rem] transition-all duration-200"
+              style={{ color: colors.textMuted }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = colors.hoverBg;
+                e.currentTarget.style.color = colors.primary;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = colors.textMuted;
+              }}
+              aria-label="Toggle theme"
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
           {/* Notifications Dropdown */}
           <DropdownMenu.Root open={showNotifications} onOpenChange={setShowNotifications}>
             <DropdownMenu.Trigger asChild>
-              <button className="relative p-2.5 rounded-lg hover:bg-white/10 transition-all duration-200 group">
-                <Bell className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" />
+              <button
+                className="relative p-2.5 rounded-[0.375rem] transition-all duration-200 group"
+                style={{ color: colors.textMuted }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = colors.hoverBg;
+                  e.currentTarget.style.color = colors.text;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = colors.textMuted;
+                }}
+              >
+                <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-0.5 -right-0.5 bg-error text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg"
+                    className="absolute -top-0.5 -right-0.5 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    style={{
+                      background: colors.notifBadge,
+                      color: '#ffffff',
+                      fontFamily: 'Outfit, sans-serif',
+                    }}
                   >
                     {unreadCount}
                   </motion.span>
@@ -92,18 +133,35 @@ const Header = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="bg-gradient-to-br from-[#1a1a2e] to-[#16162a] backdrop-blur-xl p-5 mt-2 w-80 rounded-xl shadow-2xl"
+                      className="p-5 mt-2 w-80 rounded-[12px] shadow-2xl"
+                      style={{
+                        background: colors.dropdownBg,
+                        border: `1px solid ${colors.dropdownBorder}`,
+                        boxShadow: colors.shadowCard,
+                        zIndex: 12000,
+                      }}
                     >
-                      <h3 className="text-white font-semibold text-base mb-4">Notifications</h3>
+                      <h3
+                        className="font-semibold text-base mb-4"
+                        style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}
+                      >
+                        Notifications
+                      </h3>
                       <div className="space-y-2">
                         {unreadCount === 0 ? (
                           <div className="text-center py-8">
-                            <p className="text-white/50 text-sm">
+                            <p
+                              className="text-sm"
+                              style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}
+                            >
                               No new notifications
                             </p>
                           </div>
                         ) : (
-                          <p className="text-white/70 text-sm">
+                          <p
+                            className="text-sm"
+                            style={{ color: colors.primaryLight, fontFamily: 'Outfit, sans-serif' }}
+                          >
                             You have {unreadCount} unread notifications
                           </p>
                         )}
@@ -118,23 +176,40 @@ const Header = () => {
           {/* User Dropdown */}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 transition-all duration-200 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-semibold shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform">
+              <button
+                className="flex items-center gap-3 p-2 rounded-[0.375rem] transition-all duration-200 group"
+                onMouseEnter={e => (e.currentTarget.style.background = colors.hoverBg)}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                <div
+                  className="w-10 h-10 rounded-[10px] flex items-center justify-center font-semibold transition-transform group-hover:scale-105"
+                  style={{
+                    background: colors.avatarBg,
+                    color: '#ffffff',
+                    fontFamily: 'Space Grotesk, sans-serif',
+                  }}
+                >
                   {user?.profilePicture ? (
                     <img
                       src={user.profilePicture}
                       alt={user.name}
-                      className="w-full h-full rounded-xl object-cover"
+                      className="w-full h-full rounded-[0.375rem] object-cover"
                     />
                   ) : (
                     getInitials(user?.name)
                   )}
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-white text-sm font-medium">
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}
+                  >
                     {user?.name || 'User'}
                   </p>
-                  <p className="text-white/50 text-xs">
+                  <p
+                    className="text-xs"
+                    style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}
+                  >
                     {(user as any)?.roleName || 'Role'}
                   </p>
                 </div>
@@ -148,20 +223,48 @@ const Header = () => {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16162a] backdrop-blur-xl p-2 mt-2 w-64 rounded-xl shadow-2xl"
+                  className="p-2 mt-2 w-64 rounded-[12px] shadow-2xl"
+                  style={{
+                    background: colors.dropdownBg,
+                    border: `1px solid ${colors.dropdownBorder}`,
+                    boxShadow: colors.shadowCard,
+                    zIndex: 12000,
+                  }}
                 >
                   {/* User info */}
-                  <div className="px-4 py-3 mb-2 bg-white/5 rounded-lg">
-                    <p className="text-white font-semibold text-sm">{user?.name}</p>
-                    <p className="text-white/50 text-xs mt-0.5">{user?.email}</p>
+                  <div
+                    className="px-4 py-3 mb-2 rounded-[8px]"
+                    style={{ background: colors.activeItemBg }}
+                  >
+                    <p
+                      className="font-semibold text-sm"
+                      style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}
+                    >
+                      {user?.name}
+                    </p>
+                    <p
+                      className="text-xs mt-0.5"
+                      style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}
+                    >
+                      {user?.email}
+                    </p>
                   </div>
 
                   {/* Menu items */}
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <DropdownMenu.Item asChild>
                       <button
                         onClick={handleProfile}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-left text-sm"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-[0.375rem] transition-all duration-200 text-left text-sm"
+                        style={{ color: colors.text, fontFamily: 'Outfit, sans-serif' }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = colors.hoverBg;
+                          e.currentTarget.style.color = colors.text;
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = colors.text;
+                        }}
                       >
                         <User className="w-4 h-4" />
                         <span>Profile</span>
@@ -170,7 +273,16 @@ const Header = () => {
 
                     <DropdownMenu.Item asChild>
                       <button
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-left text-sm"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-[0.375rem] transition-all duration-200 text-left text-sm"
+                        style={{ color: colors.text, fontFamily: 'Outfit, sans-serif' }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = colors.hoverBg;
+                          e.currentTarget.style.color = colors.text;
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = colors.text;
+                        }}
                       >
                         <Settings className="w-4 h-4" />
                         <span>Settings</span>
@@ -178,12 +290,24 @@ const Header = () => {
                     </DropdownMenu.Item>
                   </div>
 
-                  <div className="h-px bg-white/10 my-2" />
+                  <div
+                    className="my-2"
+                    style={{ height: '1px', background: colors.divider }}
+                  />
 
                   <DropdownMenu.Item asChild>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-left text-sm"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-[0.375rem] transition-all duration-200 text-left text-sm"
+                      style={{ color: colors.text, fontFamily: 'Outfit, sans-serif' }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(220,38,38,0.12)';
+                        e.currentTarget.style.color = '#fca5a5';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = colors.text;
+                      }}
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Logout</span>
@@ -195,7 +319,7 @@ const Header = () => {
           </DropdownMenu.Root>
         </div>
       </div>
-    </motion.header>
+    </motion.div>
   );
 };
 

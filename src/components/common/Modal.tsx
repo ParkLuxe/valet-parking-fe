@@ -7,6 +7,7 @@ import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '../../utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ModalProps {
   open: boolean;
@@ -14,6 +15,7 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   className?: string;
+  titleClassName?: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -22,43 +24,51 @@ const Modal: React.FC<ModalProps> = ({
   title,
   children,
   className,
+  titleClassName,
 }) => {
+  const { colors } = useTheme();
+
   return (
     <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <Dialog.Portal>
         {/* Overlay */}
-        <Dialog.Overlay className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 animate-in fade-in duration-200" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md animate-in fade-in duration-200" />
         
         {/* Content */}
         <Dialog.Content
           className={cn(
-            'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50',
-            'w-full max-w-4xl max-h-[90vh] overflow-y-auto',
-            'bg-gradient-to-br from-[#1a1a2e] to-[#16162a]',
-            'border border-white/10 rounded-2xl shadow-2xl',
-            'p-6 animate-in zoom-in-95 fade-in duration-200',
+            'fixed left-1/2 top-1/2 z-50 w-[min(92vw,56rem)] max-h-[min(88vh,900px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden outline-none',
+            'rounded-[24px] shadow-2xl',
+            'animate-in zoom-in-95 fade-in duration-200',
             className
           )}
+          style={{
+            background: colors.dropdownBg,
+            border: `1px solid ${colors.border}`,
+            boxShadow: '0 20px 60px rgba(15,23,42,0.22)',
+          }}
         >
+
           {/* Header */}
           {title && (
-            <div className="flex items-center justify-between mb-4">
-              <Dialog.Title className="text-xl font-bold text-white">
+            <div className="relative z-10 flex items-center justify-between gap-4 px-6 py-5" style={{ borderBottom: `1px solid ${colors.divider}` }}>
+              <Dialog.Title className={cn('text-xl font-bold', titleClassName)} style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}>
                 {title}
               </Dialog.Title>
               <Dialog.Close asChild>
                 <button
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl transition-colors"
+                  style={{ background: colors.hoverBg }}
                   aria-label="Close"
                 >
-                  <X className="w-5 h-5 text-white/70" />
+                  <X className="w-5 h-5" style={{ color: colors.textMuted }} />
                 </button>
               </Dialog.Close>
             </div>
           )}
           
           {/* Body */}
-          <div className="text-white">
+          <div className="relative z-10 overflow-y-auto px-6 pb-6 pt-5" style={{ color: colors.text }}>
             {children}
           </div>
         </Dialog.Content>

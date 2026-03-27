@@ -99,16 +99,14 @@ export const useHostUser = (userId: string) => {
 };
 
 // Get host's users (with optional role filter)
-export const useHostUsers = (hostId: string, role?: string) => {
+export const useHostUsers = () => {
   return useQuery({
-    queryKey: [...queryKeys.users.all, 'host', hostId, role] as const,
+    queryKey: [...queryKeys.users.all, 'host'] as const,
     queryFn: () => {
-      const url = role 
-        ? `/v1/host-users/host/${hostId}?role=${role}`
-        : `/v1/host-users`;
+      const url = `/v1/host-users`;
       return apiHelper.get(url);
     },
-    enabled: !!hostId,
+    enabled: true,
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -130,6 +128,16 @@ export const useHostUsersCount = (hostId: string) => {
   return useQuery({
     queryKey: [...queryKeys.users.all, 'widget', hostId] as const,
     queryFn: () => apiHelper.get(`/v1/host-users/widget/${hostId}`),
+    enabled: !!hostId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+// Get user counts by role from /v1/host-users/count
+export const useHostUsersRoleCount = (hostId: string) => {
+  return useQuery<Record<string, number>>({
+    queryKey: [...queryKeys.users.all, 'count', hostId] as const,
+    queryFn: () => apiHelper.get(`/v1/host-users/count${hostId ? `?hostId=${hostId}` : ''}`),
     enabled: !!hostId,
     staleTime: 5 * 60 * 1000,
   });

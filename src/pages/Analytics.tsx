@@ -1,38 +1,20 @@
 /**
- * Analytics Dashboard Page
- * Displays comprehensive metrics, charts, and performance data
+ * Analytics Dashboard — Valet Mobile Operations Design
+ * Super Admin Valet Performance screen pattern
+ * Elite Circle leaderboard, KPI tiles, charts
  */
 
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
+  LineChart, Line, BarChart, Bar, AreaChart, Area,
+  XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import {
-  Users,
-  Car,
-  DollarSign,
-  CreditCard,
-} from 'lucide-react';
-import { Card } from '../components';
-import { cn } from '../utils';
-import {  formatCurrency  } from '../utils';
+import { Users, Car, DollarSign, CreditCard, Star, TrendingUp } from 'lucide-react';
+import { formatCurrency } from '../utils';
 
-// Mock data generators - using deterministic values
+// ─── Mock data generators (unchanged) ─────────────────────────────────
 const generateVehicleData = () => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
   return months.map((month, index) => ({
@@ -43,363 +25,271 @@ const generateVehicleData = () => {
 };
 
 const generateVehicleTypeData = () => [
-  { name: 'Sedan', value: 450, color: '#667eea' },
-  { name: 'SUV', value: 320, color: '#764ba2' },
-  { name: 'Hatchback', value: 280, color: '#f093fb' },
-  { name: 'Luxury', value: 150, color: '#4facfe' },
-  { name: 'Bike', value: 200, color: '#00f2fe' },
+  { name: 'Sedan',    value: 450, color: '#8b5cf6' },
+  { name: 'SUV',      value: 320, color: '#e9c349' },
+  { name: 'Hatchback',value: 280, color: '#a78bfa' },
+  { name: 'Luxury',   value: 150, color: '#4ade80' },
+  { name: 'Bike',     value: 200, color: '#fb923c' },
 ];
 
 const generateUserRegistrationData = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return days.map((day, index) => ({
-    day,
-    users: 15 + index * 3 + (index % 3) * 5,
-  }));
+  return days.map((day, index) => ({ day, users: 15 + index * 3 + (index % 3) * 5 }));
 };
 
 const generateValetPerformance = () => [
-  { name: 'John Smith', vehicles: 245, rating: 4.8, efficiency: 92 },
-  { name: 'Sarah Johnson', vehicles: 230, rating: 4.9, efficiency: 95 },
-  { name: 'Mike Davis', vehicles: 215, rating: 4.7, efficiency: 88 },
-  { name: 'Emily Brown', vehicles: 198, rating: 4.6, efficiency: 85 },
-  { name: 'David Wilson', vehicles: 182, rating: 4.5, efficiency: 82 },
+  { name: 'Julian Thorne',   venue: 'Grand Hotel Indigo',  rating: 4.99, sessions: 142 },
+  { name: 'Elena Rossi',     venue: 'The Obsidian Club',   rating: 4.97, sessions: 201 },
+  { name: 'Marcus Sterling', venue: 'Ritz-Carlton Sky',    rating: 4.94, sessions: 88  },
+  { name: 'Alex Mercer',     venue: 'Park-Luxe Terminal A',rating: 4.91, sessions: 174 },
+  { name: 'Sarah Taylor',    venue: 'Marina Bay Valet',    rating: 4.88, sessions: 130 },
 ];
 
+// ─── Custom tooltip ────────────────────────────────────────────────────
+const ChartTooltip = ({ active, payload, label }: any) => {
+  if (active && payload?.length) {
+    return (
+      <div className="px-4 py-3 rounded-[0.375rem]" style={{ background: '#222a3d', border: '1px solid rgba(139,92,246,0.1)', fontFamily: 'Inter, sans-serif' }}>
+        <p className="text-sm font-semibold mb-2" style={{ color: '#dae2fd' }}>{label}</p>
+        {payload.map((entry, i) => (
+          <p key={i} className="text-xs" style={{ color: entry.color }}>
+            {entry.name}: {entry.name.includes('Revenue') || entry.name.includes('revenue') ? formatCurrency(entry.value) : entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+// ─── KPI tile ─────────────────────────────────────────────────────────
+const KPITile = ({ icon: Icon, label, value, change, accent, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    className="p-6 rounded-[12px] relative overflow-hidden group"
+    style={{ background: '#171f33', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+    onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px)')}
+    onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
+  >
+    <div className="flex items-start justify-between mb-4">
+      <div className="p-3 rounded-[0.375rem]" style={{ background: `${accent}18` }}>
+        <Icon className="w-6 h-6" style={{ color: accent }} />
+      </div>
+      <span className="text-sm font-semibold" style={{ color: '#4ade80', fontFamily: 'Inter, sans-serif' }}>
+        <TrendingUp className="w-3.5 h-3.5 inline mr-1" />{change}
+      </span>
+    </div>
+    <div className="text-3xl font-bold mb-1" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>
+      {value}
+    </div>
+    <div className="text-sm" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>{label}</div>
+  </motion.div>
+);
+
+// ─── Analytics page ────────────────────────────────────────────────────
 const Analytics = () => {
   const [timeFilter, setTimeFilter] = useState('month');
 
-  // Generate data
-  const vehicleData = useMemo(() => generateVehicleData(), []);
-  const vehicleTypeData = useMemo(() => generateVehicleTypeData(), []);
-  const userRegistrationData = useMemo(() => generateUserRegistrationData(), []);
-  const valetPerformance = useMemo(() => generateValetPerformance(), []);
+  const vehicleData        = useMemo(() => generateVehicleData(), []);
+  const vehicleTypeData    = useMemo(() => generateVehicleTypeData(), []);
+  const userRegistration   = useMemo(() => generateUserRegistrationData(), []);
+  const valetPerformance   = useMemo(() => generateValetPerformance(), []);
 
-  // Calculate metrics
-  const totalVehicles = vehicleData.reduce((sum, item) => sum + item.vehicles, 0);
-  const totalRevenue = vehicleData.reduce((sum, item) => sum + item.revenue, 0);
-  const totalUsers = userRegistrationData.reduce((sum, item) => sum + item.users, 0);
-  const activeSubscriptions = 42;
-
-  const metrics = [
-    {
-      icon: Users,
-      label: 'Total Users',
-      value: totalUsers.toString(),
-      change: '+12%',
-      color: 'from-blue-500 to-cyan-500',
-    },
-    {
-      icon: Car,
-      label: 'Vehicles Parked',
-      value: totalVehicles.toString(),
-      change: '+18%',
-      color: 'from-purple-500 to-pink-500',
-    },
-    {
-      icon: DollarSign,
-      label: 'Revenue This Month',
-      value: formatCurrency(totalRevenue / vehicleData.length),
-      change: '+24%',
-      color: 'from-green-500 to-emerald-500',
-    },
-    {
-      icon: CreditCard,
-      label: 'Active Subscriptions',
-      value: activeSubscriptions.toString(),
-      change: '+8%',
-      color: 'from-orange-500 to-red-500',
-    },
-  ];
+  const totalVehicles      = vehicleData.reduce((s, d) => s + d.vehicles, 0);
+  const totalRevenue       = vehicleData.reduce((s, d) => s + d.revenue, 0);
+  const totalUsers         = userRegistration.reduce((s, d) => s + d.users, 0);
 
   const timeFilters = [
-    { id: 'day', label: 'Today' },
-    { id: 'week', label: 'This Week' },
-    { id: 'month', label: 'This Month' },
-    { id: 'custom', label: 'Custom Range' },
+    { id: 'day',    label: 'Today'       },
+    { id: 'week',   label: 'This Week'   },
+    { id: 'month',  label: 'This Month'  },
+    { id: 'custom', label: 'Custom Range'},
   ];
 
-  // Custom tooltip styling
-  interface CustomTooltipProps {
-  active?: any;
-  payload?: any;
-  label?: any;
-}
-
-const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-[#1a1a2e] border border-white/10 rounded-lg p-3 shadow-lg">
-          <p className="text-white font-medium mb-2">{label}</p>
-          {payload.map((entry, index) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.name.includes('Revenue') ? formatCurrency(entry.value) : entry.value}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+  const chartGrid = 'rgba(255,255,255,0.06)';
+  const chartAxis = '#909097';
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="space-y-7 p-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gradient-primary mb-2">
-            Analytics Dashboard
-          </h1>
-          <p className="text-white/70">
-            Comprehensive insights into your parking operations
+          <p className="text-xs font-semibold tracking-widest mb-1" style={{ color: '#8b5cf6', fontFamily: 'Inter, sans-serif' }}>PERFORMANCE CENTER</p>
+          <h1 className="text-4xl font-bold mb-1" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>Analytics</h1>
+          <p className="text-sm" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>
+            Comprehensive insights into valet operations
           </p>
         </div>
-
-        {/* Time Filter */}
         <div className="flex gap-2">
-          {timeFilters.map((filter) => (
+          {timeFilters.map(f => (
             <button
-              key={filter.id}
-              onClick={() => setTimeFilter(filter.id)}
-              className={cn(
-                'px-4 py-2 rounded-button font-medium transition-all',
-                timeFilter === filter.id
-                  ? 'bg-gradient-primary text-white shadow-glow-primary'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10'
-              )}
+              key={f.id}
+              onClick={() => setTimeFilter(f.id)}
+              className="px-3 py-1.5 rounded-[0.375rem] text-xs font-semibold transition-all"
+              style={{
+                background: timeFilter === f.id ? '#8b5cf6' : 'rgba(139,92,246,0.07)',
+                color: timeFilter === f.id ? '#0b1326' : '#909097',
+                fontFamily: 'Inter, sans-serif',
+              }}
             >
-              {filter.label}
+              {f.label}
             </button>
           ))}
         </div>
+      </motion.div>
+
+      {/* KPI tiles */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <KPITile icon={Users}      label="Total Users"          value={totalUsers}                                      change="+12%"  accent="#8b5cf6" delay={0}    />
+        <KPITile icon={Car}        label="Vehicles Parked"       value={totalVehicles}                                   change="+18%"  accent="#e9c349" delay={0.07} />
+        <KPITile icon={DollarSign} label="Revenue This Month"    value={formatCurrency(totalRevenue / vehicleData.length)} change="+24%" accent="#4ade80" delay={0.14} />
+        <KPITile icon={CreditCard} label="Active Subscriptions"  value={42}                                              change="+8%"   accent="#a78bfa" delay={0.21} />
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {metrics.map((metric, index) => {
-          const Icon = metric.icon;
-          return (
-            <motion.div
-              key={metric.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="relative overflow-hidden group hover:scale-105 transition-transform">
-                {/* Background gradient */}
-                <div className={cn(
-                  'absolute inset-0 bg-gradient-to-br opacity-10 group-hover:opacity-20 transition-opacity',
-                  metric.color
-                )} />
-                
-                <div className="relative p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={cn(
-                      'p-3 rounded-lg bg-gradient-to-br',
-                      metric.color
-                    )}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="text-green-400 text-sm font-medium">
-                      {metric.change}
-                    </span>
+      {/* Charts 2×2 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Vehicles over time */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="p-6 rounded-[12px]" style={{ background: '#171f33', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+          <h3 className="text-base font-bold mb-5" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>Vehicles Parked Over Time</h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <LineChart data={vehicleData}>
+              <defs>
+                <linearGradient id="vLine" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#8b5cf6" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+              <XAxis dataKey="month" stroke={chartAxis} tick={{ fill: chartAxis, fontSize: 11 }} />
+              <YAxis stroke={chartAxis} tick={{ fill: chartAxis, fontSize: 11 }} />
+              <Tooltip content={<ChartTooltip />} />
+              <Line type="monotone" dataKey="vehicles" stroke="#8b5cf6" strokeWidth={2.5} dot={{ fill: '#8b5cf6', r: 4 }} activeDot={{ r: 6 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Revenue */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="p-6 rounded-[12px]" style={{ background: '#171f33', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+          <h3 className="text-base font-bold mb-5" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>Revenue Over Time</h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={vehicleData}>
+              <defs>
+                <linearGradient id="revBar" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#e9c349" stopOpacity={0.9} />
+                  <stop offset="95%" stopColor="#af8d11" stopOpacity={0.5} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+              <XAxis dataKey="month" stroke={chartAxis} tick={{ fill: chartAxis, fontSize: 11 }} />
+              <YAxis stroke={chartAxis} tick={{ fill: chartAxis, fontSize: 11 }} />
+              <Tooltip content={<ChartTooltip />} />
+              <Bar dataKey="revenue" fill="url(#revBar)" radius={[6, 6, 0, 0]} name="Revenue (₹)" />
+            </BarChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* User registrations */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="p-6 rounded-[12px]" style={{ background: '#171f33', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+          <h3 className="text-base font-bold mb-5" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>User Registrations (This Week)</h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={userRegistration}>
+              <defs>
+                <linearGradient id="regArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#a78bfa" stopOpacity={0.7} />
+                  <stop offset="95%" stopColor="#a78bfa" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+              <XAxis dataKey="day" stroke={chartAxis} tick={{ fill: chartAxis, fontSize: 11 }} />
+              <YAxis stroke={chartAxis} tick={{ fill: chartAxis, fontSize: 11 }} />
+              <Tooltip content={<ChartTooltip />} />
+              <Area type="monotone" dataKey="users" stroke="#a78bfa" strokeWidth={2} fill="url(#regArea)" name="New Users" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Vehicle type breakdown */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="p-6 rounded-[12px]" style={{ background: '#171f33', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+          <h3 className="text-base font-bold mb-5" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>Vehicle Type Breakdown</h3>
+          <div className="space-y-3">
+            {vehicleTypeData.map((type, i) => {
+              const max = vehicleTypeData[0].value;
+              const pct = Math.round((type.value / max) * 100);
+              return (
+                <div key={type.name}>
+                  <div className="flex justify-between text-xs mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <span style={{ color: '#c6c6cd' }}>{type.name}</span>
+                    <span style={{ color: type.color }}>{type.value} vehicles</span>
                   </div>
-                  <div className="text-3xl font-bold text-white mb-1">
-                    {metric.value}
-                  </div>
-                  <div className="text-white/60 text-sm">
-                    {metric.label}
+                  <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 1, delay: 0.4 + i * 0.08 }}
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, ${type.color}aa, ${type.color})` }}
+                    />
                   </div>
                 </div>
-              </Card>
-            </motion.div>
-          );
-        })}
+              );
+            })}
+          </div>
+        </motion.div>
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Vehicles Parked Over Time - Line Chart */}
-        <Card title="Vehicles Parked Over Time" className="col-span-1">
-          <div className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={vehicleData}>
-                <defs>
-                  <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#667eea" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#764ba2" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis dataKey="month" stroke="#fff" opacity={0.7} />
-                <YAxis stroke="#fff" opacity={0.7} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ color: '#fff' }} />
-                <Line
-                  type="monotone"
-                  dataKey="vehicles"
-                  stroke="#667eea"
-                  strokeWidth={3}
-                  fill="url(#lineGradient)"
-                  dot={{ fill: '#667eea', r: 5 }}
-                  activeDot={{ r: 7 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+      {/* Elite Circle — Leaderboard */}
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="p-6 rounded-[12px]" style={{ background: '#171f33', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+        <div className="flex items-center gap-2 mb-5">
+          <Star className="w-5 h-5" style={{ color: '#e9c349' }} />
+          <h3 className="text-base font-bold" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>Elite Circle</h3>
+          <span className="text-xs px-2 py-0.5 rounded-full ml-1" style={{ background: 'rgba(233,195,73,0.12)', color: '#e9c349', fontFamily: 'Inter, sans-serif' }}>
+            Top performing valets
+          </span>
+        </div>
 
-        {/* Revenue Over Time - Bar Chart */}
-        <Card title="Revenue Over Time" className="col-span-1">
-          <div className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={vehicleData}>
-                <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#059669" stopOpacity={0.6}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis dataKey="month" stroke="#fff" opacity={0.7} />
-                <YAxis stroke="#fff" opacity={0.7} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ color: '#fff' }} />
-                <Bar
-                  dataKey="revenue"
-                  fill="url(#barGradient)"
-                  radius={[8, 8, 0, 0]}
-                  name="Revenue (₹)"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        {/* Vehicle Type Distribution - Pie Chart */}
-        <Card title="Vehicle Type Distribution" className="col-span-1">
-          <div className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={vehicleTypeData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {vehicleTypeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap gap-3 justify-center mt-4">
-              {vehicleTypeData.map((item) => (
-                <div key={item.name} className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-white/70 text-sm">{item.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        {/* User Registrations - Area Chart */}
-        <Card title="User Registrations (This Week)" className="col-span-1">
-          <div className="p-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={userRegistrationData}>
-                <defs>
-                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4facfe" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#00f2fe" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis dataKey="day" stroke="#fff" opacity={0.7} />
-                <YAxis stroke="#fff" opacity={0.7} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ color: '#fff' }} />
-                <Area
-                  type="monotone"
-                  dataKey="users"
-                  stroke="#4facfe"
-                  strokeWidth={2}
-                  fill="url(#areaGradient)"
-                  name="New Users"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </div>
-
-      {/* Valet Performance Table */}
-      <Card title="Valet Performance Rankings">
-        <div className="p-6">
-          <div className="space-y-4">
-            {valetPerformance.map((valet, index) => (
+        <div className="space-y-2">
+          {valetPerformance.map((valet, i) => {
+            const medals = ['🥇', '🥈', '🥉'];
+            const initials = valet.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            const accent = i === 0 ? '#e9c349' : i === 1 ? '#c6c6cd' : i === 2 ? '#fb923c' : '#8b5cf6';
+            return (
               <motion.div
                 key={valet.name}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-4 p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all"
+                transition={{ delay: 0.45 + i * 0.07 }}
+                className="flex items-center gap-4 px-4 py-3 rounded-[0.375rem] transition-all"
+                style={{ background: 'rgba(139,92,246,0.03)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(139,92,246,0.07)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(139,92,246,0.03)')}
               >
-                {/* Rank Badge */}
-                <div className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center font-bold text-white',
-                  index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
-                  index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800' :
-                  index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
-                  'bg-white/10'
-                )}>
-                  {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: `${accent}22`, color: accent, fontFamily: 'Manrope, sans-serif' }}>
+                  {initials}
                 </div>
 
-                {/* Valet Info */}
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-white font-semibold">{valet.name}</h4>
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-white/70">
-                        {valet.vehicles} vehicles
-                      </span>
-                      <span className="text-yellow-400">
-                        ⭐ {valet.rating}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-sm font-semibold" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>{valet.name}</span>
+                    {i < 3 && <span className="text-xs">{medals[i]}</span>}
                   </div>
-                  
-                  {/* Efficiency Progress Bar */}
-                  <div className="flex items-center gap-3">
-                    <span className="text-white/50 text-xs w-20">Efficiency</span>
-                    <div className="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${valet.efficiency}%` }}
-                        transition={{ duration: 1, delay: index * 0.1 }}
-                        className="h-full bg-gradient-to-r from-green-500 to-emerald-400"
-                      />
-                    </div>
-                    <span className="text-white text-sm font-medium w-12">
-                      {valet.efficiency}%
-                    </span>
+                  <p className="text-xs" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>{valet.venue}</p>
+                </div>
+
+                <div className="text-right">
+                  <div className="flex items-center gap-1 justify-end mb-0.5">
+                    <Star className="w-3.5 h-3.5" style={{ color: '#e9c349' }} />
+                    <span className="text-sm font-bold" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>{valet.rating}</span>
                   </div>
+                  <p className="text-xs" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>{valet.sessions} sessions</p>
                 </div>
               </motion.div>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </Card>
+      </motion.div>
     </div>
   );
 };

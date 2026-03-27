@@ -3,18 +3,17 @@
  * Manage hosts - View, Create, Edit, Deactivate
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Plus,
   Edit,
   Eye,
   ToggleLeft,
   ToggleRight,
-  Building2,
   Users,
   Car,
 } from 'lucide-react';
-import { Card } from '../../components';
+
 import { Button } from '../../components';
 import { Modal } from '../../components';
 import { Input } from '../../components';
@@ -22,6 +21,8 @@ import { LoadingSpinner } from '../../components';
 import { DataTable } from '../../components';
 import { ConfirmDialog } from '../../components';
 import { useHosts, useRegisterHost, useUpdateHost } from '../../hooks/queries/useHosts';
+import { useStatesByCountry } from '../../hooks/queries/useCountries';
+import { useCityLocationSuggestions, usePostalCodeLookup } from '../../hooks/queries/useLocationSuggestions';
 
 const HostManagement = () => {
   // Pagination will be implemented in the future
@@ -94,6 +95,86 @@ const HostManagement = () => {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const submitting = registerHostMutation.isPending || updateHostMutation.isPending;
+
+  const { data: statesResponse, isLoading: statesLoading } = useStatesByCountry(formData.countryCode || 'IN');
+  const { data: cityLocationSuggestions = [], isLoading: citySuggestionsLoading } = useCityLocationSuggestions(formData.city, formData.state);
+  const { data: postalLookupSuggestions = [], isFetching: postalLookupLoading } = usePostalCodeLookup(formData.postalCode);
+
+  const stateSuggestions = useMemo(() => {
+    const rawStates = Array.isArray(statesResponse)
+      ? statesResponse
+      : Array.isArray((statesResponse as any)?.content)
+        ? (statesResponse as any).content
+        : Array.isArray((statesResponse as any)?.data)
+          ? (statesResponse as any).data
+          : [];
+
+    return rawStates
+      .map((state: any) => {
+        const value = state.name || state.stateName || state.state || '';
+        return { label: value, value };
+      })
+      .filter((state: { value: string }) => state.value)
+      .filter((state: { value: string }) =>
+        !formData.state.trim() || state.value.toLowerCase().includes(formData.state.trim().toLowerCase())
+      );
+  }, [formData.state, statesResponse]);
+
+  const citySuggestions = useMemo(() => {
+    const seen = new Set<string>();
+    return cityLocationSuggestions
+      .filter((item) => {
+        const key = `${item.city}|${item.state}`;
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      })
+      .map((item) => ({
+        label: item.city,
+        value: item.city,
+        meta: item.state,
+        payload: item,
+      }));
+  }, [cityLocationSuggestions]);
+
+  const postalSuggestions = useMemo(() => {
+    const source = cityLocationSuggestions.length > 0 ? cityLocationSuggestions : postalLookupSuggestions;
+    const seen = new Set<string>();
+    return source
+      .filter((item) => {
+        if (!item.postalCode || seen.has(item.postalCode)) {
+          return false;
+        }
+        seen.add(item.postalCode);
+        return true;
+      })
+      .filter((item) => !formData.postalCode.trim() || item.postalCode.includes(formData.postalCode.trim()))
+      .map((item) => ({
+        label: item.postalCode,
+        value: item.postalCode,
+        meta: `${item.city}, ${item.state}`,
+        payload: item,
+      }));
+  }, [cityLocationSuggestions, formData.postalCode, postalLookupSuggestions]);
+
+  useEffect(() => {
+    if (formData.postalCode.trim().length < 6 || postalLookupSuggestions.length === 0) {
+      return;
+    }
+
+    const match = postalLookupSuggestions[0];
+    setFormData((prev) =>
+      prev.city === match.city && prev.state === match.state
+        ? prev
+        : {
+            ...prev,
+            city: match.city,
+            state: match.state,
+          }
+    );
+  }, [formData.postalCode, postalLookupSuggestions]);
 
 
   const validateForm = () => {
@@ -182,6 +263,37 @@ const HostManagement = () => {
     if (formErrors[name]) {
       setFormErrors({ ...formErrors, [name]: '' });
     }
+  };
+
+  const handleStateSuggestionSelect = (suggestion: { value: string }) => {
+    setFormData((prev) => ({
+      ...prev,
+      state: suggestion.value,
+      city: '',
+      postalCode: '',
+    }));
+    setFormErrors((prev) => ({ ...prev, state: '', city: '', postalCode: '' }));
+  };
+
+  const handleCitySuggestionSelect = (suggestion: { value: string; payload?: any }) => {
+    const payload = suggestion.payload;
+    setFormData((prev) => ({
+      ...prev,
+      city: suggestion.value,
+      state: payload?.state || prev.state,
+    }));
+    setFormErrors((prev) => ({ ...prev, city: '', state: '' }));
+  };
+
+  const handlePostalSuggestionSelect = (suggestion: { value: string; payload?: any }) => {
+    const payload = suggestion.payload;
+    setFormData((prev) => ({
+      ...prev,
+      postalCode: suggestion.value,
+      city: payload?.city || prev.city,
+      state: payload?.state || prev.state,
+    }));
+    setFormErrors((prev) => ({ ...prev, postalCode: '', city: '', state: '' }));
   };
 
   const handleOpenCreateModal = () => {
@@ -450,16 +562,25 @@ const HostManagement = () => {
     return <LoadingSpinner message="Loading hosts..." fullScreen />;
   }
 
+  const activeHosts   = hosts.filter(h => h.isActive !== false).length;
+  const inactiveHosts = hosts.filter(h => h.isActive === false).length;
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Host Management</h1>
-          <p className="text-white/60">Manage all hosts and their details</p>
+          <p className="text-xs font-semibold tracking-widest mb-1" style={{ color: '#8b5cf6', fontFamily: 'Inter, sans-serif' }}>
+            GLOBAL HOST ECOSYSTEM
+          </p>
+          <h1 className="text-4xl font-bold mb-1" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>
+            Host Management
+          </h1>
+          <p className="text-sm" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>
+            Manage all valet host organizations, admins, and business details
+          </p>
         </div>
         <Button
-          variant="primary"
           onClick={handleOpenCreateModal}
           startIcon={<Plus className="w-5 h-5" />}
         >
@@ -467,14 +588,25 @@ const HostManagement = () => {
         </Button>
       </div>
 
+      {/* Stats bar */}
+      <div className="flex items-center gap-8 px-6 py-4 rounded-[12px]" style={{ background: '#171f33', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+        {[
+          { label: 'Total Hosts',    value: hosts.length,  color: '#dae2fd' },
+          { label: 'Active',         value: activeHosts,   color: '#4ade80'  },
+          { label: 'Inactive',       value: inactiveHosts, color: '#909097'  },
+        ].map((s, i) => (
+          <div key={s.label} className="flex items-center gap-8">
+            <div>
+              <p className="text-2xl font-bold tabular-nums" style={{ color: s.color, fontFamily: 'Manrope, sans-serif' }}>{s.value}</p>
+              <p className="text-xs" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>{s.label}</p>
+            </div>
+            {i < 2 && <div className="w-px h-8" style={{ background: 'rgba(139,92,246,0.08)' }} />}
+          </div>
+        ))}
+      </div>
+
       {/* Hosts Table */}
-      <Card
-        title={`Total Hosts: ${hosts.length}`}
-        subtitle={`Active: ${hosts.filter((h) => h.isActive !== false).length} | Inactive: ${
-          hosts.filter((h) => h.isActive === false).length
-        }`}
-        headerAction={<Building2 className="w-5 h-5 text-white/50" />}
-      >
+      <div className="rounded-[12px] overflow-hidden" style={{ background: '#171f33', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
         <DataTable
           columns={columns}
           data={hosts}
@@ -483,7 +615,7 @@ const HostManagement = () => {
           emptyMessage="No hosts found"
           pageSize={10}
         />
-      </Card>
+      </div>
 
       {/* Create/Edit Modal */}
       <Modal
@@ -581,23 +713,29 @@ const HostManagement = () => {
                 />
               </div>
               <Input
-                label="City"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                error={!!formErrors.city}
-                helperText={formErrors.city}
-                placeholder="Hyderabad"
-                required
-              />
-              <Input
                 label="State"
                 name="state"
                 value={formData.state}
                 onChange={handleInputChange}
                 error={!!formErrors.state}
-                helperText={formErrors.state}
+                helperText={formErrors.state || 'Pick the state first for better city suggestions'}
                 placeholder="Telangana"
+                suggestions={stateSuggestions}
+                onSuggestionSelect={handleStateSuggestionSelect}
+                loadingSuggestions={statesLoading}
+                required
+              />
+              <Input
+                label="City"
+                name="city"
+                value={formData.city}
+                onChange={handleInputChange}
+                error={!!formErrors.city}
+                helperText={formErrors.city || (formData.state ? 'City suggestions are filtered by the selected state' : 'Enter or select a state first')}
+                placeholder="Hyderabad"
+                suggestions={formData.state ? citySuggestions : []}
+                onSuggestionSelect={handleCitySuggestionSelect}
+                loadingSuggestions={!!formData.state && citySuggestionsLoading}
                 required
               />
               <Input
@@ -606,8 +744,11 @@ const HostManagement = () => {
                 value={formData.postalCode}
                 onChange={handleInputChange}
                 error={!!formErrors.postalCode}
-                helperText={formErrors.postalCode}
+                helperText={formErrors.postalCode || 'Typing a full postal code will auto-fill city and state'}
                 placeholder="500062"
+                suggestions={postalSuggestions}
+                onSuggestionSelect={handlePostalSuggestionSelect}
+                loadingSuggestions={postalLookupLoading}
                 required
               />
               <Input

@@ -16,7 +16,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../lib/queryKeys';
 import { fetchCurrentUserProfile } from '../hooks/queries/useHostUsers';
 import type { User as UserType, AuthResponse } from '../types/api';
-import { validateRequired, cn } from '../utils';
+import { validateRequired } from '../utils';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -155,25 +155,25 @@ const Login = () => {
   ];
 
   return (
-    <div className="min-h-screen flex bg-background">
-      {/* Left Side - Hero Section with Gradient and Stats */}
+    <div className="min-h-screen flex" style={{ background: '#09090f' }}>
+      {/* Left Side - Hero Section with dark midnight tones */}
       <motion.div
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
         className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
       >
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-primary opacity-90" />
+        {/* Midnight Dark Background */}
+        <div className="absolute inset-0" style={{ background: '#09090f' }} />
         
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse-slow" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent rounded-full blur-3xl animate-pulse-slow [animation-delay:1s]" />
+        {/* Animated Background Pattern — cyan accent glows */}
+        <div className="absolute inset-0" style={{ opacity: 0.12 }}>
+          <div className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl animate-pulse-slow" style={{ background: '#8b5cf6' }} />
+          <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full blur-3xl animate-pulse-slow" style={{ background: '#7c3aed', animationDelay: '1s' }} />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between p-12 text-white">
+        <div className="relative z-10 flex flex-col justify-between p-12" style={{ color: '#dae2fd' }}>
           {/* Logo */}
           <motion.div
             initial={{ y: -20, opacity: 0 }}
@@ -182,8 +182,8 @@ const Login = () => {
             className="flex items-center gap-3"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-white rounded-lg blur opacity-50" />
-              <div className="relative bg-white/20 backdrop-blur-sm p-3 rounded-lg">
+              <div className="absolute inset-0 rounded-lg" style={{ background: '#8b5cf6', opacity: 0.5 }} />
+              <div className="relative p-3 rounded-lg" style={{ background: 'rgba(139,92,246,0.15)', backdropFilter: 'blur(8px)' }}>
                 <img 
                   src="/parkluxe-logo-192.png" 
                   alt="ParkLuxe Logo" 
@@ -192,8 +192,8 @@ const Login = () => {
               </div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Park-Luxe</h1>
-              <p className="text-white/80 text-sm">Valet Parking Excellence</p>
+              <h1 className="text-3xl font-bold" style={{ fontFamily: 'Manrope, sans-serif', color: '#dae2fd' }}>Park-Luxe</h1>
+              <p className="text-sm" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>Valet Parking Excellence</p>
             </div>
           </motion.div>
 
@@ -204,6 +204,7 @@ const Login = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
               className="text-5xl font-bold mb-6 leading-tight"
+              style={{ fontFamily: 'Manrope, sans-serif', color: '#dae2fd' }}
             >
               Premium Valet<br />Parking Experience
             </motion.h2>
@@ -211,7 +212,8 @@ const Login = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-xl text-white/90 mb-12"
+              className="text-xl mb-12"
+              style={{ color: '#c6c6cd', fontFamily: 'Inter, sans-serif' }}
             >
               Seamlessly manage your valet operations with real-time tracking and analytics.
             </motion.p>
@@ -226,11 +228,17 @@ const Login = () => {
                     initial={{ y: 30, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.6 + index * 0.1 }}
-                    className="glass-card p-4 text-center hover:-translate-y-1 transition-transform"
+                    className="p-4 text-center hover:-translate-y-1 transition-transform rounded-[12px]"
+                    style={{
+                      background: 'rgba(45,52,73,0.5)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+                    }}
                   >
-                    <Icon className="w-8 h-8 mx-auto mb-2" />
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-sm text-white/70">{stat.label}</p>
+                    <Icon className="w-8 h-8 mx-auto mb-2" style={{ color: '#8b5cf6' }} />
+                    <p className="text-2xl font-bold" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>{stat.value}</p>
+                    <p className="text-sm" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>{stat.label}</p>
                   </motion.div>
                 );
               })}
@@ -242,9 +250,10 @@ const Login = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="flex items-center gap-2 text-white/60 text-sm"
+            className="flex items-center gap-2 text-sm"
+            style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}
           >
-            <Shield className="w-4 h-4" />
+            <Shield className="w-4 h-4" style={{ color: '#8b5cf6' }} />
             <span>Secure • Reliable • Professional</span>
           </motion.div>
         </div>
@@ -256,11 +265,12 @@ const Login = () => {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
         className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12"
+        style={{ background: '#09090f' }}
       >
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="bg-gradient-primary p-3 rounded-lg">
+            <div className="p-3 rounded-[0.375rem]" style={{ background: '#8b5cf6' }}>
               <img 
                 src="/parkluxe-logo-192.png" 
                 alt="ParkLuxe Logo" 
@@ -268,8 +278,8 @@ const Login = () => {
               />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Park-Luxe</h1>
-              <p className="text-white/60 text-sm">Valet Management</p>
+              <h1 className="text-2xl font-bold" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>Park-Luxe</h1>
+              <p className="text-sm" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>Valet Management</p>
             </div>
           </div>
 
@@ -280,8 +290,8 @@ const Login = () => {
             transition={{ delay: 0.3 }}
             className="mb-8"
           >
-            <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p className="text-white/60">Sign in to your account to continue</p>
+            <h2 className="text-3xl font-bold mb-2" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>Welcome Back</h2>
+            <p style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>Sign in to your account to continue</p>
           </motion.div>
 
           {/* Role Selection Tabs */}
@@ -295,16 +305,33 @@ const Login = () => {
             }}
             className="mb-6"
           >
-            <Tabs.List className="grid grid-cols-3 gap-2 glass-card p-1 rounded-button">
+            <Tabs.List
+              className="grid grid-cols-3 gap-2 p-1 rounded-[0.375rem]"
+              style={{ background: '#171f33' }}
+            >
               {roleLabels.map((label, index) => (
                 <Tabs.Trigger
                   key={roles[index]}
                   value={roles[index]}
-                  className={cn(
-                    'px-4 py-2 text-sm font-medium rounded-button transition-all',
-                    'data-[state=active]:bg-gradient-primary data-[state=active]:text-white data-[state=active]:shadow-lg',
-                    'data-[state=inactive]:text-white/60 data-[state=inactive]:hover:text-white'
-                  )}
+                  className="px-4 py-2 text-sm font-medium rounded-[0.375rem] transition-all"
+                  style={{
+                    fontFamily: 'Inter, sans-serif',
+                    background: selectedTab === index
+                      ? '#8b5cf6'
+                      : 'transparent',
+                    color: selectedTab === index ? '#00354a' : '#909097',
+                    boxShadow: selectedTab === index ? '0 4px 12px rgba(139,92,246,0.2)' : 'none',
+                  }}
+                  onMouseEnter={e => {
+                    if (selectedTab !== index) {
+                      e.currentTarget.style.color = '#dae2fd';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (selectedTab !== index) {
+                      e.currentTarget.style.color = '#909097';
+                    }
+                  }}
                 >
                   {label}
                 </Tabs.Trigger>
@@ -319,11 +346,15 @@ const Login = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="glass-card p-4 mb-4 border-l-4 border-error"
+                className="p-4 mb-4 rounded-[0.375rem]"
+                style={{
+                  background: 'rgba(147,0,10,0.35)',
+                  borderLeft: '4px solid #ffb4ab',
+                }}
               >
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
-                  <p className="text-white text-sm">{error}</p>
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#ffb4ab' }} />
+                  <p className="text-sm" style={{ color: '#ffdad6', fontFamily: 'Inter, sans-serif' }}>{error}</p>
                 </div>
               </motion.div>
             )}
@@ -381,12 +412,16 @@ const Login = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="mt-6 text-center text-white/60 text-sm"
+              className="mt-6 text-center text-sm"
+              style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}
             >
               Don't have an account?{' '}
               <Link
                 to="/register"
-                className="text-primary hover:text-primary-light font-medium transition-colors"
+                className="font-medium transition-colors"
+                style={{ color: '#8b5cf6' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#c4e7ff')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#8b5cf6')}
               >
                 Register as Host
               </Link>

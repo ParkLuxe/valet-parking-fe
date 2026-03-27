@@ -16,14 +16,22 @@ export const useGenerateQRCode = () => {
   
   return useMutation({
     mutationFn: async (data: {
-      hostId: string;
+      hostId?: string;
       customData?: any;
+      slotId?: string;
+      phoneNumber?: string;
+      vehicleNumber?: string;
+      valetHostUserId?: number;
     }) => {
       const response = await apiHelper.post('/v1/qr/generate', data);
       return response;
     },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qrCodes.list(data.hostId) });
+    onSuccess: (_data: any, variables) => {
+      if (variables.hostId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.qrCodes.list(variables.hostId) });
+      } else {
+        queryClient.invalidateQueries({ queryKey: queryKeys.qrCodes.all });
+      }
       dispatch(addToast({
         type: 'success',
         message: 'QR code generated successfully',

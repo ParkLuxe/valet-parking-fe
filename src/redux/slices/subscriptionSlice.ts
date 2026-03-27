@@ -93,6 +93,11 @@ const subscriptionSlice = createSlice({
       state.status = 'active';
       state.billing.lastPaymentDate = action.payload.date;
     },
+
+    // Append payment history entry without changing subscription counters
+    appendPaymentHistory: (state, action) => {
+      state.paymentHistory.unshift(action.payload);
+    },
     
     // Set payment history
     setPaymentHistory: (state, action) => {
@@ -129,6 +134,7 @@ export const {
   incrementScanCount,
   setBillingInfo,
   addPayment,
+  appendPaymentHistory,
   setPaymentHistory,
   setSubscriptionData,
   setError,

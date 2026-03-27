@@ -85,4 +85,5 @@ export {
   incrementScanCount,
   setBillingInfo,
   addPayment as addSubscriptionPayment,
+  appendPaymentHistory,
 } from './slices/subscriptionSlice';

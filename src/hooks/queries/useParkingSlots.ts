@@ -21,6 +21,18 @@ export const useParkingSlots = (hostId: string) => {
   });
 };
 
+// Get available parking slots
+export const useAvailableParkingSlots = () => {
+  return useQuery({
+    queryKey: [...queryKeys.parkingSlots.all, 'available'] as const,
+    queryFn: async () => {
+      const response = await apiHelper.get('/v1/parking-slot/available');
+      return response;
+    },
+    staleTime: 60 * 1000,
+  });
+};
+
 // Create parking slots mutation
 export const useCreateParkingSlots = () => {
   const dispatch = useDispatch();

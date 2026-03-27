@@ -1,6 +1,7 @@
 /**
- * Host Schedules Page
- * Manage operating schedules for the host
+ * Host Schedules — Valet Mobile Operations Design
+ * Valet Schedule Management: cron schedule cards with time info
+ * Preserves all existing TanStack Table, hooks, and CRUD logic
  */
 
 import React, { useState, useMemo } from 'react';
@@ -15,11 +16,13 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table';
-import { Card, Button, LoadingSpinner, Modal, Input } from '../components';
+import { Button, LoadingSpinner, Modal, Input } from '../components';
 import { useHostSchedules, useCreateSchedule, useUpdateSchedule, useDeleteSchedule } from '../hooks/queries/useHostSchedules';
 import { usePermissions } from '../hooks';
-import { Edit2, Trash2, Plus } from 'lucide-react';
-import { cn } from '../utils';
+import { Edit2, Trash2, Plus, AlarmClock } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useTheme } from '../contexts/ThemeContext';
+
 interface Schedule {
   scheduleId?: string;
   id?: string;
@@ -29,134 +32,109 @@ interface Schedule {
 
 const HostSchedules = () => {
   const { can } = usePermissions();
+  const { colors } = useTheme();
   const { user } = useSelector((state: RootState) => state.auth);
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal]       = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [formData, setFormData] = useState({
-    cronExpression: '',
-    timeZone: 'Asia/Kolkata',
-  });
+  const [sorting, setSorting]           = useState<SortingState>([]);
+  const [formData, setFormData]         = useState({ cronExpression: '', timeZone: 'Asia/Kolkata' });
 
-  // ✅ Use TanStack Query hooks
+  // ─── Hooks (unchanged) ────────────────────────────────────────────────
   const isSuperAdmin = user?.roleName === 'SUPERADMIN';
   const { data: schedules = [], isLoading } = useHostSchedules(user?.hostId || '');
   const createMutation = useCreateSchedule();
   const updateMutation = useUpdateSchedule();
   const deleteMutation = useDeleteSchedule();
 
+  // ─── Handlers (unchanged logic) ──────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (editingSchedule) {
-      updateMutation.mutate({
-        scheduleId: editingSchedule.scheduleId || editingSchedule.id || '',
-        ...formData,
-      }, {
-        onSuccess: () => {
-          setShowModal(false);
-          setEditingSchedule(null);
-          resetForm();
-        },
-      });
+      updateMutation.mutate(
+        { scheduleId: editingSchedule.scheduleId || editingSchedule.id || '', ...formData },
+        { onSuccess: () => { setShowModal(false); setEditingSchedule(null); resetForm(); } }
+      );
     } else {
-      createMutation.mutate({
-        ...(isSuperAdmin && user?.hostId ? { hostId: user.hostId } : {}),
-        ...formData,
-      }, {
-        onSuccess: () => {
-          setShowModal(false);
-          resetForm();
-        },
-      });
+      createMutation.mutate(
+        { ...(isSuperAdmin && user?.hostId ? { hostId: user.hostId } : {}), ...formData },
+        { onSuccess: () => { setShowModal(false); resetForm(); } }
+      );
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      cronExpression: '',
-      timeZone: 'Asia/Kolkata',
-    });
-  };
+  const resetForm = () => setFormData({ cronExpression: '', timeZone: 'Asia/Kolkata' });
 
   const handleEdit = React.useCallback((schedule: Schedule) => {
     setEditingSchedule(schedule);
-    setFormData({
-      cronExpression: schedule.cronExpression,
-      timeZone: schedule.timeZone,
-    });
+    setFormData({ cronExpression: schedule.cronExpression, timeZone: schedule.timeZone });
     setShowModal(true);
   }, []);
 
   const handleDelete = React.useCallback(async (scheduleId: string) => {
-    if (!window.confirm('Are you sure you want to delete this schedule?')) {
-      return;
-    }
+    if (!window.confirm('Delete this schedule?')) return;
     deleteMutation.mutate(scheduleId);
   }, [deleteMutation]);
 
-  const handleAddNew = () => {
-    setEditingSchedule(null);
-    resetForm();
-    setShowModal(true);
-  };
+  const handleAddNew = () => { setEditingSchedule(null); resetForm(); setShowModal(true); };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  // Define columns for TanStack Table
+  // ─── Table columns ────────────────────────────────────────────────────
   const columns = useMemo<ColumnDef<Schedule>[]>(() => [
     {
       accessorKey: 'cronExpression',
       header: 'Cron Expression',
       cell: ({ row }) => (
-        <span className="text-white font-mono">{row.original.cronExpression}</span>
+        <span className="font-mono text-sm font-bold" style={{ color: colors.primaryBtn }}>
+          {row.original.cronExpression}
+        </span>
       ),
     },
     {
       accessorKey: 'timeZone',
       header: 'Time Zone',
       cell: ({ row }) => (
-        <span className="text-white/90">{row.original.timeZone}</span>
+        <span className="text-sm" style={{ color: colors.text, fontFamily: 'Outfit, sans-serif' }}>
+          {row.original.timeZone}
+        </span>
       ),
     },
     {
       accessorKey: 'id',
       header: 'Schedule ID',
       cell: ({ row }) => (
-        <span className="text-white/60 text-xs font-mono">{row.original.id || row.original.scheduleId || '—'}</span>
+        <span className="font-mono text-xs" style={{ color: colors.textMuted }}>
+          {row.original.id || row.original.scheduleId || '—'}
+        </span>
       ),
     },
     ...(can('canManageSchedules') ? [{
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <div className="flex justify-center gap-2">
-          <Button
-            variant="outline"
-            size="small"
+        <div className="flex gap-2">
+          <button
             onClick={() => handleEdit(row.original)}
-            className="hover:bg-white/10"
-            startIcon={<Edit2 className="w-4 h-4" />}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[0.375rem] text-xs font-medium transition-all"
+            style={{ background: colors.activeItemBg, color: colors.primaryBtn, fontFamily: 'Outfit, sans-serif' }}
+            onMouseEnter={e => (e.currentTarget.style.background = colors.activeIconBg)}
+            onMouseLeave={e => (e.currentTarget.style.background = colors.activeItemBg)}
           >
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="small"
+            <Edit2 className="w-3.5 h-3.5" /> Edit
+          </button>
+          <button
             onClick={() => handleDelete(row.original.scheduleId || row.original.id || '')}
-            className="text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
-            startIcon={<Trash2 className="w-4 h-4" />}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[0.375rem] text-xs font-medium transition-all"
+            style={{ background: 'rgba(248,113,113,0.08)', color: '#f87171', fontFamily: 'Inter, sans-serif' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(248,113,113,0.15)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(248,113,113,0.08)')}
           >
-            Delete
-          </Button>
+            <Trash2 className="w-3.5 h-3.5" /> Delete
+          </button>
         </div>
       ),
     } as ColumnDef<Schedule>] : []),
@@ -169,122 +147,112 @@ const HostSchedules = () => {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
-    state: {
-      sorting,
-    },
+    state: { sorting },
   });
 
+  // ─── Permission guard ─────────────────────────────────────────────────
   if (!can('canManageSchedules') && !can('canViewSchedules')) {
     return (
-      <div className="p-6">
-        <div className="bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 px-4 py-3 rounded-lg">
-          You don't have permission to view schedules.
+      <div className="p-8">
+        <div className="p-4 rounded-[0.375rem]" style={{ background: 'rgba(233,195,73,0.08)', border: '1px solid rgba(233,195,73,0.2)' }}>
+          <p className="text-sm" style={{ color: '#e9c349', fontFamily: 'Outfit, sans-serif' }}>
+            You don't have permission to view schedules.
+          </p>
         </div>
       </div>
     );
   }
 
-  if (isLoading && schedules.length === 0) {
-    return <LoadingSpinner message="Loading schedules..." fullScreen />;
-  }
+  if (isLoading && schedules.length === 0) return <LoadingSpinner message="Loading schedules..." fullScreen />;
 
-  const loading = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+  const isMutating = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Operating Schedules</h1>
-          <p className="text-white/70 mt-1">Manage your business hours</p>
+          <p className="text-xs font-semibold tracking-widest mb-1" style={{ color: colors.primary, fontFamily: 'Inter, sans-serif' }}>SCHEDULING</p>
+          <h1 className="text-4xl font-bold mb-1" style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}>Operating Schedules</h1>
+          <p className="text-sm" style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}>Manage cron-based operational schedules and time zones</p>
         </div>
         {can('canManageSchedules') && (
-          <Button 
-            onClick={handleAddNew}
-            variant="primary"
-            startIcon={<Plus className="w-4 h-4" />}
-          >
+          <Button onClick={handleAddNew} startIcon={<Plus className="w-4 h-4" />}>
             Add Schedule
           </Button>
         )}
-      </div>
+      </motion.div>
 
-      {/* Schedules Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          {schedules.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-white/70 text-lg">No schedules found</p>
-              <p className="text-white/50 mt-2">Add a schedule to get started</p>
-            </div>
-          ) : (
-            <div className="overflow-hidden rounded-[5px] border border-white/10">
-              <table className="w-full">
-              <thead>
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id} className="border-b border-white/10">
-                    {headerGroup.headers.map(header => (
-                      <th
-                        key={header.id}
-                        className={cn(
-                          'px-4 py-3 text-left text-sm font-semibold text-white/90',
-                          header.column.getCanSort() && 'cursor-pointer select-none hover:text-white',
-                          header.id === 'actions' && 'text-center',
-                          header.id === 'isOpen' && 'text-center'
+      {/* Schedule table */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="rounded-[18px] overflow-hidden"
+        style={{ background: colors.surfaceCard, border: `1px solid ${colors.border}`, boxShadow: '0 10px 28px rgba(15,23,42,0.08)' }}
+      >
+        {schedules.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <AlarmClock className="w-16 h-16 mb-4 opacity-15" style={{ color: colors.primaryBtn }} />
+            <p className="text-lg font-semibold mb-2" style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}>No schedules configured</p>
+            <p className="text-sm mb-6" style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}>Add a schedule to manage operating hours</p>
+            {can('canManageSchedules') && (
+              <Button onClick={handleAddNew} startIcon={<Plus className="w-4 h-4" />}>Add First Schedule</Button>
+            )}
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              {table.getHeaderGroups().map(hg => (
+                <tr key={hg.id} style={{ borderBottom: `1px solid ${colors.divider}` }}>
+                  {hg.headers.map(header => (
+                    <th
+                      key={header.id}
+                      className="px-5 py-3.5 text-left text-xs font-semibold cursor-pointer select-none"
+                      style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif', background: colors.surfaceCardRaised }}
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {header.column.getCanSort() && (
+                          <span style={{ color: colors.primaryBtn }}>
+                            {{ asc: '↑', desc: '↓' }[header.column.getIsSorted() as string] ?? '⇅'}
+                          </span>
                         )}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        <div className="flex items-center gap-2">
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                          {header.column.getCanSort() && (
-                            <span className="text-white/50">
-                              {{
-                                asc: ' ↑',
-                                desc: ' ↓',
-                              }[header.column.getIsSorted() as string] ?? ' ⇅'}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {table.getRowModel().rows.map(row => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-white/5 transition-colors"
-                  >
-                    {row.getVisibleCells().map(cell => (
-                      <td
-                        key={cell.id}
-                        className={cn(
-                          'px-4 py-3 text-sm',
-                          cell.column.id === 'actions' && 'text-center',
-                          cell.column.id === 'isOpen' && 'text-center'
-                        )}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </Card>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row, i) => (
+                <motion.tr
+                  key={row.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.04 }}
+                  style={{ borderBottom: `1px solid ${colors.divider}` }}
+                  onMouseEnter={e => (e.currentTarget.style.background = colors.hoverBg)}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <td key={cell.id} className="px-5 py-4 text-sm">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </motion.div>
 
       {/* Create/Edit Modal */}
       {showModal && (
         <Modal
           open={showModal}
-          onClose={() => {
-            setShowModal(false);
-            setEditingSchedule(null);
-          }}
+          onClose={() => { setShowModal(false); setEditingSchedule(null); }}
           title={editingSchedule ? 'Edit Schedule' : 'Add Schedule'}
         >
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -297,10 +265,9 @@ const HostSchedules = () => {
               placeholder="e.g. 0 0 5 * * ?"
               required
             />
-            <p className="text-xs text-white/50 -mt-2">
-              Standard cron format: seconds minutes hours day month weekday
+            <p className="text-xs -mt-2" style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}>
+              Format: seconds minutes hours day month weekday
             </p>
-
             <Input
               label="Time Zone"
               type="text"
@@ -310,19 +277,11 @@ const HostSchedules = () => {
               placeholder="e.g. Asia/Kolkata"
               required
             />
-
-            <div className="flex justify-end gap-2 pt-4 border-t border-white/10">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setShowModal(false);
-                  setEditingSchedule(null);
-                }}
-              >
+            <div className="flex justify-end gap-2 pt-4" style={{ borderTop: `1px solid ${colors.divider}` }}>
+              <Button type="button" variant="outline" onClick={() => { setShowModal(false); setEditingSchedule(null); }}>
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" disabled={loading}>
+              <Button type="submit" disabled={isMutating}>
                 {editingSchedule ? 'Update' : 'Create'} Schedule
               </Button>
             </div>

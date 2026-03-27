@@ -28,6 +28,8 @@ import { Input } from '../components';
 import { Modal } from '../components';
 import { LoadingSpinner } from '../components';
 import { useParkingSlots, useCreateParkingSlots } from '../hooks/queries/useParkingSlots';
+import { useTheme } from '../contexts/ThemeContext';
+import { usePermissions } from '../hooks';
 import { cn } from '../utils';
 
 const ParkingSlots = () => {
@@ -37,6 +39,19 @@ const ParkingSlots = () => {
 
   const { data: slotsData, isLoading, error } = useParkingSlots(hostId);
   const createSlotsMutation = useCreateParkingSlots();
+  const { colors, isDark } = useTheme();
+  const { can } = usePermissions();
+
+  // Theme-aware text helpers
+  const textPrimary = isDark ? 'text-white' : 'text-gray-800';
+  const textMuted   = isDark ? 'text-white/70' : 'text-gray-500';
+  const textFaint   = isDark ? 'text-white/50' : 'text-gray-400';
+  const textLabel   = isDark ? 'text-white/60' : 'text-gray-500';
+  const btnUnselectedClass = isDark
+    ? 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
+    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700 border border-gray-200';
+  const insetBg = isDark ? 'bg-white/5' : 'bg-gray-100/80';
+  const divider = isDark ? 'border-white/10' : 'border-gray-200';
 
   const slots = useMemo(() => {
     if (!slotsData) return [];
@@ -264,16 +279,18 @@ const ParkingSlots = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Parking Slots</h1>
-          <p className="text-white/70">Manage and monitor parking slot availability in real-time</p>
+          <h1 className={`text-3xl font-bold mb-2 ${textPrimary}`}>Parking Slots</h1>
+          <p className={textMuted}>Manage and monitor parking slot availability in real-time</p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setShowAddModal(true)}
-          startIcon={<Plus className="w-5 h-5" />}
-        >
-          Add New Slot
-        </Button>
+        {can('canCreateParkingSlots') && (
+          <Button
+            variant="primary"
+            onClick={() => setShowAddModal(true)}
+            startIcon={<Plus className="w-5 h-5" />}
+          >
+            Add New Slot
+          </Button>
+        )}
       </div>
 
       {/* Filters and Search */}
@@ -281,8 +298,8 @@ const ParkingSlots = () => {
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
           {/* Floor Selector */}
           <div className="flex items-center gap-3 flex-1">
-            <Building2 className="w-5 h-5 text-white/70" />
-            <span className="text-white/90 font-medium whitespace-nowrap">Floor:</span>
+            <Building2 className="w-5 h-5" style={{ color: colors.textMuted }} />
+            <span className={`font-medium whitespace-nowrap ${textPrimary}`}>Floor:</span>
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setSelectedFloor('all')}
@@ -290,7 +307,7 @@ const ParkingSlots = () => {
                   'px-4 py-2 rounded-[5px] font-medium text-sm transition-all',
                   selectedFloor === 'all'
                     ? 'bg-gradient-primary text-white shadow-lg shadow-primary/30'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
+                    : btnUnselectedClass
                 )}
               >
                 All
@@ -303,7 +320,7 @@ const ParkingSlots = () => {
                     'px-4 py-2 rounded-[5px] font-medium text-sm transition-all',
                     selectedFloor === floor
                       ? 'bg-gradient-primary text-white shadow-lg shadow-primary/30'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
+                      : btnUnselectedClass
                   )}
                 >
                   {String(floor)}
@@ -314,7 +331,7 @@ const ParkingSlots = () => {
 
           {/* Status Filter */}
           <div className="flex items-center gap-3">
-            <Filter className="w-5 h-5 text-white/70" />
+            <Filter className="w-5 h-5" style={{ color: colors.textMuted }} />
             <div className="flex gap-2">
               {['all', 'AVAILABLE', 'OCCUPIED', 'RESERVED'].map((status) => (
                 <button
@@ -324,7 +341,7 @@ const ParkingSlots = () => {
                     'px-3 py-1.5 rounded-[5px] text-xs font-medium transition-all capitalize',
                     statusFilter === status
                       ? 'bg-primary text-white'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
+                      : btnUnselectedClass
                   )}
                 >
                   {status === 'all' ? 'All' : status.toLowerCase()}
@@ -353,7 +370,7 @@ const ParkingSlots = () => {
         <Card className="bg-green-500/10 border-green-500/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/60 text-sm mb-1">Available</p>
+              <p className={`text-sm mb-1 ${textLabel}`}>Available</p>
               <p className="text-2xl font-bold text-green-400">{stats.available}</p>
             </div>
             <CheckCircle2 className="w-8 h-8 text-green-400/50" />
@@ -362,7 +379,7 @@ const ParkingSlots = () => {
         <Card className="bg-red-500/10 border-red-500/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/60 text-sm mb-1">Occupied</p>
+              <p className={`text-sm mb-1 ${textLabel}`}>Occupied</p>
               <p className="text-2xl font-bold text-red-400">{stats.occupied}</p>
             </div>
             <Car className="w-8 h-8 text-red-400/50" />
@@ -371,19 +388,19 @@ const ParkingSlots = () => {
         <Card className="bg-yellow-500/10 border-yellow-500/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/60 text-sm mb-1">Reserved</p>
+              <p className={`text-sm mb-1 ${textLabel}`}>Reserved</p>
               <p className="text-2xl font-bold text-yellow-400">{stats.reserved}</p>
             </div>
             <Timer className="w-8 h-8 text-yellow-400/50" />
           </div>
         </Card>
-        <Card className="bg-white/5 border-white/10">
+        <Card className={isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/60 text-sm mb-1">Total Slots</p>
-              <p className="text-2xl font-bold text-white">{stats.total}</p>
+              <p className={`text-sm mb-1 ${textLabel}`}>Total Slots</p>
+              <p className={`text-2xl font-bold ${textPrimary}`}>{stats.total}</p>
             </div>
-            <MapPin className="w-8 h-8 text-white/30" />
+            <MapPin className="w-8 h-8" style={{ color: colors.textMuted, opacity: 0.4 }} />
           </div>
         </Card>
       </div>
@@ -396,7 +413,7 @@ const ParkingSlots = () => {
               <AnimatePresence>
                 {filteredSlots.map((slot, index) => {
                   const status = getSlotStatus(slot);
-                  const colors = getSlotColor(status);
+                  const slotColors = getSlotColor(status);
                   return (
                     <motion.button
                       key={slot.id || index}
@@ -409,24 +426,24 @@ const ParkingSlots = () => {
                         'relative p-4 rounded-[5px] border-2 transition-all duration-200',
                         'flex flex-col items-center justify-center gap-2 min-h-[100px]',
                         'hover:scale-105 hover:shadow-lg cursor-pointer group',
-                        colors.bg,
-                        colors.border,
-                        colors.hover
+                        slotColors.bg,
+                        slotColors.border,
+                        slotColors.hover
                       )}
                     >
                       {/* Status Icon */}
                       <div className="absolute top-2 right-2 opacity-70 group-hover:opacity-100 transition-opacity">
-                        {colors.icon}
+                        {slotColors.icon}
                       </div>
 
                       {/* Slot Number */}
-                      <div className={cn('text-lg font-bold', colors.text)}>
+                      <div className={cn('text-lg font-bold', slotColors.text)}>
                         {slot.slotNumber || slot.name || `Slot ${index + 1}`}
                       </div>
 
                       {/* Vehicle indicator for occupied slots */}
                       {status === 'OCCUPIED' && (
-                        <div className="flex items-center gap-1 text-xs text-white/60">
+                        <div className="flex items-center gap-1 text-xs" style={{ color: colors.textMuted }}>
                           <Car className="w-3 h-3" />
                           <span className="truncate max-w-[60px]">
                             {slot.vehicleNumber || 'Occupied'}
@@ -436,7 +453,7 @@ const ParkingSlots = () => {
 
                       {/* Section indicator */}
                       {slot.section && (
-                        <div className="absolute bottom-1 left-2 text-xs text-white/40">
+                        <div className="absolute bottom-1 left-2 text-xs" style={{ color: colors.textMuted, opacity: 0.6 }}>
                           {slot.section}
                         </div>
                       )}
@@ -447,14 +464,14 @@ const ParkingSlots = () => {
             </div>
           ) : (
             <div className="text-center py-16">
-              <MapPin className="w-16 h-16 text-white/20 mx-auto mb-4" />
-              <p className="text-white/70 text-lg mb-2">No parking slots found</p>
-              <p className="text-white/50 text-sm mb-6">
+              <MapPin className="w-16 h-16 mx-auto mb-4" style={{ color: colors.textMuted, opacity: 0.4 }} />
+              <p className={`text-lg mb-2 ${textMuted}`}>No parking slots found</p>
+              <p className={`text-sm mb-6 ${textFaint}`}>
                 {searchQuery || statusFilter !== 'all' || selectedFloor !== 'all'
                   ? 'Try adjusting your filters'
                   : 'Create your first parking slot to get started'}
               </p>
-              {!searchQuery && statusFilter === 'all' && selectedFloor === 'all' && (
+              {!searchQuery && statusFilter === 'all' && selectedFloor === 'all' && can('canCreateParkingSlots') && (
                 <Button
                   variant="primary"
                   onClick={() => setShowAddModal(true)}
@@ -470,7 +487,7 @@ const ParkingSlots = () => {
         {/* Entrance Indicator */}
         {filteredSlots.length > 0 && (
           <div className="border-t-2 border-yellow-500/30 mx-6 my-4 relative">
-            <div className="absolute left-1/2 -translate-x-1/2 -top-3 bg-background-secondary px-4">
+            <div className="absolute left-1/2 -translate-x-1/2 -top-3 px-4" style={{ backgroundColor: colors.surfaceCard }}>
               <span className="text-yellow-400 font-semibold uppercase text-xs flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 Entrance
@@ -492,8 +509,8 @@ const ParkingSlots = () => {
         >
           <div className="space-y-4">
             {/* Status Badge */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-[5px]">
-              <span className="text-white/70">Status</span>
+            <div className={`flex items-center justify-between p-4 rounded-[5px] ${insetBg}`}>
+              <span className={textMuted}>Status</span>
               <div className="flex items-center gap-2">
                 {getSlotColor(getSlotStatus(selectedSlot)).icon}
                 <span className={cn('font-semibold capitalize', getSlotColor(getSlotStatus(selectedSlot)).text)}>
@@ -503,59 +520,59 @@ const ParkingSlots = () => {
             </div>
 
             {/* Floor */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-[5px]">
-              <span className="text-white/70 flex items-center gap-2">
+            <div className={`flex items-center justify-between p-4 rounded-[5px] ${insetBg}`}>
+              <span className={`flex items-center gap-2 ${textMuted}`}>
                 <Building2 className="w-4 h-4" />
                 Floor
               </span>
-              <span className="font-semibold text-white">{selectedSlot.floor || '1'}</span>
+              <span className={`font-semibold ${textPrimary}`}>{selectedSlot.floor || '1'}</span>
             </div>
 
             {/* Section */}
             {selectedSlot.section && (
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-[5px]">
-                <span className="text-white/70 flex items-center gap-2">
+              <div className={`flex items-center justify-between p-4 rounded-[5px] ${insetBg}`}>
+                <span className={`flex items-center gap-2 ${textMuted}`}>
                   <MapPin className="w-4 h-4" />
                   Section
                 </span>
-                <span className="font-semibold text-white">{selectedSlot.section}</span>
+                <span className={`font-semibold ${textPrimary}`}>{selectedSlot.section}</span>
               </div>
             )}
 
             {/* Vehicle Details (if occupied) */}
             {getSlotStatus(selectedSlot) === 'OCCUPIED' && (
               <>
-                <div className="border-t border-white/10 pt-4">
-                  <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <div className={`border-t pt-4 ${divider}`}>
+                  <h4 className={`text-lg font-semibold mb-3 flex items-center gap-2 ${textPrimary}`}>
                     <Car className="w-5 h-5" />
                     Vehicle Information
                   </h4>
                 </div>
 
                 {selectedSlot.vehicleNumber && (
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-[5px]">
-                    <span className="text-white/70">Vehicle Number</span>
-                    <span className="font-semibold text-white">{selectedSlot.vehicleNumber}</span>
+                  <div className={`flex items-center justify-between p-4 rounded-[5px] ${insetBg}`}>
+                    <span className={textMuted}>Vehicle Number</span>
+                    <span className={`font-semibold ${textPrimary}`}>{selectedSlot.vehicleNumber}</span>
                   </div>
                 )}
 
                 {selectedSlot.valetName && (
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-[5px]">
-                    <span className="text-white/70 flex items-center gap-2">
+                  <div className={`flex items-center justify-between p-4 rounded-[5px] ${insetBg}`}>
+                    <span className={`flex items-center gap-2 ${textMuted}`}>
                       <User className="w-4 h-4" />
                       Valet Assigned
                     </span>
-                    <span className="font-semibold text-white">{selectedSlot.valetName}</span>
+                    <span className={`font-semibold ${textPrimary}`}>{selectedSlot.valetName}</span>
                   </div>
                 )}
 
                 {selectedSlot.parkedAt && (
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-[5px]">
-                    <span className="text-white/70 flex items-center gap-2">
+                  <div className={`flex items-center justify-between p-4 rounded-[5px] ${insetBg}`}>
+                    <span className={`flex items-center gap-2 ${textMuted}`}>
                       <Clock className="w-4 h-4" />
                       Parked Since
                     </span>
-                    <span className="font-semibold text-white text-sm">
+                    <span className={`font-semibold text-sm ${textPrimary}`}>
                       {new Date(selectedSlot.parkedAt).toLocaleString()}
                     </span>
                   </div>
@@ -564,7 +581,7 @@ const ParkingSlots = () => {
             )}
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t border-white/10">
+            <div className={`flex gap-3 pt-4 border-t ${divider}`}>
               {getSlotStatus(selectedSlot) === 'AVAILABLE' && (
                 <Button variant="primary" className="flex-1">
                   Assign Vehicle
@@ -591,7 +608,7 @@ const ParkingSlots = () => {
       )}
 
       {/* Add Slot Modal */}
-      {showAddModal && (
+      {showAddModal && can('canCreateParkingSlots') && (
         <Modal
           open={showAddModal}
           onClose={handleCloseAddModal}
@@ -638,7 +655,7 @@ const ParkingSlots = () => {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-white/10">
+            <div className={`flex gap-3 pt-4 border-t ${divider}`}>
               <Button
                 type="button"
                 variant="outline"

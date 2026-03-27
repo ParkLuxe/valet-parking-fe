@@ -1,274 +1,244 @@
 /**
- * Enhanced Sidebar Navigation Component
- * Clean UI with minimal borders, better spacing and visual hierarchy
+ * Sidebar — PARK-LUXE Command Center
+ * Inline card panel, same rounded design as content. Collapses via hamburger.
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Home,
-  QrCode,
-  BarChart3,
-  Users,
-  ParkingSquare,
-  CreditCard,
-  User,
-  ChevronLeft,
-  FileText,
-  DollarSign,
-  Package,
-  Calendar,
-  Building2,
-  Settings,
-  TrendingUp,
+  LayoutDashboard,
   Car,
+  CreditCard,
+  ShieldCheck,
+  QrCode,
+  Users,
+  Calendar,
+  FileText,
   Activity,
-  FileLineChart,
   Bug,
+  HelpCircle,
+  User,
+  LogOut,
+  PanelLeftClose,
 } from 'lucide-react';
-import { toggleSidebar } from '../../redux';
-import { cn } from '../../utils';
+import { useTheme } from '../../contexts/ThemeContext';
+import { toggleSidebar, logout } from '../../redux';
+
 import { usePermissions } from '../../hooks';
 import type { RootState } from '../../redux';
 
-const drawerWidth = 260;
+const desktopDrawerWidth = 240;
 
-// Menu items configuration with permissions
+// ─── Menu items ─────────────────────────────────────────────────────────────
 const getAllMenuItems = () => [
-  // Common
-  { path: "/dashboard", label: "Dashboard", icon: Home, permission: null },
-  {
-    path: "/qr-scan",
-    label: "QR Scanner",
-    icon: QrCode,
-    permission: "canScanQR",
-  },
-
-  // SuperAdmin Only
-  {
-    path: "/host-management",
-    label: "Hosts Management",
-    icon: Building2,
-    permission: "canManageHosts",
-  },
-  {
-    path: "/subscription-plans-crud",
-    label: "Subscription Plans",
-    icon: Package,
-    permission: "canManageSubscriptionPlans",
-  },
-
-  // Host Admin
-  {
-    path: "/customers",
-    label: "Customers",
-    icon: Users,
-    permission: "canManageVehicles",
-  },
-  {
-    path: "/host-users",
-    label: "Host Users",
-    icon: Users,
-    permission: "canManageUsers",
-  },
-  {
-    path: "/host-schedules",
-    label: "Operating Hours",
-    icon: Calendar,
-    permission: "canManageSchedules",
-  },
-  {
-    path: "/invoices",
-    label: "Invoices",
-    icon: FileText,
-    permission: "canViewInvoices",
-  },
-  {
-    path: "/subscription",
-    label: "Subscription",
-    icon: CreditCard,
-    permission: "canManageSubscription",
-  },
-
-  // Valet/Host User
-  {
-    path: "/my-vehicles",
-    label: "My Vehicles",
-    icon: Car,
-    permission: "canViewAssignedVehicles",
-  },
-  {
-    path: "/my-performance",
-    label: "My Performance",
-    icon: Activity,
-    permission: "canViewOwnPerformance",
-  },
-
-  // Debug (dev environment only)
-  ...(process.env.NODE_ENV === "development"
-    ? [
-        {
-          path: "/debug-protected",
-          label: "Debug Dashboard",
-          icon: Bug,
-          permission: null,
-        },
-      ]
+  { path: '/dashboard',      label: 'Dashboard',      icon: LayoutDashboard, permission: null },
+  { path: '/subscription',   label: 'Subscription',   icon: CreditCard,      permission: 'canManageSubscription' },
+  { path: '/qr-scan',        label: 'QR Scanner',     icon: QrCode,          permission: 'canScanQR' },
+  { path: '/host-management',label: 'Admin Console',  icon: ShieldCheck,     permission: 'canManageHosts' },
+  { path: '/host-users',     label: 'Host Users',     icon: Users,           permission: 'canManageUsers' },
+  { path: '/host-schedules', label: 'Operating Hours',icon: Calendar,        permission: 'canManageSchedules' },
+  { path: '/invoices',       label: 'Invoices',       icon: FileText,        permission: 'canViewInvoices' },
+  { path: '/customers',      label: 'Customers',      icon: Users,           permission: null },
+  { path: '/my-vehicles',    label: 'My Vehicles',    icon: Car,             permission: 'canViewAssignedVehicles' },
+  { path: '/my-performance', label: 'My Performance', icon: Activity,        permission: 'canViewOwnPerformance' },
+  ...(process.env.NODE_ENV === 'development'
+    ? [{ path: '/debug-protected', label: 'Debug', icon: Bug, permission: null }]
     : []),
 ];
 
 const Sidebar = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const dispatch = useDispatch();
-  const { can } = usePermissions();
-  
-  const { user } = useSelector((state: RootState) => state.auth);
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const dispatch  = useDispatch();
+  const { can }   = usePermissions();
+  const { user }  = useSelector((state: RootState) => state.auth);
   const { sidebarOpen } = useSelector((state: RootState) => state.ui);
+  const { colors } = useTheme();
 
-  // Filter menu items based on permissions
-  const menuItems = getAllMenuItems().filter(item => 
-    !item.permission || can(item.permission)
-  );
+  // Calculate drawer width based on screen size
+  const [drawerWidth, setDrawerWidth] = useState(desktopDrawerWidth);
+
+  useEffect(() => {
+    const calculateDrawerWidth = () => {
+      // Mobile: full width minus padding (2 * 8px padding = 16px)
+      // Desktop: fixed 240px
+      const isMobile = window.innerWidth < 768;
+      setDrawerWidth(isMobile ? window.innerWidth - 16 : desktopDrawerWidth);
+    };
+
+    calculateDrawerWidth();
+    window.addEventListener('resize', calculateDrawerWidth);
+    return () => window.removeEventListener('resize', calculateDrawerWidth);
+  }, []);
+
+  const menuItems = getAllMenuItems().filter((item: any) => {
+    const permOk = !item.permission || can(item.permission);
+    const roleOk = !item.roles || item.roles.includes((user as any)?.roleName);
+    return permOk && roleOk;
+  });
 
   const handleNavigate = (path: string) => {
     navigate(path);
-    // Close sidebar on mobile after navigation
-    if (window.innerWidth < 900) {
-      dispatch(toggleSidebar());
-    }
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
   };
 
   return (
-    <>
-      {/* Overlay for mobile */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => dispatch(toggleSidebar())}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-          />
-        )}
-      </AnimatePresence>
+    <motion.aside
+      initial={false}
+      animate={{ width: sidebarOpen ? drawerWidth : 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="flex-shrink-0 flex flex-col overflow-hidden"
+      style={{
+        borderRadius: drawerWidth === desktopDrawerWidth ? '22px' : '0px',
+        background: sidebarOpen ? colors.sidebarBg : 'transparent',
+        border: sidebarOpen ? `1px solid ${colors.sidebarBorder}` : 'none',
+      }}
+    >
+      {/* Fixed-width inner wrapper so content doesn't reflow during animation */}
+      <div className="flex flex-col h-full" style={{ width: drawerWidth, minWidth: drawerWidth }}>
 
-      {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{
-          x: sidebarOpen ? 0 : -drawerWidth,
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 30,
-        }}
-        className={cn(
-          'fixed left-0 top-0 h-screen z-50',
-          'w-64 bg-gradient-to-b from-[#0a0a0f] to-[#1a1a2e]',
-          'flex flex-col shadow-2xl',
-          'lg:translate-x-0'
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 pb-5">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-primary rounded-xl blur-lg opacity-60" />
-              <div className="relative bg-gradient-primary p-2.5 rounded-xl shadow-lg">
-                <img 
-                  src="/parkluxe-logo-192.png" 
-                  alt="ParkLuxe Logo" 
-                  className="w-6 h-6"
-                />
-              </div>
-            </div>
-            <span className="text-xl font-bold text-white">
-              Park-Luxe
-            </span>
-          </div>
-          
-          {/* Close button for mobile */}
+        {/* ── Logo + collapse button ──────────────────────────────────── */}
+        <div className="px-4 md:px-5 pt-4 md:pt-6 pb-4 md:pb-5 flex items-center justify-between">
+          <p
+            className={`font-bold tracking-[0.18em] leading-none uppercase ${
+              sidebarOpen && drawerWidth !== desktopDrawerWidth ? 'text-base' : 'text-sm md:text-lg'
+            }`}
+            style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}
+          >
+            PARK-LUXE
+          </p>
           <button
             onClick={() => dispatch(toggleSidebar())}
-            className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-[8px] transition-colors"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={e => { e.currentTarget.style.background = colors.hoverBg; e.currentTarget.style.color = colors.text; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.textMuted; }}
+            aria-label="Collapse sidebar"
           >
-            <ChevronLeft className="w-5 h-5 text-white/70" />
+            <PanelLeftClose className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Navigation Menu */}
-        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-          {menuItems.map((item, index) => {
+        {/* ── Nav ────────────────────────────────────────────────────── */}
+        <nav className="flex-1 overflow-y-auto px-2 md:px-3 space-y-1 pb-4">
+          {menuItems.map((item, i) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
 
             return (
               <motion.button
                 key={item.path}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.03 }}
+                transition={{ delay: i * 0.03 }}
                 onClick={() => handleNavigate(item.path)}
-                className={cn(
-                  'w-full flex items-center gap-3 px-4 py-2.5 rounded-xl',
-                  'text-left font-medium transition-all duration-200',
-                  'group relative',
-                  isActive
-                    ? 'bg-gradient-primary text-white shadow-lg shadow-primary/30'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
-                )}
+                className="w-full flex items-center gap-2 md:gap-3.5 px-2 md:px-3.5 py-2.5 md:py-3 rounded-[12px] text-left transition-all duration-150 group relative"
+                style={{
+                  background: isActive ? colors.activeItemBg : 'transparent',
+                  color: isActive ? colors.primaryLight : colors.textMuted,
+                  border: isActive ? `1px solid ${colors.activeItemBorder}` : '1px solid transparent',
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = colors.hoverBg;
+                    e.currentTarget.style.color = colors.text;
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = colors.textMuted;
+                  }
+                }}
               >
-                {/* Active indicator */}
+                <div
+                  className="w-7 md:w-8 h-7 md:h-8 flex items-center justify-center rounded-[10px] flex-shrink-0 transition-colors"
+                  style={{ background: isActive ? colors.activeIconBg : colors.hoverBg }}
+                >
+                  <Icon className="w-3.5 md:w-4 h-3.5 md:h-4" />
+                </div>
+                <span
+                  className={`font-medium tracking-[0.02em] truncate ${
+                    sidebarOpen && drawerWidth !== desktopDrawerWidth ? 'text-base' : 'text-xs md:text-[14px]'
+                  }`}
+                  style={{ fontFamily: 'Outfit, sans-serif' }}
+                >
+                  {item.label}
+                </span>
                 {isActive && (
                   <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 bg-gradient-primary rounded-xl"
-                    transition={{
-                      type: 'spring',
-                      stiffness: 300,
-                      damping: 30,
-                    }}
+                    layoutId="activeStripe"
+                    className="absolute inset-y-2 right-2 w-1 rounded-full"
+                    style={{ background: colors.activeStripe }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
-
-                {/* Icon */}
-                <div className={cn(
-                  'relative z-10 transition-transform duration-200',
-                  isActive ? 'scale-110' : 'group-hover:scale-105'
-                )}>
-                  <Icon className="w-5 h-5" />
-                </div>
-
-                {/* Label */}
-                <span className="relative z-10 text-sm">{item.label}</span>
               </motion.button>
             );
           })}
         </nav>
 
-        {/* User Profile Card at bottom */}
-        <div className="p-4 pt-3">
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3 hover:bg-white/10 transition-all duration-200 cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-semibold shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform">
-              {user?.name?.charAt(0) || 'U'}
+        {/* ── Bottom section ─────────────────────────────────────────── */}
+        <div
+          className="px-2 md:px-3 pb-4 md:pb-5 space-y-1 pt-4"
+          style={{ borderTop: `1px solid ${colors.divider}` }}
+        >
+          {/* Profile */}
+          <button
+            onClick={() => handleNavigate('/profile')}
+            className="w-full flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-[8px] transition-colors text-left"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={e => { e.currentTarget.style.background = colors.hoverBg; e.currentTarget.style.color = colors.text; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.textMuted; }}
+          >
+            <div className="w-7 md:w-8 h-7 md:h-8 flex items-center justify-center rounded-[8px]" style={{ background: colors.hoverBg }}>
+              <User className="w-3.5 md:w-4 h-3.5 md:h-4" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium truncate">
-                {user?.name || 'User'}
-              </p>
-              <p className="text-white/50 text-xs truncate">
-                {user?.email || 'user@example.com'}
-              </p>
+            <span className={`font-medium ${
+              sidebarOpen && drawerWidth !== desktopDrawerWidth ? 'text-base' : 'text-xs md:text-[14px]'
+            }`} style={{ fontFamily: 'Outfit, sans-serif' }}>Profile</span>
+          </button>
+
+          {/* Help */}
+          <button
+            onClick={() => {}}
+            className="w-full flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-[8px] transition-colors text-left"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={e => { e.currentTarget.style.background = colors.hoverBg; e.currentTarget.style.color = colors.text; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.textMuted; }}
+          >
+            <div className="w-7 md:w-8 h-7 md:h-8 flex items-center justify-center rounded-[8px]" style={{ background: colors.hoverBg }}>
+              <HelpCircle className="w-3.5 md:w-4 h-3.5 md:h-4" />
             </div>
-          </div>
+            <span className={`font-medium ${
+              sidebarOpen && drawerWidth !== desktopDrawerWidth ? 'text-base' : 'text-xs md:text-[14px]'
+            }`} style={{ fontFamily: 'Outfit, sans-serif' }}>Help</span>
+          </button>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-[8px] transition-colors text-left"
+            style={{ color: colors.textMuted }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.10)'; e.currentTarget.style.color = '#fca5a5'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.textMuted; }}
+          >
+            <div className="w-7 md:w-8 h-7 md:h-8 flex items-center justify-center rounded-[8px]" style={{ background: colors.hoverBg }}>
+              <LogOut className="w-3.5 md:w-4 h-3.5 md:h-4" />
+            </div>
+            <span className={`font-medium ${
+              sidebarOpen && drawerWidth !== desktopDrawerWidth ? 'text-base' : 'text-xs md:text-[14px]'
+            }`} style={{ fontFamily: 'Outfit, sans-serif' }}>Logout</span>
+          </button>
         </div>
-      </motion.aside>
-    </>
+      </div>
+    </motion.aside>
   );
 };
 

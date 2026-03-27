@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { ToastProvider, ToastViewport, ToastWithIcon, Layout } from './components';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Route Components
 import { ProtectedRoute, PublicRoute } from './routes';
@@ -24,7 +25,6 @@ import Subscription from './pages/Subscription';
 import Invoices from './pages/Invoices';
 import InvoiceDetails from './pages/InvoiceDetails';
 import Payments from './pages/Payments';
-import SubscriptionPlans from './pages/SubscriptionPlans';
 import QRCodeManagement from './pages/QRCodeManagement';
 import HostSchedules from './pages/HostSchedules';
 import DebugDashboard from './pages/DebugDashboard';
@@ -64,7 +64,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <>
+    <ThemeProvider>
       <Router>
         <Routes>
           {/* Public Routes */}
@@ -155,7 +155,7 @@ const App: React.FC = () => {
           <Route
             path="/parking-slots"
             element={
-              <ProtectedRoute requiredRoles={[USER_ROLES.SUPERADMIN, USER_ROLES.HOST, USER_ROLES.VALET_HEAD, USER_ROLES.VALET]}>
+              <ProtectedRoute requiredRoles={[USER_ROLES.SUPERADMIN, USER_ROLES.VALET]}>
                 <Layout>
                   <ParkingSlots />
                 </Layout>
@@ -165,7 +165,7 @@ const App: React.FC = () => {
           <Route
             path="/subscription"
             element={
-              <ProtectedRoute requiredRoles={[USER_ROLES.HOST, USER_ROLES.VALET_HEAD]}>
+              <ProtectedRoute requiredRoles={[USER_ROLES.SUPERADMIN, USER_ROLES.HOST, USER_ROLES.VALET_HEAD]}>
                 <Layout>
                   <Subscription />
                 </Layout>
@@ -200,16 +200,6 @@ const App: React.FC = () => {
               <ProtectedRoute page="payments">
                 <Layout>
                   <Payments />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/subscription-plans"
-            element={
-              <ProtectedRoute page="subscriptionPlans">
-                <Layout>
-                  <SubscriptionPlans />
                 </Layout>
               </ProtectedRoute>
             }
@@ -345,14 +335,19 @@ const App: React.FC = () => {
           <ToastWithIcon
             key={toast.id}
             variant={toast.type || 'info'}
-            title={toast.type === 'success' ? 'Success' : toast.type === 'error' ? 'Error' : 'Info'}
+            title={
+              toast.type === 'success' ? 'Success'
+              : toast.type === 'error' ? 'Error'
+              : toast.type === 'warning' ? 'Warning'
+              : 'Info'
+            }
             description={toast.message}
             onClose={() => handleCloseToast(toast.id)}
           />
         ))}
         <ToastViewport />
       </ToastProvider>
-    </>
+    </ThemeProvider>
   );
 };
 

@@ -6,42 +6,61 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        headline: ['Space Grotesk', 'sans-serif'],
+        body: ['Outfit', 'sans-serif'],
+        sans: ['Outfit', 'sans-serif'],
+      },
       colors: {
-        // Custom color palette for Park-Luxe
+        // Obsidian + Violet design system
         background: {
-          DEFAULT: '#0a0a0f',
-          secondary: '#1a1a2e',
+          DEFAULT: '#09090f',
+          secondary: '#111117',
+        },
+        surface: {
+          DEFAULT: '#09090f',
+          low: '#111117',
+          mid: '#1a1a24',
+          high: '#222230',
+          highest: '#2a2a3a',
+          bright: '#32324a',
         },
         primary: {
-          DEFAULT: '#667eea',
-          light: '#8a9ef7',
-          dark: '#5568d3',
+          DEFAULT: '#8b5cf6',
+          light: '#c4b5fd',
+          dark: '#6d28d9',
+          on: '#ffffff',
         },
-        accent: {
-          DEFAULT: '#00d2ff',
-          light: '#33deff',
-          dark: '#00a5cc',
+        secondary: {
+          DEFAULT: '#e879f9',
+          light: '#f5d0fe',
+          dark: '#a21caf',
+          on: '#ffffff',
         },
-        success: '#10b981',
-        warning: '#f59e0b',
-        error: '#ef4444',
+        success: '#34d399',
+        warning: '#fbbf24',
+        error: '#f87171',
+        'error-container': '#7f1d1d',
+        'on-surface': '#f4f4f5',
+        'on-surface-variant': '#a1a1aa',
+        outline: '#52525b',
+        'outline-variant': '#3f3f46',
       },
-      backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #00d2ff 0%, #3a47d5 100%)',
-        'gradient-card': 'linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))',
-      },
+      backgroundImage: {},
       borderRadius: {
-        'card': '16px',
-        'button': '8px',
+        'card': '12px',
+        'button': '0.375rem',
       },
       boxShadow: {
-        'card': '0 8px 32px rgba(0,0,0,0.3)',
-        'glow-primary': '0 0 20px rgba(102, 126, 234, 0.5)',
-        'glow-accent': '0 0 20px rgba(0, 210, 255, 0.5)',
+        'card': '0 24px 60px rgba(4,0,14,0.55)',
+        'glow-primary': '0 0 30px rgba(124,255,225,0.28)',
+        'glow-accent': '0 0 30px rgba(165,139,255,0.25)',
+        'glow-gold': '0 0 30px rgba(255,122,217,0.22)',
+        'ambient': '0 10px 36px rgba(4,0,14,0.45)',
       },
       backdropBlur: {
-        'card': '10px',
+        'card': '12px',
+        'glass': '12px',
       },
       animation: {
         'shimmer': 'shimmer 2s linear infinite',

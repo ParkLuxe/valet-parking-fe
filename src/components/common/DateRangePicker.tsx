@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X, CalendarDays } from 'lucide-react';
 import Button from './Button';
+import { useTheme } from '../../contexts/ThemeContext';
 import { cn } from '../../utils';
 
 interface DateRangePickerProps {
@@ -125,7 +126,8 @@ const CalendarMonth = ({
   selectedEnd, 
   onDateSelect,
   minDate,
-  maxDate
+  maxDate,
+  colors
 }: { 
   date: Date; 
   selectedStart: string | null; 
@@ -133,6 +135,7 @@ const CalendarMonth = ({
   onDateSelect: (date: Date) => void;
   minDate?: Date;
   maxDate?: Date;
+  colors: ReturnType<typeof useTheme>['colors'];
 }) => {
   const year = date.getFullYear();
   const month = date.getMonth();
@@ -203,15 +206,25 @@ const CalendarMonth = ({
         disabled={isDisabled}
         className={cn(
           'h-10 w-10 rounded-full text-sm font-medium transition-all duration-200',
-          'hover:bg-primary/20 hover:text-white',
           isDisabled && 'opacity-30 cursor-not-allowed',
-          isToday && !isSelected && 'bg-white/10 text-primary font-semibold',
-          isInRange && !isSelected && 'bg-primary/10 text-white',
-          isSelected && 'bg-primary text-white font-semibold shadow-md',
           isStart && 'rounded-l-full',
-          isEnd && 'rounded-r-full',
-          !isSelected && !isInRange && !isDisabled && 'text-white/70 hover:text-white'
+          isEnd && 'rounded-r-full'
         )}
+        style={{
+          background: isSelected ? colors.primaryBtn : isInRange ? colors.activeItemBg : isToday ? colors.surfaceInset : 'transparent',
+          color: isSelected ? '#ffffff' : isToday ? colors.primaryBtn : !isDisabled ? colors.text : colors.textMuted,
+          boxShadow: isSelected ? '0 10px 24px rgba(99,102,241,0.25)' : 'none'
+        }}
+        onMouseEnter={e => {
+          if (!isDisabled && !isSelected) {
+            e.currentTarget.style.background = isInRange ? colors.activeItemBg : colors.hoverBg;
+          }
+        }}
+        onMouseLeave={e => {
+          if (!isDisabled && !isSelected) {
+            e.currentTarget.style.background = isInRange ? colors.activeItemBg : isToday ? colors.surfaceInset : 'transparent';
+          }
+        }}
       >
         {day}
       </button>
@@ -222,7 +235,7 @@ const CalendarMonth = ({
     <div className="w-full">
       <div className="grid grid-cols-7 gap-0 mb-2">
         {dayNames.map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-white/60 py-2">
+          <div key={day} className="text-center text-xs font-medium py-2" style={{ color: colors.textMuted }}>
             {day}
           </div>
         ))}
@@ -243,6 +256,7 @@ const DateRangePicker = ({
   showLabel = true,
   label = 'Date Range',
 }: DateRangePickerProps) => {
+  const { colors } = useTheme();
   const [startDate, setStartDate] = useState(initialStartDate);
   const [endDate, setEndDate] = useState(initialEndDate);
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -462,7 +476,7 @@ const DateRangePicker = ({
       {/* Single Date Range Input */}
       <div className="w-full">
         {showLabel && (
-          <label className="block text-sm font-medium text-white/90 mb-2">{label}</label>
+          <label className="block text-sm font-medium mb-2" style={{ color: colors.textMuted }}>{label}</label>
         )}
           <div className="relative">
           <button
@@ -476,22 +490,21 @@ const DateRangePicker = ({
               }
             }}
             className={cn(
-              'w-full px-4 py-3 pl-4 pr-12',
-              'bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg',
-              'text-white text-left',
-              'transition-all duration-200',
-              'hover:border-primary/50 focus:outline-none',
-              showCalendar && 'border-primary ring-2 ring-primary/30',
-              'flex items-center justify-between group cursor-pointer'
+              'w-full px-4 py-3 pl-4 pr-12 rounded-lg',
+              'text-left transition-all duration-200',
+              'focus:outline-none flex items-center justify-between group cursor-pointer'
             )}
+            style={{
+              background: colors.surfaceCard,
+              border: `1px solid ${showCalendar ? colors.primaryBtn : colors.border}`,
+              color: colors.text,
+              boxShadow: showCalendar ? '0 0 0 4px rgba(99,102,241,0.14)' : 'none'
+            }}
           >
-            <span className={cn(
-              'text-sm',
-              (startDate || endDate) ? 'text-white' : 'text-white/50'
-            )}>
+            <span className="text-sm" style={{ color: (startDate || endDate) ? colors.text : colors.textMuted }}>
               {formatDateRange()}
             </span>
-            <CalendarDays className="absolute right-3 w-5 h-5 text-white/50 group-hover:text-primary transition-colors" />
+            <CalendarDays className="absolute right-3 w-5 h-5 transition-colors" style={{ color: colors.textMuted }} />
           </button>
           
           {(startDate || endDate) && (
@@ -500,9 +513,11 @@ const DateRangePicker = ({
                 e.stopPropagation();
                 handleClear();
               }}
-              className="absolute right-10 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded transition-colors"
+              className="absolute right-10 top-1/2 -translate-y-1/2 p-1 rounded transition-colors"
+              onMouseEnter={e => (e.currentTarget.style.background = colors.hoverBg)}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
-              <X className="w-4 h-4 text-white/50 hover:text-white" />
+              <X className="w-4 h-4" style={{ color: colors.textMuted }} />
             </button>
           )}
         </div>
@@ -512,18 +527,21 @@ const DateRangePicker = ({
       {showCalendar && createPortal(
         <div 
           data-calendar-portal
-          className="fixed z-[9999] bg-gradient-to-br from-[#1a1a2e] to-[#16162a] border border-white/20 rounded-xl shadow-2xl backdrop-blur-xl overflow-hidden max-h-[90vh] overflow-y-auto"
+          className="fixed z-[9999] rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
           style={{
             top: `${calendarPosition.top}px`,
             left: `${calendarPosition.left}px`,
             width: `${calendarPosition.width}px`,
             maxWidth: `calc(100vw - 32px)`,
+            background: colors.surfaceCard,
+            border: `1px solid ${colors.border}`,
+            backdropFilter: 'blur(14px)',
           }}
         >
           <div className="flex flex-col lg:flex-row">
             {/* Left Panel - Preset Ranges */}
             {showPresets && (
-              <div className="w-full lg:w-48 border-b lg:border-b-0 lg:border-r border-white/10 bg-white/5">
+              <div className="w-full lg:w-48 border-b lg:border-b-0 lg:border-r" style={{ borderColor: colors.divider, background: colors.surfaceInset }}>
                 <div className="p-3 space-y-1">
                   {presets.map((preset, index) => {
                     const isSelected = selectedPreset === preset.label;
@@ -531,12 +549,18 @@ const DateRangePicker = ({
                       <button
                         key={index}
                         onClick={() => handlePresetClick(preset)}
-                        className={cn(
-                          'w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-                          isSelected 
-                            ? 'bg-primary text-white shadow-md' 
-                            : 'text-white/70 hover:bg-white/10 hover:text-white'
-                        )}
+                        className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+                        style={{
+                          background: isSelected ? colors.primaryBtn : 'transparent',
+                          color: isSelected ? '#ffffff' : colors.text,
+                          boxShadow: isSelected ? '0 10px 24px rgba(99,102,241,0.25)' : 'none'
+                        }}
+                        onMouseEnter={e => {
+                          if (!isSelected) e.currentTarget.style.background = colors.hoverBg;
+                        }}
+                        onMouseLeave={e => {
+                          if (!isSelected) e.currentTarget.style.background = 'transparent';
+                        }}
                       >
                         {preset.label}
                       </button>
@@ -548,12 +572,18 @@ const DateRangePicker = ({
                       setStartDate('');
                       setEndDate('');
                     }}
-                    className={cn(
-                      'w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-                      selectedPreset === 'Custom Range' || (!selectedPreset && (startDate || endDate))
-                        ? 'bg-primary text-white shadow-md' 
-                        : 'text-white/70 hover:bg-white/10 hover:text-white'
-                    )}
+                    className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+                    style={{
+                      background: selectedPreset === 'Custom Range' || (!selectedPreset && (startDate || endDate)) ? colors.primaryBtn : 'transparent',
+                      color: selectedPreset === 'Custom Range' || (!selectedPreset && (startDate || endDate)) ? '#ffffff' : colors.text,
+                      boxShadow: selectedPreset === 'Custom Range' || (!selectedPreset && (startDate || endDate)) ? '0 10px 24px rgba(99,102,241,0.25)' : 'none'
+                    }}
+                    onMouseEnter={e => {
+                      if (!(selectedPreset === 'Custom Range' || (!selectedPreset && (startDate || endDate)))) e.currentTarget.style.background = colors.hoverBg;
+                    }}
+                    onMouseLeave={e => {
+                      if (!(selectedPreset === 'Custom Range' || (!selectedPreset && (startDate || endDate)))) e.currentTarget.style.background = 'transparent';
+                    }}
                   >
                     Custom Range
                   </button>
@@ -570,11 +600,13 @@ const DateRangePicker = ({
                     <div className="flex items-center justify-between mb-4">
                       <button
                         onClick={() => navigateMonth('prev', 'left')}
-                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors group"
+                        className="p-1.5 rounded-lg transition-colors group"
+                        onMouseEnter={e => (e.currentTarget.style.background = colors.hoverBg)}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                       >
-                        <ChevronLeft className="w-5 h-5 text-white/70 group-hover:text-primary transition-colors" />
+                        <ChevronLeft className="w-5 h-5 transition-colors" style={{ color: colors.textMuted }} />
                       </button>
-                      <h3 className="text-white font-semibold text-sm">
+                      <h3 className="font-semibold text-sm" style={{ color: colors.text }}>
                         {monthNames[leftMonth.getMonth()]} {leftMonth.getFullYear()}
                       </h3>
                       <div className="w-9" /> {/* Spacer for alignment */}
@@ -584,6 +616,7 @@ const DateRangePicker = ({
                       selectedStart={startDate}
                       selectedEnd={endDate}
                       onDateSelect={handleDateSelect}
+                      colors={colors}
                     />
                   </div>
 
@@ -591,14 +624,16 @@ const DateRangePicker = ({
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-9" /> {/* Spacer for alignment */}
-                      <h3 className="text-white font-semibold text-sm">
+                      <h3 className="font-semibold text-sm" style={{ color: colors.text }}>
                         {monthNames[rightMonth.getMonth()]} {rightMonth.getFullYear()}
                       </h3>
                       <button
                         onClick={() => navigateMonth('next', 'left')}
-                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors group"
+                        className="p-1.5 rounded-lg transition-colors group"
+                        onMouseEnter={e => (e.currentTarget.style.background = colors.hoverBg)}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                       >
-                        <ChevronRight className="w-5 h-5 text-white/70 group-hover:text-primary transition-colors" />
+                        <ChevronRight className="w-5 h-5 transition-colors" style={{ color: colors.textMuted }} />
                       </button>
                     </div>
                     <CalendarMonth
@@ -607,13 +642,14 @@ const DateRangePicker = ({
                       selectedEnd={endDate}
                       onDateSelect={handleDateSelect}
                       minDate={startDate ? parseLocalDate(startDate) : undefined}
+                      colors={colors}
                     />
                   </div>
                 </div>
               </div>
 
               {/* Apply Button */}
-              <div className="px-4 sm:px-6 pb-4 pt-2 border-t border-white/10 flex justify-end">
+              <div className="px-4 sm:px-6 pb-4 pt-2 border-t flex justify-end" style={{ borderColor: colors.divider }}>
                 <Button
                   variant="primary"
                   onClick={() => {

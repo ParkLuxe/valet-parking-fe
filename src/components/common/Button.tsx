@@ -1,11 +1,12 @@
 /**
- * Enhanced Button Component with Premium Styling
- * Features gradient backgrounds, hover effects, and animations
+ * Button Component — Obsidian + Violet Design System
+ * Flat solid colors, no gradients
  */
 
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost' | 'outline' | 'gradient';
 export type ButtonSize = 'small' | 'medium' | 'large' | 'sm' | 'md' | 'lg';
@@ -44,93 +45,157 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   type = 'button',
   className,
+  style,
   ...props
 }) => {
   const normalizedSize = normalizeSize(size);
+  const { colors } = useTheme();
 
-  // Base button styles
+  const variantInlineStyles: Record<ButtonVariant, React.CSSProperties> = {
+    primary: {
+      background: colors.primaryBtn,
+      color: '#ffffff',
+      border: '1px solid transparent',
+      boxShadow: '0 6px 18px rgba(139,92,246,0.26)',
+    },
+    secondary: {
+      background: colors.activeItemBg,
+      color: colors.primary,
+      border: `1px solid ${colors.activeItemBorder}`,
+    },
+    success: {
+      background: colors.primaryBtn,
+      color: '#ffffff',
+      border: '1px solid transparent',
+      boxShadow: '0 6px 18px rgba(139,92,246,0.26)',
+    },
+    danger: {
+      background: '#dc2626',
+      color: '#ffffff',
+      border: '1px solid transparent',
+      boxShadow: '0 6px 18px rgba(220,38,38,0.24)',
+    },
+    ghost: {
+      background: 'transparent',
+      color: colors.textMuted,
+      border: 'none',
+    },
+    outline: {
+      background: colors.surfaceCard,
+      color: colors.text,
+      border: `1px solid ${colors.border}`,
+      boxShadow: '0 1px 2px rgba(15,23,42,0.06)',
+    },
+    gradient: {
+      background: colors.primaryBtn,
+      color: '#ffffff',
+      border: '1px solid transparent',
+      boxShadow: '0 6px 18px rgba(139,92,246,0.26)',
+    },
+  };
+
+  const sizeStyles = {
+    small: 'px-4 py-2 text-sm',
+    medium: 'px-5 py-2.5 text-sm',
+    large: 'px-6 py-3 text-base',
+  };
+
   const baseStyles = cn(
     'relative inline-flex items-center justify-center',
-    'font-semibold transition-all duration-300 ease-in-out',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background',
+    'font-semibold transition-all duration-150 ease-in-out',
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
     'disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
-    fullWidth && 'w-full'
+    'rounded-[14px]',
+    sizeStyles[normalizedSize],
+    fullWidth && 'w-full',
+    className
   );
-
-  // Size variants
-  const sizeStyles = {
-    small: 'px-4 py-2 text-sm rounded-lg',
-    medium: 'px-6 py-3 text-base rounded-button',
-    large: 'px-8 py-4 text-lg rounded-button',
-  };
-
-  // Variant styles with gradients and effects
-  const variantStyles: Record<ButtonVariant, string> = {
-    primary: cn(
-      'bg-gradient-to-r from-[#667eea] to-[#764ba2]',
-      'text-white shadow-lg',
-      'hover:shadow-glow-primary hover:-translate-y-0.5',
-      'focus:ring-primary',
-      'active:translate-y-0'
-    ),
-    secondary: cn(
-      'bg-transparent border-2 border-white/20',
-      'text-white hover:bg-white/10',
-      'hover:border-white/30 hover:-translate-y-0.5',
-      'focus:ring-white/50',
-      'active:translate-y-0'
-    ),
-    success: cn(
-      'bg-gradient-to-r from-[#00d2ff] to-[#3a47d5]',
-      'text-white shadow-lg',
-      'hover:shadow-glow-accent hover:-translate-y-0.5',
-      'focus:ring-accent',
-      'active:translate-y-0'
-    ),
-    danger: cn(
-      'bg-gradient-to-r from-[#ef4444] to-[#dc2626]',
-      'text-white shadow-lg',
-      'hover:shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:-translate-y-0.5',
-      'focus:ring-error',
-      'active:translate-y-0'
-    ),
-    ghost: cn(
-      'bg-transparent text-white',
-      'hover:bg-white/5',
-      'focus:ring-white/30'
-    ),
-    outline: cn(
-      'bg-transparent border-2 border-primary',
-      'text-primary hover:bg-primary/10',
-      'hover:border-primary hover:-translate-y-0.5',
-      'focus:ring-primary',
-      'active:translate-y-0'
-    ),
-    gradient: cn(
-      'bg-gradient-to-r from-[#667eea] via-[#764ba2] to-[#00d2ff]',
-      'text-white shadow-lg',
-      'hover:shadow-glow-primary hover:-translate-y-0.5',
-      'focus:ring-primary',
-      'active:translate-y-0'
-    ),
-  };
 
   return (
     <button
       type={type}
       disabled={disabled || loading}
       onClick={onClick}
-      className={cn(
-        baseStyles,
-        sizeStyles[normalizedSize],
-        variantStyles[variant],
-        className
-      )}
+      className={baseStyles}
+      style={{
+        fontFamily: 'Outfit, sans-serif',
+        letterSpacing: '0.01em',
+        borderWidth: variantInlineStyles[variant].border ? '1px' : undefined,
+        borderStyle: variantInlineStyles[variant].border ? 'solid' : undefined,
+        outline: 'none',
+        ...variantInlineStyles[variant],
+        boxShadow: variantInlineStyles[variant].boxShadow,
+        ...(disabled || loading ? { opacity: 0.5 } : {}),
+        ...style,
+      }}
+      onMouseEnter={e => {
+        if (!disabled && !loading) {
+          e.currentTarget.style.transform = 'translateY(-1px)';
+          if (variant === 'primary' || variant === 'success' || variant === 'gradient') {
+            e.currentTarget.style.background = colors.primaryBtnHover;
+          }
+          if (variant === 'ghost') {
+            e.currentTarget.style.background = colors.hoverBg;
+            e.currentTarget.style.color = colors.text;
+          }
+          if (variant === 'outline') {
+            e.currentTarget.style.background = colors.surfaceCardRaised;
+            e.currentTarget.style.borderColor = colors.borderPrimary;
+          }
+          if (variant === 'secondary') {
+            e.currentTarget.style.background = colors.activeIconBg;
+          }
+          if (variant === 'danger') {
+            e.currentTarget.style.background = '#b91c1c';
+          }
+        }
+      }}
+      onMouseLeave={e => {
+        if (!disabled && !loading) {
+          e.currentTarget.style.transform = 'translateY(0)';
+          if (variant === 'primary' || variant === 'success' || variant === 'gradient') {
+            e.currentTarget.style.background = colors.primaryBtn;
+          }
+          if (variant === 'ghost') {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = colors.textMuted;
+          }
+          if (variant === 'outline') {
+            e.currentTarget.style.background = colors.surfaceCard;
+            e.currentTarget.style.borderColor = colors.border;
+          }
+          if (variant === 'secondary') {
+            e.currentTarget.style.background = colors.activeItemBg;
+          }
+          if (variant === 'danger') {
+            e.currentTarget.style.background = '#dc2626';
+          }
+        }
+      }}
+      onMouseDown={e => {
+        if (!disabled && !loading) {
+          e.currentTarget.style.transform = 'scale(0.98)';
+        }
+      }}
+      onMouseUp={e => {
+        if (!disabled && !loading) {
+          e.currentTarget.style.transform = 'translateY(-1px)';
+        }
+      }}
       {...props}
     >
-      {/* Ripple effect on click */}
-      <span className="absolute inset-0 overflow-hidden rounded-button">
-        <span className="absolute inset-0 bg-white/0 active:bg-white/10 transition-colors duration-300" />
+      <span
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: 14,
+          boxShadow: `0 0 0 0 transparent`,
+        }}
+      />
+      {/* Ripple overlay */}
+      <span className="absolute inset-0 overflow-hidden rounded-[14px]">
+        <span className="absolute inset-0 bg-white/0 active:bg-white/10 transition-colors duration-200" />
       </span>
 
       {/* Button content */}

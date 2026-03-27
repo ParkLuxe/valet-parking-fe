@@ -15,6 +15,7 @@ import {
 import { cn } from '../../utils';
 import Button from './Button';
 import Input from './Input';
+import { useTheme } from '../../contexts/ThemeContext';
 
 
 
@@ -31,6 +32,7 @@ const DataTable = ({
   pageSize = 10,
   getRowClassName = null,
 }) => {
+  const { colors } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
@@ -108,12 +110,12 @@ const DataTable = ({
   // Get sort icon
   const getSortIcon = (accessor) => {
     if (sortColumn !== accessor) {
-      return <ChevronsUpDown className="w-4 h-4 text-white/30" />;
+      return <ChevronsUpDown className="w-4 h-4" style={{ color: colors.textMuted }} />;
     }
     return sortDirection === 'asc' ? (
-      <ChevronUp className="w-4 h-4 text-white/70" />
+      <ChevronUp className="w-4 h-4" style={{ color: colors.primary }} />
     ) : (
-      <ChevronDown className="w-4 h-4 text-white/70" />
+      <ChevronDown className="w-4 h-4" style={{ color: colors.primary }} />
     );
   };
 
@@ -143,9 +145,15 @@ const DataTable = ({
 
       {/* Bulk actions */}
       {bulkActions && selectedRows.size > 0 && (
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+        <div
+          className="rounded-[16px] p-3"
+          style={{
+            background: colors.activeItemBg,
+            border: `1px solid ${colors.activeItemBorder}`,
+          }}
+        >
           <div className="flex items-center justify-between">
-            <span className="text-white/70 text-sm">
+            <span className="text-sm" style={{ color: colors.text }}>
               {selectedRows.size} row(s) selected
             </span>
             <div className="flex gap-2">{bulkActions}</div>
@@ -154,11 +162,14 @@ const DataTable = ({
       )}
 
       {/* Table */}
-      <div className="glass-card overflow-hidden rounded-[5px]">
+      <div
+        className="glass-card overflow-hidden rounded-[22px]"
+        style={{ border: `1px solid ${colors.border}` }}
+      >
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/10">
+              <tr style={{ borderBottom: `1px solid ${colors.divider}` }}>
                 {bulkActions && (
                   <th className="px-4 py-3 text-left">
                     <input
@@ -168,7 +179,8 @@ const DataTable = ({
                         selectedRows.size === paginatedData.length
                       }
                       onChange={handleSelectAll}
-                      className="rounded border-white/20 bg-white/5 text-primary focus:ring-primary"
+                      className="rounded"
+                      style={{ borderColor: colors.border, background: colors.surfaceCardRaised }}
                     />
                   </th>
                 )}
@@ -176,9 +188,14 @@ const DataTable = ({
                   <th
                     key={index}
                     className={cn(
-                      'px-4 py-3 text-left text-sm font-semibold text-white/70',
-                      column.sortable && 'cursor-pointer hover:text-white'
+                      'px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em]',
+                      column.sortable && 'cursor-pointer'
                     )}
+                    style={{
+                      color: colors.primary,
+                      background: colors.surfaceCardRaised,
+                      fontFamily: 'Outfit, sans-serif',
+                    }}
                     onClick={() => column.sortable && handleSort(column.accessor)}
                   >
                     <div className="flex items-center gap-2">
@@ -195,12 +212,25 @@ const DataTable = ({
                   <tr
                     key={rowIndex}
                     className={cn(
-                      'border-b border-white/5 transition-colors',
-                      onRowClick && 'cursor-pointer hover:bg-white/5',
-                      selectedRows.has(rowIndex) && 'bg-blue-500/10',
+                      'transition-colors',
+                      onRowClick && 'cursor-pointer',
                       getRowClassName && getRowClassName(row, rowIndex)
                     )}
+                    style={{
+                      borderBottom: `1px solid ${colors.divider}`,
+                      background: selectedRows.has(rowIndex) ? colors.activeItemBg : 'transparent',
+                    }}
                     onClick={() => onRowClick && onRowClick(row)}
+                    onMouseEnter={(event) => {
+                      if (!selectedRows.has(rowIndex)) {
+                        event.currentTarget.style.background = colors.hoverBg;
+                      }
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.background = selectedRows.has(rowIndex)
+                        ? colors.activeItemBg
+                        : 'transparent';
+                    }}
                   >
                     {bulkActions && (
                       <td className="px-4 py-3">
@@ -212,12 +242,17 @@ const DataTable = ({
                             handleRowSelect(rowIndex);
                           }}
                           onClick={(e) => e.stopPropagation()}
-                          className="rounded border-white/20 bg-white/5 text-primary focus:ring-primary"
+                          className="rounded"
+                          style={{ borderColor: colors.border, background: colors.surfaceCardRaised }}
                         />
                       </td>
                     )}
                     {columns.map((column, colIndex) => (
-                      <td key={colIndex} className="px-4 py-3 text-sm text-white">
+                      <td
+                        key={colIndex}
+                        className="px-5 py-4 text-sm"
+                        style={{ color: colors.text, fontFamily: 'Outfit, sans-serif' }}
+                      >
                         {column.render
                           ? column.render(row[column.accessor], row)
                           : row[column.accessor]}
@@ -229,7 +264,8 @@ const DataTable = ({
                 <tr>
                   <td
                     colSpan={columns.length + (bulkActions ? 1 : 0)}
-                    className="px-4 py-8 text-center text-white/50"
+                    className="px-4 py-10 text-center"
+                    style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}
                   >
                     {emptyMessage}
                   </td>
@@ -243,7 +279,7 @@ const DataTable = ({
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-white/50">
+          <div className="text-sm" style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}>
             Showing {(currentPage - 1) * pageSize + 1} to{' '}
             {Math.min(currentPage * pageSize, sortedData.length)} of{' '}
             {sortedData.length} entries

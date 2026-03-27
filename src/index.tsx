@@ -14,6 +14,10 @@ import { store } from './redux';
 import reportWebVitals from './reportWebVitals';
 import { queryClient } from './lib/queryClient';
 
+const shouldShowReactQueryDevtools =
+  process.env.NODE_ENV === 'development' &&
+  process.env.REACT_APP_ENABLE_QUERY_DEVTOOLS === 'true';
+
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
@@ -23,7 +27,7 @@ root.render(
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <App />
-        <ReactQueryDevtools initialIsOpen={false} />
+        {shouldShowReactQueryDevtools ? <ReactQueryDevtools initialIsOpen={false} /> : null}
       </QueryClientProvider>
     </Provider>
   </React.StrictMode>

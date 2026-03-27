@@ -100,6 +100,11 @@ export interface InvoiceItem {
 export interface InvoiceFilters {
   hostId?: string;
   status?: InvoiceStatus | 'ALL';
+  paymentStatus?: InvoiceStatus | 'ALL';
+  sortBy?: string;
+  sortDirection?: 'ASC' | 'DESC';
+  dueDateFrom?: string;
+  dueDateTo?: string;
   startDate?: string;
   endDate?: string;
   page?: number;

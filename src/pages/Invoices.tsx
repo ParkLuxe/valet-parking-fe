@@ -10,6 +10,7 @@ import { addToast } from '../redux';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, Button, LoadingSpinner, RazorpayButton, DateRangePicker } from '../components';
+import { useTheme } from '../contexts/ThemeContext';
 import { useInvoices, useDownloadInvoicePDF } from '../hooks/queries/useInvoices';
 import { queryKeys } from '../lib/queryKeys';
 import { formatCurrency, formatDate } from '../utils';
@@ -17,6 +18,7 @@ import { usePermissions } from '../hooks';
 
 const Invoices = () => {
   const navigate = useNavigate();
+  const { colors } = useTheme();
   const { can } = usePermissions();
   const { user } = useSelector((state: RootState) => state.auth);
   const queryClient = useQueryClient();
@@ -59,6 +61,9 @@ const Invoices = () => {
     const baseFilters: any = {
       page: currentPage,
       size: pageSize,
+      sortBy: 'invoiceDate',
+      sortDirection: 'DESC',
+      status: 'A',
     };
     
     // Always include hostId if available
@@ -68,7 +73,7 @@ const Invoices = () => {
     
     // Add status filter if not ALL
     if (statusFilter !== 'ALL') {
-      baseFilters.status = statusFilter;
+      baseFilters.paymentStatus = statusFilter;
     }
     
     // Add date range filters if provided (format with time)
@@ -137,8 +142,8 @@ const Invoices = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-white">Invoices</h1>
-          <p className="text-white/70 mt-1">Manage your billing and payments</p>
+          <h1 className="text-3xl font-bold" style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}>Invoices</h1>
+          <p className="mt-1" style={{ color: colors.textMuted }}>Manage your billing and payments</p>
         </div>
       </div>
 
@@ -149,7 +154,7 @@ const Invoices = () => {
           <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-end">
             {/* Status Filter */}
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-white/90 mb-2">Status</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: colors.textMuted }}>Status</label>
               <div className="flex gap-2 flex-wrap">
                 {['UNPAID', 'PAID', 'OVERDUE', 'ALL'].map((status) => (
                   <Button
@@ -169,7 +174,7 @@ const Invoices = () => {
 
             {/* Date Range Filter */}
             <div className="flex-1 min-w-[300px] max-w-[500px]">
-              <label className="block text-sm font-medium text-white/90 mb-2">Date Range</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: colors.textMuted }}>Date Range</label>
               <DateRangePicker
                 onDateChange={handleDateRangeChange}
                 showPresets={true}
@@ -190,7 +195,7 @@ const Invoices = () => {
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg font-semibold text-white">
+                  <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
                     Invoice #{invoice.invoiceNumber}
                   </h3>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(invoice.paymentStatus)}`}>
@@ -199,21 +204,21 @@ const Invoices = () => {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-white/60">Date</p>
-                    <p className="font-medium text-white">{formatDate(invoice.invoiceDate)}</p>
+                    <p style={{ color: colors.textMuted }}>Date</p>
+                    <p className="font-medium" style={{ color: colors.text }}>{formatDate(invoice.invoiceDate)}</p>
                   </div>
                   <div>
-                    <p className="text-white/60">Amount</p>
-                    <p className="font-medium text-lg text-white">{formatCurrency(invoice.totalAmount)}</p>
+                    <p style={{ color: colors.textMuted }}>Amount</p>
+                    <p className="font-medium text-lg" style={{ color: colors.text }}>{formatCurrency(invoice.totalAmount)}</p>
                   </div>
                   <div>
-                    <p className="text-white/60">Period</p>
-                    <p className="font-medium text-white">{invoice.billingPeriod || 'N/A'}</p>
+                    <p style={{ color: colors.textMuted }}>Period</p>
+                    <p className="font-medium" style={{ color: colors.text }}>{invoice.billingPeriod || 'N/A'}</p>
                   </div>
                   {invoice.dueDate && (
                     <div>
-                      <p className="text-white/60">Due Date</p>
-                      <p className="font-medium text-white">{formatDate(invoice.dueDate)}</p>
+                      <p style={{ color: colors.textMuted }}>Due Date</p>
+                      <p className="font-medium" style={{ color: colors.text }}>{formatDate(invoice.dueDate)}</p>
                     </div>
                   )}
                 </div>
@@ -252,8 +257,8 @@ const Invoices = () => {
         {invoices?.length === 0 && (
           <Card>
             <div className="text-center py-12">
-              <p className="text-white/70 text-lg">No invoices found</p>
-              <p className="text-white/50 mt-2">
+              <p className="text-lg" style={{ color: colors.text }}>No invoices found</p>
+              <p className="mt-2" style={{ color: colors.textMuted }}>
                 {statusFilter === 'ALL' 
                   ? 'You don\'t have any invoices yet' 
                   : `No ${statusFilter.toLowerCase()} invoices`}
@@ -273,7 +278,7 @@ const Invoices = () => {
           >
             Previous
           </Button>
-          <span className="px-4 py-2 text-white/70">
+          <span className="px-4 py-2" style={{ color: colors.textMuted }}>
             Page {currentPage + 1} of {pagination.totalPages}
           </span>
           <Button

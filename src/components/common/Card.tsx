@@ -1,10 +1,11 @@
 /**
- * Enhanced Card Component with Glassmorphism
- * Features backdrop blur, gradient backgrounds, and hover effects
+ * Enhanced Card Component — Neon Afterhours Design System
+ * Frosted panels, soft gradients, and elevated hover motion
  */
 
 import React from 'react';
 import { cn } from '../../utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface CardProps {
   title?: string;
@@ -32,17 +33,39 @@ const Card: React.FC<CardProps> = ({
   onClick,
   ...props
 }) => {
+  const { colors } = useTheme();
+
   return (
     <div
       className={cn(
-        'glass-card p-6',
+        'p-6 rounded-[20px]',
         'transition-all duration-300 ease-in-out',
-        hover && 'hover:-translate-y-1 hover:shadow-2xl cursor-pointer',
-        glow && 'hover:shadow-glow-primary',
-        gradient && 'bg-gradient-card',
+        hover && 'cursor-pointer',
         'flex flex-col',
         className
       )}
+      style={{
+        background: gradient
+          ? colors.activeItemBg
+          : colors.surfaceCard,
+        boxShadow: '0 10px 30px rgba(15,23,42,0.10)',
+        border: `1px solid ${colors.border}`,
+      }}
+      onClick={onClick}
+      onMouseEnter={e => {
+        if (hover) {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = glow
+            ? '0 14px 34px rgba(15,23,42,0.14), 0 0 0 1px rgba(139,92,246,0.10)'
+            : '0 14px 34px rgba(15,23,42,0.14)';
+        }
+      }}
+      onMouseLeave={e => {
+        if (hover) {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 10px 30px rgba(15,23,42,0.10)';
+        }
+      }}
       {...props}
     >
       {/* Card Header */}
@@ -50,12 +73,18 @@ const Card: React.FC<CardProps> = ({
         <div className="mb-4 flex items-start justify-between">
           <div className="flex-1">
             {title && (
-              <h3 className="text-xl font-bold text-white mb-1">
+              <h3
+                className="text-xl font-bold mb-1"
+                style={{ color: colors.text, fontFamily: 'Space Grotesk, sans-serif' }}
+              >
                 {title}
               </h3>
             )}
             {subtitle && (
-              <p className="text-sm text-white/60">
+              <p
+                className="text-sm"
+                style={{ color: colors.textMuted, fontFamily: 'Outfit, sans-serif' }}
+              >
                 {subtitle}
               </p>
             )}
@@ -73,9 +102,12 @@ const Card: React.FC<CardProps> = ({
         {children}
       </div>
 
-      {/* Card Actions */}
+      {/* Card Actions — separator uses ghost border rule */}
       {actions && (
-        <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-2">
+        <div
+          className="mt-4 pt-4 flex items-center gap-2"
+          style={{ borderTop: `1px solid ${colors.divider}` }}
+        >
           {actions}
         </div>
       )}

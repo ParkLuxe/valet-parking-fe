@@ -131,7 +131,7 @@ export const PERMISSIONS = {
 
     // Parking slots
     canManageParkingSlots: true,
-    canCreateParkingSlots: true,
+    canCreateParkingSlots: false,
     canViewParkingSlots: true,
 
     // Reports

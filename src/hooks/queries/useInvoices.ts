@@ -10,22 +10,45 @@ import {  addToast  } from '../../redux';
 import { queryKeys } from '../../lib/queryKeys';
 import type { InvoiceFilters } from '../../types/api';
 
-// Filter invoices using POST /v1/invoices/filter
+// Filter invoices using POST /v1/invoices/filter-spec
 export const useInvoices = (filters: InvoiceFilters = {}) => {
   const page = filters.page ?? 0;
   const size = filters.size ?? 10;
-  
-  // Ensure hostId is always included in the request body
-  const requestBody: any = { ...filters, page, size };
-  
-  // Always include hostId if provided
-  if (filters.hostId) {
-    requestBody.hostId = filters.hostId;
+  const sortBy = filters.sortBy ?? 'invoiceDate';
+  const sortDirection = filters.sortDirection ?? 'DESC';
+
+  // Keep query params out of body
+  const requestBody: any = { ...filters };
+  delete requestBody.page;
+  delete requestBody.size;
+  delete requestBody.sortBy;
+  delete requestBody.sortDirection;
+
+  // Backward compatibility: map existing `status` filter to `paymentStatus`
+  if (!requestBody.paymentStatus && filters.status && filters.status !== 'ALL') {
+    requestBody.paymentStatus = filters.status;
+  }
+
+  // Always use active invoices unless explicitly overridden
+  if (!requestBody.status) {
+    requestBody.status = 'A';
+  }
+
+  // Remove ALL sentinel value from outgoing payload
+  if (requestBody.status === 'ALL') {
+    delete requestBody.status;
+  }
+  if (requestBody.paymentStatus === 'ALL') {
+    delete requestBody.paymentStatus;
   }
   
   return useQuery({
     queryKey: queryKeys.invoices.list(filters),
-    queryFn: () => apiHelper.post('/v1/invoices/filter', requestBody),
+    queryFn: () =>
+      apiHelper.post(
+        `/v1/invoices/filter-spec?page=${page}&size=${size}&sortBy=${sortBy}&sortDirection=${sortDirection}`,
+        requestBody
+      ),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

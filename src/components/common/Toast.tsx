@@ -1,143 +1,29 @@
 /**
  * Toast Notification Component using Radix UI
- * Features slide-in animations and auto-dismiss
+ * Theme-aware via inline styles — works correctly in both light and dark mode.
  */
 
 import React from 'react';
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
-import { cn } from '../../utils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
-interface ToastProps extends React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root> {
-  variant?: ToastVariant;
-}
-
-const Toast = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitive.Root>,
-  ToastProps
->(({ className, variant = 'info', ...props }, ref) => {
-  const variantStyles = {
-    success: 'bg-gradient-to-r from-success/90 to-success/70 border-success',
-    error: 'bg-gradient-to-r from-error/90 to-error/70 border-error',
-    warning: 'bg-gradient-to-r from-warning/90 to-warning/70 border-warning',
-    info: 'bg-gradient-to-r from-primary/90 to-primary/70 border-primary',
-  };
-
-  return (
-    <ToastPrimitive.Root
-      ref={ref}
-      className={cn(
-        'glass-card p-4 shadow-lg',
-        'border-l-4',
-        'data-[state=open]:animate-slide-in',
-        'data-[state=closed]:animate-fade-out',
-        variantStyles[variant],
-        className
-      )}
-      {...props}
-    />
-  );
-});
-
-Toast.displayName = 'Toast';
-
-const ToastAction = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitive.Action>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Action>
->(({ className, ...props }, ref) => (
-  <ToastPrimitive.Action
-    ref={ref}
-    className={cn(
-      'inline-flex items-center justify-center',
-      'px-3 py-2 text-sm font-medium',
-      'rounded-button bg-white/20 hover:bg-white/30',
-      'transition-colors',
-      className
-    )}
-    {...props}
-  />
-));
-
-ToastAction.displayName = 'ToastAction';
-
-const ToastClose = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitive.Close>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Close>
->(({ className, ...props }, ref) => (
-  <ToastPrimitive.Close
-    ref={ref}
-    className={cn(
-      'absolute top-2 right-2',
-      'rounded-button p-1',
-      'text-white/70 hover:text-white',
-      'hover:bg-white/10',
-      'transition-colors',
-      className
-    )}
-    {...props}
-  >
-    <X className="w-4 h-4" />
-  </ToastPrimitive.Close>
-));
-
-ToastClose.displayName = 'ToastClose';
-
-const ToastTitle = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <ToastPrimitive.Title
-    ref={ref}
-    className={cn('text-sm font-semibold text-white', className)}
-    {...props}
-  />
-));
-
-ToastTitle.displayName = 'ToastTitle';
-
-const ToastDescription = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <ToastPrimitive.Description
-    ref={ref}
-    className={cn('text-sm text-white/90 mt-1', className)}
-    {...props}
-  />
-));
-
-ToastDescription.displayName = 'ToastDescription';
-
-const ToastProvider = ToastPrimitive.Provider;
-const ToastViewport = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitive.Viewport>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitive.Viewport>
->(({ className, ...props }, ref) => (
-  <ToastPrimitive.Viewport
-    ref={ref}
-    className={cn(
-      'fixed bottom-0 right-0 z-[100]',
-      'flex flex-col gap-2 p-4',
-      'w-full max-w-md',
-      className
-    )}
-    {...props}
-  />
-));
-
-ToastViewport.displayName = 'ToastViewport';
-
-// Icon mapping
-const toastIcons: Record<ToastVariant, typeof CheckCircle> = {
-  success: CheckCircle,
-  error: AlertCircle,
-  warning: AlertTriangle,
-  info: Info,
+const variantColor: Record<ToastVariant, string> = {
+  success: '#34d399',
+  error:   '#f87171',
+  warning: '#fbbf24',
+  info:    '#a78bfa',
 };
 
-// Helper component to render toast with icon
+const variantIcon: Record<ToastVariant, React.ElementType> = {
+  success: CheckCircle,
+  error:   AlertCircle,
+  warning: AlertTriangle,
+  info:    Info,
+};
+
 interface ToastWithIconProps {
   variant?: ToastVariant;
   title: string;
@@ -146,29 +32,98 @@ interface ToastWithIconProps {
 }
 
 const ToastWithIcon: React.FC<ToastWithIconProps> = ({ variant = 'info', title, description, onClose }) => {
-  const Icon = toastIcons[variant];
+  const { colors } = useTheme();
+  const Icon = variantIcon[variant];
+  const color = variantColor[variant];
 
   return (
-    <Toast variant={variant}>
-      <div className="flex items-start gap-3">
-        <Icon className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-        <div className="flex-1">
-          <ToastTitle>{title}</ToastTitle>
-          {description && <ToastDescription>{description}</ToastDescription>}
-        </div>
+    <ToastPrimitive.Root
+      duration={5000}
+      onOpenChange={(open) => { if (!open) onClose?.(); }}
+      style={{
+        background: colors.surfaceCard,
+        border: `1px solid ${colors.border}`,
+        borderLeft: `4px solid ${color}`,
+        borderRadius: '12px',
+        padding: '14px 16px',
+        boxShadow: '0 8px 28px rgba(0,0,0,0.18)',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '12px',
+        position: 'relative',
+        minWidth: '280px',
+        maxWidth: '380px',
+      }}
+    >
+      <Icon style={{ color, width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <ToastPrimitive.Title
+          style={{
+            color: colors.text,
+            fontSize: 14,
+            fontWeight: 600,
+            fontFamily: 'Outfit, sans-serif',
+            lineHeight: 1.4,
+          }}
+        >
+          {title}
+        </ToastPrimitive.Title>
+        {description && (
+          <ToastPrimitive.Description
+            style={{
+              color: colors.textMuted,
+              fontSize: 13,
+              marginTop: 4,
+              fontFamily: 'Outfit, sans-serif',
+              lineHeight: 1.5,
+            }}
+          >
+            {description}
+          </ToastPrimitive.Description>
+        )}
       </div>
-      <ToastClose />
-    </Toast>
+      <ToastPrimitive.Close
+        aria-label="Close"
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: colors.textMuted,
+          padding: 2,
+          flexShrink: 0,
+          marginTop: -2,
+          marginRight: -4,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 4,
+        }}
+      >
+        <X style={{ width: 14, height: 14 }} />
+      </ToastPrimitive.Close>
+    </ToastPrimitive.Root>
   );
 };
 
-export {
-  Toast,
-  ToastAction,
-  ToastClose,
-  ToastTitle,
-  ToastDescription,
-  ToastProvider,
-  ToastViewport,
-  ToastWithIcon,
-};
+const ToastProvider = ToastPrimitive.Provider;
+
+const ToastViewport: React.FC = () => (
+  <ToastPrimitive.Viewport
+    style={{
+      position: 'fixed',
+      bottom: 20,
+      right: 20,
+      zIndex: 9999,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+      maxWidth: 400,
+      listStyle: 'none',
+      padding: 0,
+      margin: 0,
+      outline: 'none',
+    }}
+  />
+);
+
+export { ToastProvider, ToastViewport, ToastWithIcon };

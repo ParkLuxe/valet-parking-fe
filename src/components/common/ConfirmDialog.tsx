@@ -32,7 +32,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   loading = false,
 }) => {
   return (
-    <Modal open={open} onClose={onClose} title={title} className="">
+    <Modal open={open} onClose={onClose} title={title} className="w-[min(92vw,30rem)]">
       <div className="space-y-6">
         {/* Warning Icon */}
         <div className="flex items-center justify-center">
@@ -47,7 +47,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 justify-end">
+        <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
           <Button
             variant="ghost"
             onClick={onClose}

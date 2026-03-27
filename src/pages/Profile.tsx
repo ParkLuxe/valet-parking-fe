@@ -24,6 +24,9 @@ import { Card, Input, Button, LoadingSpinner } from '../components';
 import { updateProfile, addToast } from '../redux';
 import { useUpdateProfile, useChangePassword } from '../hooks/queries/useAuth';
 import { useCurrentUserProfile } from '../hooks/queries/useHostUsers';
+import { useStatesByCountry } from '../hooks/queries/useCountries';
+import { useCityLocationSuggestions, usePostalCodeLookup } from '../hooks/queries/useLocationSuggestions';
+import { useTheme } from '../contexts/ThemeContext';
 import type { RootState } from '../redux';
 import {
   validateEmail,
@@ -37,6 +40,7 @@ import {
 const Profile = () => {
   const dispatch = useDispatch();
   const authUser = useSelector((state: RootState) => state.auth.user);
+  const { colors, isDark } = useTheme();
   
   // Use TanStack Query hook to fetch user profile
   const { data: userProfile, isLoading: profileLoading, error } = useCurrentUserProfile();
@@ -141,6 +145,86 @@ const Profile = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
 
+  const { data: statesResponse, isLoading: statesLoading } = useStatesByCountry('IN');
+  const { data: cityLocationSuggestions = [], isLoading: citySuggestionsLoading } = useCityLocationSuggestions(formData.city, formData.state);
+  const { data: postalLookupSuggestions = [], isFetching: postalLookupLoading } = usePostalCodeLookup(formData.postalCode);
+
+  const stateSuggestions = useMemo(() => {
+    const rawStates = Array.isArray(statesResponse)
+      ? statesResponse
+      : Array.isArray((statesResponse as any)?.content)
+        ? (statesResponse as any).content
+        : Array.isArray((statesResponse as any)?.data)
+          ? (statesResponse as any).data
+          : [];
+
+    return rawStates
+      .map((state: any) => {
+        const value = state.name || state.stateName || state.state || '';
+        return { label: value, value };
+      })
+      .filter((state: { value: string }) => state.value)
+      .filter((state: { value: string }) =>
+        !formData.state.trim() || state.value.toLowerCase().includes(formData.state.trim().toLowerCase())
+      );
+  }, [formData.state, statesResponse]);
+
+  const citySuggestions = useMemo(() => {
+    const seen = new Set<string>();
+    return cityLocationSuggestions
+      .filter((item) => {
+        const key = `${item.city}|${item.state}`;
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      })
+      .map((item) => ({
+        label: item.city,
+        value: item.city,
+        meta: item.state,
+        payload: item,
+      }));
+  }, [cityLocationSuggestions]);
+
+  const postalSuggestions = useMemo(() => {
+    const source = cityLocationSuggestions.length > 0 ? cityLocationSuggestions : postalLookupSuggestions;
+    const seen = new Set<string>();
+    return source
+      .filter((item) => {
+        if (!item.postalCode || seen.has(item.postalCode)) {
+          return false;
+        }
+        seen.add(item.postalCode);
+        return true;
+      })
+      .filter((item) => !formData.postalCode.trim() || item.postalCode.includes(formData.postalCode.trim()))
+      .map((item) => ({
+        label: item.postalCode,
+        value: item.postalCode,
+        meta: `${item.city}, ${item.state}`,
+        payload: item,
+      }));
+  }, [cityLocationSuggestions, formData.postalCode, postalLookupSuggestions]);
+
+  useEffect(() => {
+    if (formData.postalCode.trim().length < 6 || postalLookupSuggestions.length === 0) {
+      return;
+    }
+
+    const match = postalLookupSuggestions[0];
+    setFormData((prev) =>
+      prev.city === match.city && prev.state === match.state
+        ? prev
+        : {
+            ...prev,
+            city: match.city,
+            state: match.state,
+          }
+    );
+  }, [formData.postalCode, postalLookupSuggestions]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -153,6 +237,34 @@ const Profile = () => {
         [name]: '',
       }));
     }
+  };
+
+  const handleStateSuggestionSelect = (suggestion: { value: string }) => {
+    setFormData((prev) => ({
+      ...prev,
+      state: suggestion.value,
+      city: '',
+      postalCode: '',
+    }));
+  };
+
+  const handleCitySuggestionSelect = (suggestion: { value: string; payload?: any }) => {
+    const payload = suggestion.payload;
+    setFormData((prev) => ({
+      ...prev,
+      city: suggestion.value,
+      state: payload?.state || prev.state,
+    }));
+  };
+
+  const handlePostalSuggestionSelect = (suggestion: { value: string; payload?: any }) => {
+    const payload = suggestion.payload;
+    setFormData((prev) => ({
+      ...prev,
+      postalCode: suggestion.value,
+      city: payload?.city || prev.city,
+      state: payload?.state || prev.state,
+    }));
   };
 
   const handlePasswordChange = (e) => {
@@ -358,7 +470,7 @@ const Profile = () => {
         <h1 className="text-4xl font-bold text-gradient-primary mb-2">
           Profile Settings
         </h1>
-        <p className="text-white/70">
+        <p style={{ color: colors.textMuted }}>
           Manage your account and view your activity
         </p>
       </div>
@@ -371,9 +483,22 @@ const Profile = () => {
             <div className="p-4 flex flex-col items-center">
               {/* Avatar with gradient border - SMALLER - NO UPLOAD */}
               <div className="relative mb-3">
-                <div className="absolute inset-0 bg-gradient-primary rounded-full blur opacity-75 transition-opacity" />
-                <div className="relative w-24 h-24 rounded-full bg-gradient-primary p-1">
-                  <div className="w-full h-full rounded-full bg-[#1a1a2e] flex items-center justify-center text-3xl font-bold text-white">
+                <div
+                  className="absolute inset-0 rounded-full blur opacity-75 transition-opacity"
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.primaryBtn}, ${colors.primaryBtnHover})`,
+                  }}
+                />
+                <div
+                  className="relative w-24 h-24 rounded-full p-1"
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.primaryBtn}, ${colors.primaryBtnHover})`,
+                  }}
+                >
+                  <div
+                    className="w-full h-full rounded-full flex items-center justify-center text-3xl font-bold"
+                    style={{ background: colors.surfaceInset, color: colors.text }}
+                  >
                     {(() => {
                       if (user?.firstName || user?.lastName) {
                         const first = user?.firstName?.charAt(0) || '';
@@ -386,7 +511,7 @@ const Profile = () => {
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-1">
+              <h3 className="text-xl font-bold mb-1" style={{ color: colors.text }}>
                 {(() => {
                   const nameParts = [
                     user?.firstName,
@@ -405,15 +530,16 @@ const Profile = () => {
               {/* Profile Completion - COMPACT */}
               <div className="w-full">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-white/70 text-xs">Profile Completion</span>
-                  <span className="text-white font-semibold text-sm">{profileCompletion}%</span>
+                  <span className="text-xs" style={{ color: colors.textMuted }}>Profile Completion</span>
+                  <span className="font-semibold text-sm" style={{ color: colors.text }}>{profileCompletion}%</span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ background: colors.divider }}>
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${profileCompletion}%` }}
                     transition={{ duration: 1 }}
-                    className="h-full bg-gradient-primary"
+                    className="h-full"
+                    style={{ background: `linear-gradient(90deg, ${colors.primaryBtn}, ${colors.primaryBtnHover})` }}
                   />
                 </div>
               </div>
@@ -423,10 +549,10 @@ const Profile = () => {
           {/* Account Info - COMPACT */}
           <Card>
             <div className="p-3">
-              <h3 className="text-lg font-bold text-white mb-3">Account Info</h3>
+              <h3 className="text-lg font-bold mb-3" style={{ color: colors.text }}>Account Info</h3>
               <div className="space-y-3">
-                <div className="p-2 bg-white/5 rounded-lg">
-                  <div className="flex items-center gap-2 text-white/70 mb-1">
+                <div className="p-2 rounded-lg" style={{ background: colors.surfaceInset }}>
+                  <div className="flex items-center gap-2 mb-1" style={{ color: colors.textMuted }}>
                     <Shield className="w-4 h-4" />
                     <span className="text-xs">Role</span>
                   </div>
@@ -434,7 +560,7 @@ const Profile = () => {
                     {formatRole(user)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-white/70">
+                <div className="flex items-center gap-2" style={{ color: colors.textMuted }}>
                   <Calendar className="w-4 h-4" />
                   <span className="text-xs">
                     Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
@@ -546,9 +672,9 @@ const Profile = () => {
               </div>
 
               {/* Address Section */}
-              <div className="pt-4 border-t border-white/10">
-                <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-blue-400" />
+              <div className="pt-4 border-t" style={{ borderColor: colors.divider }}>
+                <h4 className="font-semibold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
+                  <MapPin className="w-4 h-4" style={{ color: isDark ? '#60a5fa' : '#2563eb' }} />
                   Address Information
                 </h4>
                 <div className="grid grid-cols-1 gap-4">
@@ -570,25 +696,37 @@ const Profile = () => {
                   />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Input
-                      label="City"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      icon={<Building2 className="w-5 h-5" />}
-                    />
-                    <Input
                       label="State"
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
+                      helperText="Select the state first to tighten the city and postal suggestions"
                       icon={<Building2 className="w-5 h-5" />}
+                      suggestions={stateSuggestions}
+                      onSuggestionSelect={handleStateSuggestionSelect}
+                      loadingSuggestions={statesLoading}
+                    />
+                    <Input
+                      label="City"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      helperText={formData.state ? 'City suggestions are filtered by the selected state' : 'Enter or select a state first'}
+                      icon={<Building2 className="w-5 h-5" />}
+                      suggestions={formData.state ? citySuggestions : []}
+                      onSuggestionSelect={handleCitySuggestionSelect}
+                      loadingSuggestions={!!formData.state && citySuggestionsLoading}
                     />
                     <Input
                       label="Postal Code"
                       name="postalCode"
                       value={formData.postalCode}
                       onChange={handleChange}
+                      helperText="Typing a full postal code will auto-fill city and state"
                       icon={<MapPin className="w-5 h-5" />}
+                      suggestions={postalSuggestions}
+                      onSuggestionSelect={handlePostalSuggestionSelect}
+                      loadingSuggestions={postalLookupLoading}
                     />
                   </div>
                 </div>
@@ -675,14 +813,20 @@ const Profile = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex items-start gap-4 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all"
+                        className="flex items-start gap-4 p-3 rounded-lg transition-all"
+                        style={{ background: colors.surfaceInset }}
+                        onMouseEnter={e => { e.currentTarget.style.background = colors.hoverBg; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = colors.surfaceInset; }}
                     >
-                      <div className="p-2 bg-gradient-primary rounded-lg">
-                        <IconComponent className="w-5 h-5 text-white" />
+                      <div
+                        className="p-2 rounded-lg"
+                        style={{ background: `linear-gradient(135deg, ${colors.primaryBtn}, ${colors.primaryBtnHover})` }}
+                      >
+                        <IconComponent className="w-5 h-5" style={{ color: '#ffffff' }} />
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-medium">{activity.action}</p>
-                        <p className="text-white/50 text-sm">{activity.time}</p>
+                          <p className="font-medium" style={{ color: colors.text }}>{activity.action}</p>
+                          <p className="text-sm" style={{ color: colors.textMuted }}>{activity.time}</p>
                       </div>
                     </motion.div>
                   );

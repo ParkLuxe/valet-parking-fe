@@ -1,151 +1,206 @@
 /**
- * Vehicle Management Page (Host)
- * Manage all vehicles - Active, Parked, Delivered
+ * Vehicle Management — Valet Mobile Operations Design
+ * Vehicle Status Board (Kanban) — matching the Stitch "Vehicle Lifecycle Board" screen
+ * Preserves all existing API hooks, VEHICLE_STATUS constants, and filter logic
  */
 
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Car, Filter } from 'lucide-react';
-import { Card } from '../../components';
 import { Button } from '../../components';
-import { LoadingSpinner } from '../../components';
-import { DataTable } from '../../components';
 import { ExportButton } from '../../components';
 import { DateRangePicker } from '../../components';
+import { LoadingSpinner } from '../../components';
 import { useParkedVehicles } from '../../hooks/queries/useVehicles';
-import {  VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY  } from '../../utils';
+import { VEHICLE_STATUS, VEHICLE_STATUS_DISPLAY } from '../../utils';
 
+// ─── Status column config ───────────────────────────────────────────────
+const KANBAN_COLUMNS = [
+  {
+    id: VEHICLE_STATUS.ASSIGNED,
+    label: 'Assigned',
+    accent: '#e9c349',
+    bg: 'rgba(233,195,73,0.08)',
+    border: 'rgba(233,195,73,0.2)',
+    dot: '#e9c349',
+  },
+  {
+    id: VEHICLE_STATUS.PARKING_IN_PROGRESS,
+    label: 'Parking In Progress',
+    accent: '#8b5cf6',
+    bg: 'rgba(139,92,246,0.08)',
+    border: 'rgba(139,92,246,0.2)',
+    dot: '#8b5cf6',
+  },
+  {
+    id: VEHICLE_STATUS.PARKED,
+    label: 'Parked',
+    accent: '#4ade80',
+    bg: 'rgba(74,222,128,0.08)',
+    border: 'rgba(74,222,128,0.2)',
+    dot: '#4ade80',
+  },
+  {
+    id: VEHICLE_STATUS.RETRIEVAL_REQUESTED,
+    label: 'Retrieval Requested',
+    accent: '#fb923c',
+    bg: 'rgba(251,146,60,0.08)',
+    border: 'rgba(251,146,60,0.2)',
+    dot: '#fb923c',
+  },
+  {
+    id: VEHICLE_STATUS.OUT_FOR_DELIVERY,
+    label: 'Out for Delivery',
+    accent: '#a78bfa',
+    bg: 'rgba(167,139,250,0.08)',
+    border: 'rgba(167,139,250,0.2)',
+    dot: '#a78bfa',
+  },
+  {
+    id: VEHICLE_STATUS.DELIVERED,
+    label: 'Delivered',
+    accent: '#909097',
+    bg: 'rgba(144,144,151,0.08)',
+    border: 'rgba(144,144,151,0.2)',
+    dot: '#909097',
+  },
+];
+
+// ─── Vehicle Card ────────────────────────────────────────────────────────
+const VehicleCard = ({ vehicle, accent, index }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, scale: 0.9 }}
+    transition={{ delay: index * 0.04 }}
+    className="p-4 rounded-[0.375rem] cursor-default"
+    style={{
+      background: '#222a3d',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+    }}
+    onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
+    onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
+  >
+    <div className="flex items-center justify-between mb-2">
+      <span
+        className="text-base font-bold font-mono"
+        style={{ color: accent, fontFamily: 'Manrope, sans-serif' }}
+      >
+        {vehicle.vehicleNumber || 'N/A'}
+      </span>
+      <Car className="w-4 h-4 opacity-40" style={{ color: accent }} />
+    </div>
+    {vehicle.customerName && (
+      <p className="text-xs mb-0.5" style={{ color: '#c6c6cd', fontFamily: 'Inter, sans-serif' }}>
+        {vehicle.customerName}
+      </p>
+    )}
+    {vehicle.assignedValet && (
+      <p className="text-xs" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>
+        Valet: {vehicle.assignedValet}
+      </p>
+    )}
+    {vehicle.parkingSlot && (
+      <p className="text-xs mt-1" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>
+        Slot: {vehicle.parkingSlot}
+      </p>
+    )}
+  </motion.div>
+);
+
+// ─── Kanban Column ───────────────────────────────────────────────────────
+const KanbanColumn = ({ column, vehicles }) => (
+  <div className="flex flex-col min-w-[240px] flex-1">
+    {/* Column header */}
+    <div
+      className="flex items-center justify-between px-4 py-3 rounded-t-[12px] mb-0"
+      style={{
+        background: column.bg,
+        borderLeft: `2px solid ${column.border}`,
+        borderRight: `2px solid ${column.border}`,
+        borderTop: `2px solid ${column.border}`,
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <div
+          className="w-2 h-2 rounded-full"
+          style={{ background: column.accent, boxShadow: `0 0 8px ${column.accent}80` }}
+        />
+        <span
+          className="text-xs font-semibold"
+          style={{ color: column.accent, fontFamily: 'Inter, sans-serif' }}
+        >
+          {column.label}
+        </span>
+      </div>
+      <span
+        className="text-xs font-bold px-2 py-0.5 rounded-full"
+        style={{ background: `${column.accent}22`, color: column.accent }}
+      >
+        {vehicles.length}
+      </span>
+    </div>
+
+    {/* Cards container */}
+    <div
+      className="flex-1 p-3 space-y-2 rounded-b-[12px] min-h-[200px]"
+      style={{
+        background: '#131b2e',
+        borderLeft: `2px solid ${column.border}`,
+        borderRight: `2px solid ${column.border}`,
+        borderBottom: `2px solid ${column.border}`,
+      }}
+    >
+      <AnimatePresence>
+        {vehicles.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center h-20"
+          >
+            <p className="text-xs" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>
+              No vehicles
+            </p>
+          </motion.div>
+        )}
+        {vehicles.map((v, i) => (
+          <VehicleCard key={v.id || i} vehicle={v} accent={column.accent} index={i} />
+        ))}
+      </AnimatePresence>
+    </div>
+  </div>
+);
+
+// ─── Page ────────────────────────────────────────────────────────────────
 const VehicleManagement = () => {
   const { user } = useSelector((state: RootState) => state.auth);
-
-  const [activeTab, setActiveTab] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
-  // Date range filtering - TODO: Implement backend support for date range filtering
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
 
-  // Use TanStack Query hook
   const { data: vehicles = [], isLoading: loading } = useParkedVehicles(user?.hostId || '');
 
-  const getFilteredVehicles = () => {
-    let filtered = vehicles;
+  // Columns data
+  const columnsWithVehicles = KANBAN_COLUMNS.map(col => ({
+    ...col,
+    vehicles: vehicles.filter(v => v.status === col.id),
+  }));
 
-    // Filter by tab
-    if (activeTab === 'active') {
-      filtered = filtered.filter(
-        (v) =>
-          v.status === VEHICLE_STATUS.ASSIGNED ||
-          v.status === VEHICLE_STATUS.PARKING_IN_PROGRESS ||
-          v.status === VEHICLE_STATUS.RETRIEVAL_REQUESTED ||
-          v.status === VEHICLE_STATUS.OUT_FOR_DELIVERY
-      );
-    } else if (activeTab === 'parked') {
-      filtered = filtered.filter((v) => v.status === VEHICLE_STATUS.PARKED);
-    } else if (activeTab === 'delivered') {
-      filtered = filtered.filter((v) => v.status === VEHICLE_STATUS.DELIVERED);
-    }
+  // Summary stats
+  const activeCount   = vehicles.filter(v => [VEHICLE_STATUS.ASSIGNED, VEHICLE_STATUS.PARKING_IN_PROGRESS, VEHICLE_STATUS.RETRIEVAL_REQUESTED, VEHICLE_STATUS.OUT_FOR_DELIVERY].includes(v.status as any)).length;
+  const parkedCount   = vehicles.filter(v => v.status === VEHICLE_STATUS.PARKED).length;
+  const deliveredCount = vehicles.filter(v => v.status === VEHICLE_STATUS.DELIVERED).length;
 
-    return filtered;
-  };
-
-  const columns = [
-    {
-      header: 'Vehicle Number',
-      accessor: 'vehicleNumber',
-      sortable: true,
-      render: (value, row) => (
-        <div>
-          <div className="font-semibold text-white">{value || 'N/A'}</div>
-          <div className="text-sm text-white/50 mt-1">{row.vehicleType || 'Car'}</div>
-        </div>
-      ),
-    },
-    {
-      header: 'Customer',
-      accessor: 'customerName',
-      sortable: true,
-      render: (value, row) => (
-        <div>
-          <div className="text-white">{value || 'N/A'}</div>
-          <div className="text-sm text-white/50 mt-1">{row.customerPhone || 'N/A'}</div>
-        </div>
-      ),
-    },
-    {
-      header: 'Status',
-      accessor: 'status',
-      sortable: true,
-      render: (value) => {
-        const statusColors = {
-          [VEHICLE_STATUS.ASSIGNED]: 'bg-yellow-500/20 text-yellow-400',
-          [VEHICLE_STATUS.PARKING_IN_PROGRESS]: 'bg-blue-500/20 text-blue-400',
-          [VEHICLE_STATUS.PARKED]: 'bg-green-500/20 text-green-400',
-          [VEHICLE_STATUS.RETRIEVAL_REQUESTED]: 'bg-orange-500/20 text-orange-400',
-          [VEHICLE_STATUS.OUT_FOR_DELIVERY]: 'bg-purple-500/20 text-purple-400',
-          [VEHICLE_STATUS.DELIVERED]: 'bg-gray-500/20 text-gray-400',
-        };
-
-        return (
-          <span
-            className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${
-              statusColors[value] || 'bg-gray-500/20 text-gray-400'
-            }`}
-          >
-            {VEHICLE_STATUS_DISPLAY[value] || value || 'Unknown'}
-          </span>
-        );
-      },
-    },
-    {
-      header: 'Valet',
-      accessor: 'assignedValet',
-      sortable: true,
-      render: (value) => <span className="text-white">{value || 'Not assigned'}</span>,
-    },
-    {
-      header: 'Parking Slot',
-      accessor: 'parkingSlot',
-      sortable: true,
-      render: (value) => <span className="text-white">{value || 'Not assigned'}</span>,
-    },
-    {
-      header: 'Created At',
-      accessor: 'createdAt',
-      sortable: true,
-      render: (value) => (
-        <span className="text-white/70 text-sm">
-          {value ? new Date(value).toLocaleString() : 'N/A'}
-        </span>
-      ),
-    },
-  ];
-
-  const filteredVehicles = getFilteredVehicles();
-
-  const tabs = [
-    { id: 'all', label: 'All', count: vehicles.length },
-    {
-      id: 'active',
-      label: 'Active',
-      count: vehicles.filter(
-        (v) =>
-          v.status === VEHICLE_STATUS.ASSIGNED ||
-          v.status === VEHICLE_STATUS.PARKING_IN_PROGRESS ||
-          v.status === VEHICLE_STATUS.RETRIEVAL_REQUESTED ||
-          v.status === VEHICLE_STATUS.OUT_FOR_DELIVERY
-      ).length,
-    },
-    {
-      id: 'parked',
-      label: 'Parked',
-      count: vehicles.filter((v) => v.status === VEHICLE_STATUS.PARKED).length,
-    },
-    {
-      id: 'delivered',
-      label: 'Delivered',
-      count: vehicles.filter((v) => v.status === VEHICLE_STATUS.DELIVERED).length,
-    },
+  // Export columns for CSV
+  const exportCols = [
+    { header: 'Vehicle Number', accessor: 'vehicleNumber' },
+    { header: 'Customer',       accessor: 'customerName'  },
+    { header: 'Status',         accessor: 'status'        },
+    { header: 'Valet',          accessor: 'assignedValet' },
+    { header: 'Parking Slot',   accessor: 'parkingSlot'   },
+    { header: 'Created At',     accessor: 'createdAt'     },
   ];
 
   if (loading && !vehicles.length) {
@@ -155,67 +210,88 @@ const VehicleManagement = () => {
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-start justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Vehicle Management</h1>
-          <p className="text-white/60">Manage all vehicles and their status</p>
+          <p className="text-xs font-semibold tracking-widest mb-1" style={{ color: '#8b5cf6', fontFamily: 'Inter, sans-serif' }}>VEHICLE LIFECYCLE</p>
+          <h1 className="text-4xl font-bold mb-1" style={{ color: '#dae2fd', fontFamily: 'Manrope, sans-serif' }}>
+            Status Board
+          </h1>
+          <p className="text-sm" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>
+            Real-time vehicle lifecycle tracking across all stations
+          </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-1">
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => setShowFilters(!showFilters)}
-            startIcon={<Filter className="w-5 h-5" />}
+            startIcon={<Filter className="w-4 h-4" />}
           >
             Filters
           </Button>
           <ExportButton
-            data={filteredVehicles}
-            columns={columns}
+            data={vehicles}
+            columns={exportCols}
             filename="vehicles"
             format="csv"
-            variant="secondary"
+            variant="outline"
           />
         </div>
-      </div>
+      </motion.div>
+
+      {/* Summary stats bar */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="flex items-center gap-6 px-5 py-3 rounded-[0.375rem]"
+        style={{ background: '#171f33', boxShadow: '0 4px 16px rgba(0,0,0,0.25)' }}
+      >
+        {[
+          { label: 'Total Vehicles', value: vehicles.length, color: '#dae2fd' },
+          { label: 'Active',         value: activeCount,     color: '#8b5cf6'  },
+          { label: 'Parked',         value: parkedCount,     color: '#4ade80'  },
+          { label: 'Delivered',      value: deliveredCount,  color: '#909097'  },
+        ].map(stat => (
+          <div key={stat.label} className="flex items-center gap-2">
+            <span className="text-2xl font-bold tabular-nums" style={{ color: stat.color, fontFamily: 'Manrope, sans-serif' }}>
+              {stat.value}
+            </span>
+            <span className="text-xs" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>
+              {stat.label}
+            </span>
+            <div className="w-px h-6 mx-2" style={{ background: 'rgba(139,92,246,0.08)' }} />
+          </div>
+        )).reduce((acc, el, i, arr) => (i < arr.length - 1 ? [...acc, el] : [...acc, el.props ? React.cloneElement(el, { key: `last-${i}` }) : el]), [] as React.ReactNode[])}
+      </motion.div>
 
       {/* Filters */}
       {showFilters && (
-        <Card title="Filters">
-          <DateRangePicker onDateChange={setDateRange} showPresets={true} />
-        </Card>
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-[12px]" style={{ background: '#171f33' }}>
+          <DateRangePicker onDateChange={setDateRange} showPresets />
+        </motion.div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-white/10">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === tab.id
-                ? 'text-white border-b-2 border-primary'
-                : 'text-white/50 hover:text-white'
-            }`}
-          >
-            {tab.label} ({tab.count})
-          </button>
-        ))}
+      {/* Kanban board */}
+      <div className="overflow-x-auto pb-4">
+        <div className="flex gap-4 min-w-max">
+          {columnsWithVehicles.map(col => (
+            <KanbanColumn key={col.id} column={col} vehicles={col.vehicles} />
+          ))}
+        </div>
       </div>
 
-      {/* Vehicles Table */}
-      <Card
-        title={`${filteredVehicles.length} Vehicle(s)`}
-        headerAction={<Car className="w-5 h-5 text-white/50" />}
-      >
-        <DataTable
-          columns={columns}
-          data={filteredVehicles}
-          searchable={true}
-          searchPlaceholder="Search vehicles..."
-          emptyMessage="No vehicles found"
-          pageSize={10}
-        />
-      </Card>
+      {vehicles.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Car className="w-16 h-16 opacity-15 mb-4" style={{ color: '#8b5cf6' }} />
+          <p className="text-lg font-semibold mb-2" style={{ color: '#c6c6cd', fontFamily: 'Manrope, sans-serif' }}>No vehicles on board</p>
+          <p className="text-sm" style={{ color: '#909097', fontFamily: 'Inter, sans-serif' }}>Vehicles will appear here as they are assigned</p>
+        </div>
+      )}
     </div>
   );
 };
