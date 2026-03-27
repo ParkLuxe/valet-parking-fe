@@ -138,7 +138,7 @@ const HostSchedules = () => {
         </div>
       ),
     } as ColumnDef<Schedule>] : []),
-  ], [can, handleEdit, handleDelete]);
+  ], [can, handleEdit, handleDelete, colors.activeItemBg, colors.activeIconBg, colors.primaryBtn, colors.text, colors.textMuted]);
 
   const table = useReactTable({
     data: schedules,
